@@ -1,4 +1,4 @@
 .env
 /packages/frontend/.generated
 .DS_Store
-.10x
+*.10x
