@@ -1,0 +1,59 @@
+services:
+  db:
+    container_name: ${DATABASE_CONTAINER}
+    image: mysql:8.0.32
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - sqldb:/var/lib/mysql
+  backend:
+    container_name: backend
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile.local
+    restart: always
+    env_file: .env
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    volumes:
+      - "./packages/backend/src:/usr/src/app/src"
+      - "./packages/frontend/.generated:/usr/generated/"
+    depends_on:
+      - ${DATABASE_CONTAINER}
+    healthcheck:
+      test: "curl --fail http://localhost:${BACKEND_PORT}/api-json || exit 1"
+      interval: 1s
+      retries: 999
+      timeout: 2s
+  frontend:
+    container_name: frontend
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile.local
+    restart: always
+    env_file: .env
+    environment:
+      - PORT=${FRONTEND_PORT}
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - WDS_SOCKET_PORT=${FRONTEND_PORT}
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    volumes:
+      - "./packages/frontend/src:/usr/src/app/src"
+      - "./packages/frontend/public:/usr/src/app/public"
+      - "./packages/frontend/.generated:/usr/src/app/.generated"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  sqldb:

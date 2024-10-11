@@ -1,0 +1,18 @@
+FROM node:19-alpine3.16 As development
+
+RUN apk update && apk add curl
+
+WORKDIR /usr/src/app
+
+RUN npm i -g @nestjs/cli
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+EXPOSE ${BACKEND_PORT}
+
+ENV OPENAPI_OUT=/usr/generated/credible_cupid_openapi.json
+CMD ["npm", "run", "start:debug"]

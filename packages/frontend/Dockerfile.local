@@ -1,0 +1,18 @@
+FROM node:19-alpine3.16 As development
+
+RUN apk update && apk add openjdk11
+
+WORKDIR /usr/src/app
+
+RUN wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.9.0/openapi-generator-cli-7.9.0.jar -O openapi-generator-cli.jar
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+EXPOSE ${FRONTEND_PORT}
+
+ENV OPENAPI_DOC=/usr/generated/credible_cupid_openapi.json
+CMD ["npm", "run", "start-dev"]
