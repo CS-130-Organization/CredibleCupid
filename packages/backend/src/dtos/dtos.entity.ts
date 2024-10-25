@@ -82,7 +82,7 @@ export class GetUserResponse {
 	occupation: string;
 }
 
-export class UpdateUserBioRequest {
+export class UserUpdateBioRequest {
 	/*
 	 * The biography of the user.
 	 */

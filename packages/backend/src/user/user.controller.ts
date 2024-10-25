@@ -2,7 +2,7 @@ import { Body, Controller, UseGuards, Get, Post, Param, ForbiddenException } fro
 import { JwtAuthGuard, AuthUser } from "../auth/jwt.guard";
 import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User } from "../database/entities";
-import { GetUserResponse, UpdateUserBioRequest } from "../dtos/dtos.entity";
+import { GetUserResponse, UserUpdateBioRequest } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
 
 
@@ -34,8 +34,8 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
-	@Post("update_user_bio")
-	async update_user_bio(@AuthUser() user: User, @Body() req: UpdateUserBioRequest): Promise<GetUserResponse> {
+	@Post("update_bio")
+	async update_bio(@AuthUser() user: User, @Body() req: UserUpdateBioRequest): Promise<GetUserResponse> {
 		const res = await this.user_service.update_user_bio(
 			user.guid,
 			req.bio,
