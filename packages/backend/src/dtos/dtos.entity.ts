@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsInt, ValidateIf } from "class-validator";
+import { IsEmail, IsNotEmpty, IsInt, ValidateIf, IsEnum } from "class-validator";
+import { Gender, SexualOrientation } from "../database/entities"
 
 export class LoginRequest {
 	/*
@@ -42,4 +43,80 @@ export class GetUserResponse {
 	 * The GUID of the user.
 	 */
 	guid: string;
+
+	/*
+	 * The biography of the user.
+	 */
+	bio: string;
+
+	/*
+	 * The gender of the user.
+	 */
+	@IsEnum(Gender)
+	gender: Gender;
+
+	/*
+	 * The pronouns of the user.
+	 */
+	pronouns: string;
+
+	/*
+	 * The sexual orientation of the user.
+	 */
+	@IsEnum(SexualOrientation)
+	sexual_orientation: SexualOrientation;
+
+	/*
+	 * Birthdate of the user in ms since epoch
+	 */
+	birthday_ms_since_epoch: number;
+
+	/*
+	 * The height of the user in millimeters
+	 */
+	height_mm: number;
+
+	/*
+	 * The occupation of the user
+	 */
+	occupation: string;
+}
+
+export class UserUpdateBioRequest {
+	/*
+	 * The biography of the user.
+	 */
+	bio: string;
+
+	/*
+	 * The gender of the user.
+	 */
+	@IsEnum(Gender)
+	gender: Gender;
+
+	/*
+	 * The pronouns of the user.
+	 */
+	pronouns: string;
+
+	/*
+	 * The sexual orientation of the user.
+	 */
+	@IsEnum(SexualOrientation)
+	sexual_orientation: SexualOrientation;
+
+	/*
+	 * Birthdate of the user in ms since epoch
+	 */
+	birthday_ms_since_epoch: number;
+
+	/*
+	 * The height of the user in millimeters
+	 */
+	height_mm: number;
+
+	/*
+	 * The occupation of the user
+	 */
+	occupation: string;
 }
