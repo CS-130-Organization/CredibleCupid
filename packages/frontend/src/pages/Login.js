@@ -1,14 +1,41 @@
 import React, { useState } from 'react';
 
+import * as CredibleCupid from '../credible_cupid/src/index'
+import InitDefaultCredibleCupidClient from '../client/Client';
+
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Login attempted with:', username, password);
-    // Here you would typically handle the login logic
+
+    InitDefaultCredibleCupidClient(null);
+    let apiInstance = new CredibleCupid.AuthApi();
+    let loginRequest = new CredibleCupid.LoginRequest(username, password);
+
+    const ret = apiInstance.authLogin(loginRequest, (error, data, response) => {
+      if (error) {
+        console.error(response);
+        console.error(response.body.message);
+        console.error(response.body.statusCode);
+      } else {
+        console.log("Successfully logged in!")
+        InitDefaultCredibleCupidClient(data.jwt);
+
+        apiInstance.authRefresh((error, data, response) => {
+          if (error) {
+            console.error(response);
+            console.error(response.body.message);
+            console.error(response.body.statusCode);
+          } else {
+            console.log("Refreshed auth token!");
+          }
+        });
+      }
+    });
   };
+
 
   return (
     <div className="login-container">

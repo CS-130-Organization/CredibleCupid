@@ -15,7 +15,6 @@ function App() {
           <Route path="/profile" element={<ProfileCard/>} />
           {/* ... other routes ... */}
         </Routes>
-        <Login />
       </div>
     </Router>
   );
