@@ -16,6 +16,6 @@ jobs:
     - name: Check out repository code
       uses: actions/checkout@v4
     - name: Init .env
-      run: cp env.Sample .env
+      run: cp testingEnv.Sample .env
     - name: Build and run credible cupid server
       run: docker compose up --build --remove-orphans -d --wait

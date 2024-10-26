@@ -31,7 +31,7 @@ services:
     healthcheck:
       test: "curl --fail http://localhost:${BACKEND_PORT}/api-json || exit 1"
       interval: 1s
-      retries: 64
+      retries: ${HEALTHCHECK_RETRIES}
       timeout: 2s
   frontend:
     container_name: frontend
@@ -57,7 +57,7 @@ services:
     healthcheck:
       test: "curl --fail http://localhost:${FRONTEND_PORT}/ || exit 1"
       interval: 1s
-      retries: 64
+      retries: ${HEALTHCHECK_RETRIES}
       timeout: 2s
 
 volumes:
