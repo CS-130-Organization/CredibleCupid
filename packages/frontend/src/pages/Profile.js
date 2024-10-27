@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
+import { Button, Box, Typography, Paper, Avatar } from '@mui/material';
+import styled from '@emotion/styled';
 import { Link, useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -10,15 +12,29 @@ const Profile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
+  const [userGuid, setUserGuid] = useState('');
+  const [isOwner, setIsOwner] = useState(false);
+  const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
 
   useEffect(() => {
-
     const jwtToken = sessionStorage.getItem("jwtToken");
-    if (jwtToken) {
-      InitDefaultCredibleCupidClient(jwtToken); // Initialize with stored JWT
-    } else {
+    if (jwtToken && !tokenRefreshed) {
+      InitDefaultCredibleCupidClient(jwtToken);
+
+      let apiInstance = new CredibleCupid.AuthApi();
+      apiInstance.authRefresh((error, data, response) => {
+        if (error) {
+          console.error(response);
+        } else {
+          setUserGuid(data.user_guid);
+          console.log('API called successfully. Returned data: ' + JSON.stringify(data, null, 2));
+          sessionStorage.setItem("jwtToken", data.jwt);
+          setTokenRefreshed(true); // Set to true so this only runs once
+        }
+      });
+    } else if (!jwtToken) {
       console.error("JWT token not found. Redirecting to login.");
-      navigate("/login"); // Or handle as needed (e.g., redirect to login)
+      navigate("/login");
     }
 
 
@@ -48,6 +64,13 @@ const Profile = () => {
 
   const handleFetchProfile = (e) => {
     e.preventDefault();
+
+    if (guid === userGuid) {
+      setIsOwner(true);
+    } else {
+      setIsOwner(false);
+    }
+
     // InitDefaultCredibleCupidClient(null);
     const apiInstance = new CredibleCupid.UserApi();
     apiInstance.queryUser(guid, (error, data) => {
@@ -63,8 +86,8 @@ const Profile = () => {
   const handleUpdateProfile = (e) => {
     e.preventDefault();
     console.log("handleUpdateProfile")
-    const jwtToken = sessionStorage.getItem("jwtToken");
     
+    const jwtToken = sessionStorage.getItem("jwtToken");
     if (!jwtToken) {
       console.error("JWT token missing. Unable to update profile.");
       return;
@@ -107,12 +130,19 @@ const Profile = () => {
 
   if (!userData) return <div>Loading...</div>;
 
+  const ProfileContainer = styled(Paper)({
+    maxWidth: '600px',
+    margin: '20px auto',
+    padding: '20px',
+    // borderRadius: '10px',
+  });
+
   return (
     <div className="profile-page">
       <p>Profile</p>
       <br></br>
 
-      {isEditing ? (
+      {isEditing && isOwner ? (
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <form onSubmit={handleUpdateProfile}>
           <label>
@@ -201,87 +231,59 @@ const Profile = () => {
         </form>
       ) : (
         <>
-          <button onClick={() => setIsEditing(true)}>Edit Profile</button>
-          <br></br>
-          <button>Like</button>
-          <br></br>
-          <button>View Your likes</button>
-          {/* <br></br>
-          <img src={'https://s.yimg.com/ny/api/res/1.2/3l2GwEUoPVFLpeIAsqx3Sw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://media.zenfs.com/en/comingsoon_net_477/a82ffbfe13cb6804c0915ae278290b38'} alt="Profile" />
-          <p>Username</p>
-          <p>{userData.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData.pronouns || "Pronouns not specified"}</p>
-          <p>Instagram: @dummy</p>
-          <p>Email: {userData.email}</p>
-          <p>{userData.sexual_orientation}</p>
-          <p>{(userData.height_mm / 1000).toFixed(2)} meters</p>
-          <p>{userData.occupation || "Occupation not specified"}</p>
-          <p><strong>Bio:</strong> {userData.bio || "No bio available"}</p> */}
-          <div style={{ maxWidth: "550px", margin: "20px auto", textAlign: "left" }}>
-            {/* Profile Picture and Basic Info Section */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column", // Change to column layout
-              justifyContent: "space-around",
-              alignItems: "center",
-              padding: "20px",
-              borderBottom: "1px solid grey"
-            }}>
-              <img
-                style={{ width: "200px", height: "200px", borderRadius: "8px"}}
+      <ProfileContainer elevation={3}>
+            <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
+              <Avatar
+                alt="Profile Picture"
                 src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                alt="Profile"
+                sx={{
+                  width: 150,
+                  height: 150,
+                  marginBottom: 2,
+                  borderRadius: 0, // This makes the image rectangular
+                }}
               />
+              <Typography variant="h5">{"User"}</Typography>
+              <Typography variant="subtitle1">{userData?.email || "Email"}</Typography>
+              <Typography variant="subtitle1">{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</Typography>
+              <Typography variant="subtitle1">Instagram: @example</Typography>
+              {isOwner ? (
+                <Box my={2}>
+                  <Button variant="contained" color="primary" onClick={() => setIsEditing(true)} sx={{ marginRight: 1 }}>
+                    Edit Profile
+                  </Button>
+                  <Button variant="outlined" color="secondary" sx={{ marginLeft: 1 }}>
+                    View Likes
+                  </Button>
+                </Box>
+              ) : (
+                <>
+                  <Button variant="outlined" color="secondary">Like</Button>
 
-            </div>
-            <div style={{
-              padding: "20px",
-              border: "1px solid grey",
-              backgroundColor: "#f1f1f1",
-              borderRadius: "8px"
-            }}>
-                <h4>Name</h4>
-                <p>Email: {userData.email}</p>
-                <p>{userData.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData.pronouns || "Pronouns not specified"}</p>
-                <p>Instagram: @dummy</p>
-                <p>not AI</p>
-              </div>
-            {/* About Me Section */}
-            <div style={{
-              padding: "20px",
-              border: "1px solid grey",
-              backgroundColor: "#f1f1f1",
-              borderRadius: "8px"
-            }}>
-              <h4>Bio</h4>
-              <p>{userData.bio || "No bio available"}</p>
-            </div>
+                </>
+              )}
+            </Box>
 
-            {/* Referrals Section */}
-            <div style={{
-              padding: "20px",
-              border: "1px solid grey",
-              backgroundColor: "#f1f1f1",
-              borderRadius: "8px"
-            }}>
-              <h1>Referrals</h1>
-              <p><strong>Person 1:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p><strong>Person 2:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p><strong>Person 3:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-            </div>
+            <Box my={2} p={2} sx={{ backgroundColor: "#f1f1f1", borderRadius: "8px" }}>
+              <Typography variant="h6">Bio</Typography>
+              <Typography>{userData?.bio || "No bio available"}</Typography>
+            </Box>
 
-            {/* Details Section */}
-            <div style={{
-              padding: "20px",
-              border: "1px solid grey",
-              backgroundColor: "#f1f1f1",
-              borderRadius: "8px"
-            }}>
-              <p><strong>Gender:</strong> {userData.gender}</p>
-              <p><strong>Sexual Orientation:</strong> {userData.sexual_orientation}</p>
-              <p><strong>Height:</strong> {(userData.height_mm / 1000).toFixed(2)} meters</p>
-              <p><strong>Occupation:</strong> {userData.occupation || "Occupation not specified"}</p>
-            </div>
-          </div>
+            <Box my={2} p={2} sx={{ backgroundColor: "#f9f9f9", borderRadius: "8px" }}>
+              <Typography variant="h6">Details</Typography>
+              <Typography><strong>Gender:</strong> {userData?.gender}</Typography>
+              <Typography><strong>Sexual Orientation:</strong> {userData?.sexual_orientation}</Typography>
+              <Typography><strong>Height:</strong> {(userData.height_mm / 1000).toFixed(2)} meters</Typography>
+              <Typography><strong>Occupation:</strong> {userData?.occupation || "Occupation not specified"}</Typography>
+            </Box>
+
+            <Box my={2} p={2} sx={{ backgroundColor: "#e8f4fc", borderRadius: "8px" }}>
+              <Typography variant="h6">Referrals</Typography>
+              <Typography><strong>Person 1:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
+              <Typography><strong>Person 2:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
+              <Typography><strong>Person 3:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
+            </Box>
+          </ProfileContainer>
         </>
       )}
       <br></br>
