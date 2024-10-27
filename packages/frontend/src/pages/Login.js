@@ -23,6 +23,8 @@ function Login() {
         console.log("Successfully logged in!")
         InitDefaultCredibleCupidClient(data.jwt);
 
+        sessionStorage.setItem("jwtToken", data.jwt);
+
         apiInstance.authRefresh((error, data, response) => {
           if (error) {
             console.error(response);

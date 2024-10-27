@@ -12,6 +12,16 @@ const Profile = () => {
   const [guid, setGuid] = useState('');
 
   useEffect(() => {
+
+    const jwtToken = sessionStorage.getItem("jwtToken");
+    if (jwtToken) {
+      InitDefaultCredibleCupidClient(jwtToken); // Initialize with stored JWT
+    } else {
+      console.error("JWT token not found. Redirecting to login.");
+      navigate("/login"); // Or handle as needed (e.g., redirect to login)
+    }
+
+
     // Dummy user data with additional fields
     const dummyData = {
       email: "example@email.com",
@@ -27,7 +37,7 @@ const Profile = () => {
     
     // Set dummy data to mimic API response
     if (!userData) setUserData(dummyData);
-  }, []);
+  }, [userData, navigate]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
@@ -44,6 +54,7 @@ const Profile = () => {
       if (error) {
         console.error(error);
       } else {
+        console.log("Successfully fetch profile")
         setUserData(data);
       }
     });
@@ -51,24 +62,39 @@ const Profile = () => {
 
   const handleUpdateProfile = (e) => {
     e.preventDefault();
-    // InitDefaultCredibleCupidClient(null);
-    const apiInstance = new CredibleCupid.UserApi();
-
-    const updateRequest = new CredibleCupid.UserUpdateBioRequest({
+    console.log("handleUpdateProfile")
+    const jwtToken = sessionStorage.getItem("jwtToken");
+    
+    if (!jwtToken) {
+      console.error("JWT token missing. Unable to update profile.");
+      return;
+    }
+    
+    // Set up API client instance and authenticate with JWT
+    let defaultClient = CredibleCupid.ApiClient.instance;
+    let bearer = defaultClient.authentications['bearer'];
+    bearer.accessToken = jwtToken;
+    
+    let apiInstance = new CredibleCupid.UserApi();
+    
+    // Build UserUpdateBioRequest object
+    const userUpdateBioRequest = {
       bio: userData.bio,
       gender: userData.gender,
       pronouns: userData.pronouns,
-      sexualOrientation: userData.sexual_orientation,
-      birthdayMsSinceEpoch: userData.birthday_ms_since_epoch,
-      heightMm: userData.height_mm,
+      sexual_orientation: userData.sexual_orientation,
+      birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
+      height_mm: userData.height_mm,
       occupation: userData.occupation,
-    });
-
-    apiInstance.updateBio(updateRequest, (error, data) => {
+  };
+    console.log(JSON.stringify(userUpdateBioRequest)); // new CredibleCupidApi.UserUpdateBioRequest(); puts the data as an entry in a bio object
+    // Make the update request
+    apiInstance.updateBio(userUpdateBioRequest, (error, data, response) => {
       if (error) {
         console.error("Failed to update profile:", error);
       } else {
-        setUserData(data); // Update local data on success
+        console.log("Successfully updated bio");
+        setUserData(data); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
     });
@@ -83,9 +109,11 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
-      <h1>Profile</h1>
+      <p>Profile</p>
+      <br></br>
 
       {isEditing ? (
+        // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <form onSubmit={handleUpdateProfile}>
           <label>
             Email:
@@ -97,6 +125,7 @@ const Profile = () => {
               disabled
             />
           </label>
+          <br></br>
           <label>
             Gender:
             <select
@@ -110,6 +139,7 @@ const Profile = () => {
               <option value="Other">Other</option>
             </select>
           </label>
+          <br></br>
           <label>
             Pronouns:
             <input
@@ -119,6 +149,7 @@ const Profile = () => {
               onChange={handleChange}
             />
           </label>
+          <br></br>
           <label>
             Sexual Orientation:
             <select
@@ -134,6 +165,7 @@ const Profile = () => {
               <option value="Other">Other</option>
             </select>
           </label>
+          <br></br>
           <label>
             Height (mm):
             <input
@@ -143,6 +175,7 @@ const Profile = () => {
               onChange={handleChange}
             />
           </label>
+          <br></br>
           <label>
             Occupation:
             <input
@@ -152,6 +185,7 @@ const Profile = () => {
               onChange={handleChange}
             />
           </label>
+          <br></br>
           <label>
             Bio:
             <textarea
@@ -160,12 +194,20 @@ const Profile = () => {
               onChange={handleChange}
             />
           </label>
+          <br></br>
           <button type="submit">Save Changes</button>
+          <br></br>
           <button type="button" onClick={() => setIsEditing(false)}>Done Editing</button>
         </form>
       ) : (
         <>
           <button onClick={() => setIsEditing(true)}>Edit Profile</button>
+          <br></br>
+          <button>Like</button>
+          <br></br>
+          <button>View Your likes</button>
+          {/* <br></br>
+          <img src={'https://s.yimg.com/ny/api/res/1.2/3l2GwEUoPVFLpeIAsqx3Sw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://media.zenfs.com/en/comingsoon_net_477/a82ffbfe13cb6804c0915ae278290b38'} alt="Profile" />
           <p>Username</p>
           <p>{userData.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData.pronouns || "Pronouns not specified"}</p>
           <p>Instagram: @dummy</p>
@@ -173,10 +215,79 @@ const Profile = () => {
           <p>{userData.sexual_orientation}</p>
           <p>{(userData.height_mm / 1000).toFixed(2)} meters</p>
           <p>{userData.occupation || "Occupation not specified"}</p>
-          <p><strong>Bio:</strong> {userData.bio || "No bio available"}</p>
+          <p><strong>Bio:</strong> {userData.bio || "No bio available"}</p> */}
+          <div style={{ maxWidth: "550px", margin: "20px auto", textAlign: "left" }}>
+            {/* Profile Picture and Basic Info Section */}
+            <div style={{
+              display: "flex",
+              flexDirection: "column", // Change to column layout
+              justifyContent: "space-around",
+              alignItems: "center",
+              padding: "20px",
+              borderBottom: "1px solid grey"
+            }}>
+              <img
+                style={{ width: "200px", height: "200px", borderRadius: "8px"}}
+                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                alt="Profile"
+              />
+
+            </div>
+            <div style={{
+              padding: "20px",
+              border: "1px solid grey",
+              backgroundColor: "#f1f1f1",
+              borderRadius: "8px"
+            }}>
+                <h4>Name</h4>
+                <p>Email: {userData.email}</p>
+                <p>{userData.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData.pronouns || "Pronouns not specified"}</p>
+                <p>Instagram: @dummy</p>
+                <p>not AI</p>
+              </div>
+            {/* About Me Section */}
+            <div style={{
+              padding: "20px",
+              border: "1px solid grey",
+              backgroundColor: "#f1f1f1",
+              borderRadius: "8px"
+            }}>
+              <h4>Bio</h4>
+              <p>{userData.bio || "No bio available"}</p>
+            </div>
+
+            {/* Referrals Section */}
+            <div style={{
+              padding: "20px",
+              border: "1px solid grey",
+              backgroundColor: "#f1f1f1",
+              borderRadius: "8px"
+            }}>
+              <h1>Referrals</h1>
+              <p><strong>Person 1:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p><strong>Person 2:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p><strong>Person 3:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+            </div>
+
+            {/* Details Section */}
+            <div style={{
+              padding: "20px",
+              border: "1px solid grey",
+              backgroundColor: "#f1f1f1",
+              borderRadius: "8px"
+            }}>
+              <p><strong>Gender:</strong> {userData.gender}</p>
+              <p><strong>Sexual Orientation:</strong> {userData.sexual_orientation}</p>
+              <p><strong>Height:</strong> {(userData.height_mm / 1000).toFixed(2)} meters</p>
+              <p><strong>Occupation:</strong> {userData.occupation || "Occupation not specified"}</p>
+            </div>
+          </div>
         </>
       )}
-
+      <br></br>
+      <br></br>
+      <br></br>
+      {/* Fetching profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
       <form onSubmit={handleFetchProfile}>
         <div>
           <label htmlFor="guid">GUID:</label>
