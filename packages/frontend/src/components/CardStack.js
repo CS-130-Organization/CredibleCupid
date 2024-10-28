@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../pages/ProfileCard';
+import sobbingProfileImage from '../assets/images/sobbing.png'
+import temporaryProfileImage from '../assets/images/temp-profile.png'
 
 const styles = {
   cardStackContainer: {
@@ -138,6 +140,7 @@ const CardStack = () => {
       location: "San Francisco",
       interests: ["Photography", "Hiking", "Jazz", "Cooking"],
       verified: true,
+      imageUrl: sobbingProfileImage
     },
     {
       name: "Michael Chen",
@@ -162,6 +165,7 @@ const CardStack = () => {
       location: "Los Angeles",
       interests: ["Yoga", "Art", "Museums", "Meditation"],
       verified: true,
+      imageUrl: temporaryProfileImage
     }
   ];
 
