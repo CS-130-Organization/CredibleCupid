@@ -4,17 +4,10 @@ import ProfileCard from '../pages/ProfileCard';
 
 const styles = {
   cardStackContainer: {
-    width: '100%',
-    height: '100vh',
-    maxWidth: '390px',
-    maxHeight: '844px',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
+    width: '390px',
+    height: '844px',
     position: 'relative',
+    backgroundColor: '#f8f9fa',
     overflow: 'hidden',
   },
 
@@ -46,13 +39,13 @@ const styles = {
   },
 
   actionText: {
-    fontSize: '36px', // Reduced from 48px for better fit
+    fontSize: '36px',
     fontWeight: 'bold',
-    padding: '12px 24px', // Reduced padding
+    padding: '12px 24px',
     border: '4px solid',
     borderRadius: '12px',
     transform: 'rotate(-30deg)',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Added for better visibility
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
 
   likedText: {
@@ -67,31 +60,36 @@ const styles = {
 
   emptyState: {
     position: 'absolute',
-    top: '50%',
     left: '50%',
+    top: '50%',
     transform: 'translate(-50%, -50%)',
     backgroundColor: 'white',
     borderRadius: '12px',
-    padding: '24px',
-    textAlign: 'center',
+    padding: '32px',
+    width: '300px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '20px',
     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    width: '80%',
-    maxWidth: '300px',
+    zIndex: 20,
   },
 
   emptyStateText: {
-    color: '#4b5563',
-    fontSize: '1.125rem',
-    marginBottom: '16px',
+    color: '#ef4444',
+    fontSize: '1.25rem',
+    fontWeight: '600',
+    textAlign: 'center',
+    margin: 0,
   },
 
   resetButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#22c55e',
     color: 'white',
     padding: '12px 24px',
     borderRadius: '8px',
     border: 'none',
-    fontWeight: '500',
+    fontWeight: '600',
     cursor: 'pointer',
     transition: 'background-color 0.2s ease',
     fontSize: '16px',
@@ -220,10 +218,10 @@ const CardStack = () => {
               style={styles.resetButton}
               onClick={() => setProfiles(initialProfiles)}
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = '#2563eb';
+                e.currentTarget.style.backgroundColor = '#16a34a';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = '#3b82f6';
+                e.currentTarget.style.backgroundColor = '#22c55e';
               }}
             >
               Reset Cards
