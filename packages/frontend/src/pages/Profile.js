@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { Button, Box, Typography, Paper, Avatar } from '@mui/material';
+import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
 import styled from '@emotion/styled';
 import { Link, useNavigate } from "react-router-dom";
 
@@ -15,6 +15,10 @@ const Profile = () => {
   const [userGuid, setUserGuid] = useState('');
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
+
+   // For interests
+   const [interests, setInterests] = useState([]); // List of interests
+   const [currentInterest, setCurrentInterest] = useState(''); // Current input
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
@@ -128,6 +132,27 @@ const Profile = () => {
     setUserData({ ...userData, [name]: value });
   };
 
+
+
+  const inputRef = useRef(null);
+  const handleInterestKeyDown = (e) => {
+    if (e.key === ' '|| e.key === 'Enter') {
+      e.preventDefault();
+      if (currentInterest.trim()) {
+        setInterests([...interests, currentInterest.trim()]);
+        setCurrentInterest(''); // Clear the input
+      }
+      console.log(interests)
+    }else{
+      console.log("KEY PRESSED")
+    }
+  };
+
+  const handleInterestDelete = (interestToDelete) => {
+    setInterests(interests.filter(interest => interest !== interestToDelete));
+  };
+
+
   if (!userData) return <div>Loading...</div>;
 
   const ProfileContainer = styled(Paper)({
@@ -232,6 +257,25 @@ const Profile = () => {
       ) : (
         <>
       <ProfileContainer elevation={3}>
+          <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
+          <Typography variant="h6">Interests</Typography>
+          <Box display="flex" flexWrap="wrap" gap={1} my={2}>
+            {interests.map((interest, index) => (
+              <Chip
+                key={index}
+                label={interest}
+                onDelete={() => handleInterestDelete(interest)}
+              />
+            ))}
+          </Box>
+          <TextField
+            autoFocus="autoFocus"
+            label="Type interest and press space"
+            value={currentInterest}
+            onChange={(e) => setCurrentInterest(e.target.value)}
+            onKeyDown={handleInterestKeyDown}
+          />
+        </Box>
             <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
               <Avatar
                 alt="Profile Picture"
