@@ -1,6 +1,6 @@
 services:
   db:
-    container_name: ${DATABASE_CONTAINER}
+    container_name: db
     image: mysql:8.0.32
     restart: always
     environment:
@@ -14,6 +14,11 @@ services:
       - '3306'
     volumes:
       - sqldb:/var/lib/mysql
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=${DATABASE_PASSWORD} --execute \"SHOW DATABASES;\""
+      interval: 1s
+      retries: ${HEALTHCHECK_RETRIES:-999}
+      timeout: 2s
   backend:
     container_name: backend
     build:
@@ -27,11 +32,12 @@ services:
       - "./packages/backend/src:/usr/src/app/src"
       - "./packages/frontend/.generated:/usr/generated/"
     depends_on:
-      - ${DATABASE_CONTAINER}
+      db:
+        condition: service_healthy
     healthcheck:
       test: "curl --fail http://localhost:${BACKEND_PORT}/api-json || exit 1"
       interval: 1s
-      retries: 64
+      retries: ${HEALTHCHECK_RETRIES:-999}
       timeout: 2s
   frontend:
     container_name: frontend
@@ -57,7 +63,7 @@ services:
     healthcheck:
       test: "curl --fail http://localhost:${FRONTEND_PORT}/ || exit 1"
       interval: 1s
-      retries: 64
+      retries: ${HEALTHCHECK_RETRIES:-999}
       timeout: 2s
 
 volumes:
