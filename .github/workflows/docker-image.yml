@@ -1,0 +1,21 @@
+name: Build and Run Server
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+    - name: Init .env
+      run: cp testingEnv.Sample .env
+    - name: Build and run credible cupid server
+      run: docker compose up --build --remove-orphans -d --wait
