@@ -59,4 +59,8 @@ export class UserService {
 	async find_user_with_guid(guid: string): Promise<User | null> {
 		return await this.user_repository.findOne({ where: { guid } });
 	}
+
+	async find_matching_users(gender?: Gender): Promise<User[]> {
+		return await this.user_repository.find({ where: { gender } })
+	}
 }
