@@ -57,7 +57,7 @@ const Profile = () => {
     
     // Set dummy data to mimic API response
     if (!userData) setUserData(dummyData);
-  }, [userData, navigate]);
+  }, [userData, navigate, tokenRefreshed]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
@@ -168,7 +168,28 @@ const Profile = () => {
       <br></br>
 
       {isEditing && isOwner ? (
+
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
+        <>
+          <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
+          <Typography variant="h6">Interests</Typography>
+          <Box display="flex" flexWrap="wrap" gap={1} my={2}>
+            {interests.map((interest, index) => (
+              <Chip
+                key={index}
+                label={interest}
+                onDelete={() => handleInterestDelete(interest)}
+              />
+            ))}
+          </Box>
+            <TextField 
+              // autoFocus="autoFocus"
+              label="Type interest and press space"
+              value={currentInterest}
+              onChange={(e) => setCurrentInterest(e.target.value)}
+              onKeyDown={handleInterestKeyDown}
+            />
+          </Box>
         <form onSubmit={handleUpdateProfile}>
           <label>
             Email:
@@ -254,28 +275,10 @@ const Profile = () => {
           <br></br>
           <button type="button" onClick={() => setIsEditing(false)}>Done Editing</button>
         </form>
+      </>
       ) : (
         <>
-      <ProfileContainer elevation={3}>
-          <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
-          <Typography variant="h6">Interests</Typography>
-          <Box display="flex" flexWrap="wrap" gap={1} my={2}>
-            {interests.map((interest, index) => (
-              <Chip
-                key={index}
-                label={interest}
-                onDelete={() => handleInterestDelete(interest)}
-              />
-            ))}
-          </Box>
-          <TextField
-            autoFocus="autoFocus"
-            label="Type interest and press space"
-            value={currentInterest}
-            onChange={(e) => setCurrentInterest(e.target.value)}
-            onKeyDown={handleInterestKeyDown}
-          />
-        </Box>
+          <ProfileContainer elevation={3}>
             <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
               <Avatar
                 alt="Profile Picture"
@@ -296,14 +299,9 @@ const Profile = () => {
                   <Button variant="contained" color="primary" onClick={() => setIsEditing(true)} sx={{ marginRight: 1 }}>
                     Edit Profile
                   </Button>
-                  <Button variant="outlined" color="secondary" sx={{ marginLeft: 1 }}>
-                    View Likes
-                  </Button>
                 </Box>
               ) : (
                 <>
-                  <Button variant="outlined" color="secondary">Like</Button>
-
                 </>
               )}
             </Box>
