@@ -31,24 +31,24 @@ export class User {
 	@Column({ type: "text" })
 	readonly password: string;
 
-	@Column({ type: "longtext" })
+	@Column({ type: "text", nullable: true })
 	bio: string;
 
-	@Column({ type: "enum", enum: Gender })
+	@Column({ type: "enum", enum: Gender, default: Gender.kOther })
 	gender: Gender;
 
-	@Column({ type: "text" })
+	@Column({ type: "text", nullable: true })
 	pronouns: string;
 
-	@Column({ type: "enum", enum: SexualOrientation })
+	@Column({ type: "enum", enum: SexualOrientation, default: SexualOrientation.kOther })
 	sexual_orientation: SexualOrientation;
 
-	@Column({ type: "int" })
+	@Column({ type: "int", default: 0 })
 	birthday_ms_since_epoch: number;
 
-	@Column({ type: "int" })
+	@Column({ type: "int", default: 0 })
 	height_mm: number;
 
-	@Column({ type: "text" })
+	@Column({ type: "text", nullable: true })
 	occupation: string;
 }
