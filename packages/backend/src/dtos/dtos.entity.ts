@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsInt, ValidateIf, IsEnum } from "class-validator";
+import { IsOptional, IsEmail, IsNotEmpty, IsInt, ValidateIf, IsEnum } from "class-validator";
 import { Gender, SexualOrientation } from "../database/entities"
 
 export class LoginRequest {
@@ -80,6 +80,22 @@ export class GetUserResponse {
 	 * The occupation of the user
 	 */
 	occupation: string;
+}
+
+export class FindMatchingUsersRequest {
+	/*
+	 * The gender of the user.
+	 */
+	@IsOptional()
+	@IsEnum(Gender)
+	gender: Gender;
+}
+
+export class FindMatchingUsersResponse {
+	/*
+	 * The list of matching user GUIDs 
+	 */
+	user_guids: string[];
 }
 
 export class UserUpdateBioRequest {
