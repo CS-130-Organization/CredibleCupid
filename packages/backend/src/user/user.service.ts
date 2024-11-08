@@ -27,6 +27,8 @@ export class UserService {
 
 	async update_user_bio(
 		guid: string,
+		first_name: string,
+		last_name: string,
 		bio: string,
 		gender: Gender,
 		pronouns: string,
@@ -42,11 +44,13 @@ export class UserService {
 				return Err("User does not exist!");
 			}
 
+			user.first_name = first_name;
+			user.last_name = last_name;
 			user.bio = bio;
 			user.gender = gender;
 			user.pronouns = pronouns;
 			user.sexual_orientation = sexual_orientation;
-			user.birthday_ms_since_epoch = birthday_ms_since_epoch;
+			user.birthday = new Date(birthday_ms_since_epoch);
 			user.height_mm = height_mm;
 			user.occupation = occupation;
 
