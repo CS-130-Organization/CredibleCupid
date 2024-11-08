@@ -45,6 +45,16 @@ export class GetUserResponse {
 	guid: string;
 
 	/*
+	 * The first name of the user.
+	 */
+	first_name: string;
+
+	/*
+	 * The last name of the user.
+	 */
+	last_name: string;
+
+	/*
 	 * The biography of the user.
 	 */
 	bio: string;
@@ -82,15 +92,6 @@ export class GetUserResponse {
 	occupation: string;
 }
 
-export class FindMatchingUsersRequest {
-	/*
-	 * The gender of the user.
-	 */
-	@IsOptional()
-	@IsEnum(Gender)
-	gender: Gender;
-}
-
 export class FindMatchingUsersResponse {
 	/*
 	 * The list of matching user GUIDs 
@@ -99,6 +100,16 @@ export class FindMatchingUsersResponse {
 }
 
 export class UserUpdateBioRequest {
+	/*
+	 * The first name of the user.
+	 */
+	first_name: string;
+
+	/*
+	 * The last name of the user.
+	 */
+	last_name: string;
+
 	/*
 	 * The biography of the user.
 	 */

@@ -27,6 +27,8 @@ export class UserService {
 
 	async update_user_bio(
 		guid: string,
+		first_name: string,
+		last_name: string,
 		bio: string,
 		gender: Gender,
 		pronouns: string,
@@ -42,11 +44,13 @@ export class UserService {
 				return Err("User does not exist!");
 			}
 
+			user.first_name = first_name;
+			user.last_name = last_name;
 			user.bio = bio;
 			user.gender = gender;
 			user.pronouns = pronouns;
 			user.sexual_orientation = sexual_orientation;
-			user.birthday_ms_since_epoch = birthday_ms_since_epoch;
+			user.birthday = new Date(birthday_ms_since_epoch);
 			user.height_mm = height_mm;
 			user.occupation = occupation;
 
@@ -60,8 +64,42 @@ export class UserService {
 		return await this.user_repository.findOne({ where: { guid } });
 	}
 
-	async find_matching_users(gender?: Gender): Promise<User[]> {
-		return await this.user_repository.find({ relations: { passes: true }, where: { gender } })
+	async find_matches(guid: string): Promise<Result<User[], string>> {
+		const user = await this.user_repository.findOne({ relations: { likes: true, passes: true }, where: { guid } });
+
+		if (!user) {
+			return Err("User not found!");
+		}
+
+		let want_genders = [Gender.kMale, Gender.kFemale, Gender.kNonBinary, Gender.kOther];
+		if (user.gender == Gender.kMale) {
+			switch (user.sexual_orientation) {
+				case SexualOrientation.kStraight: { want_genders = [Gender.kFemale];               break; }
+				case SexualOrientation.kGay:      { want_genders = [Gender.kMale];                 break; }
+				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
+				default:               { break; }
+			}
+		} else if (user.gender == Gender.kFemale) {
+			switch (user.sexual_orientation) {
+				case SexualOrientation.kStraight: { want_genders = [Gender.kMale];                 break; }
+				case SexualOrientation.kGay:      { want_genders = [Gender.kFemale];               break; }
+				case SexualOrientation.kLesbian:  { want_genders = [Gender.kFemale];               break; }
+				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
+				default:               { break; }
+			}
+		}
+
+		let matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0] } });
+
+		for (let i = 1; i < want_genders.length; i++) {
+			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i] } }));
+		}
+		
+		console.log(matches)
+		matches = matches.filter(i => !i.passes.find(j => j.guid == guid));
+		matches = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
+
+		return Ok(matches);
 	}
 
 	async like_user(guid: string, cutie_guid: string): Promise<Result<boolean, string>> {
@@ -69,18 +107,19 @@ export class UserService {
 			return Err("You cannot like yourself!");
 		}
 		return await this.data_source.transaction(async manager => {
-			const user = await manager.findOne(User, { relations: { likes: true }, where: { guid } });
+			const user = await manager.findOne(User, { relations: { likes: true, passes: true }, where: { guid } });
 
 			if (!user) {
 				return Err("User does not exist!");
 			}
 
-			const cutie = await manager.findOne(User, { relations: { likes: true }, where: { guid: cutie_guid } })
+			const cutie = await manager.findOne(User, { relations: { likes: true, passes: true }, where: { guid: cutie_guid } })
 
 			if (!cutie) {
 				return Err("Cutie does not exist!");
 			}
 
+			user.passes = user.passes.filter(p => p.guid != cutie_guid);
 			user.likes.push(cutie);
 
 			await manager.save(User, user);
@@ -96,7 +135,7 @@ export class UserService {
 		}
 
 		return await this.data_source.transaction(async manager => {
-			const user = await manager.findOne(User, { relations: { likes: true }, where: { guid } });
+			const user = await manager.findOne(User, { relations: { likes: true, passes: true }, where: { guid } });
 
 			if (!user) {
 				return Err("User does not exist!");
@@ -108,7 +147,6 @@ export class UserService {
 				return Err("Cutie does not exist!");
 			}
 
-			const length_before = user.likes.length;
 			user.likes = user.likes.filter(l => l.guid != cutie_guid);
 			user.passes.push(cutie);
 

@@ -2,7 +2,7 @@ import { Body, Controller, UseGuards, Get, Post, Param, ForbiddenException, Quer
 import { JwtAuthGuard, AuthUser } from "../auth/jwt.guard";
 import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User, Gender } from "../database/entities";
-import { FindMatchingUsersResponse, FindMatchingUsersRequest, LikeUserResponse } from "../dtos/dtos.entity";
+import { FindMatchingUsersResponse, LikeUserResponse } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
 
 
@@ -14,10 +14,14 @@ export class MatchMakerController {
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
 	@Post("find_matches")
-	async find_matches(@AuthUser() user: User, @Body() req: FindMatchingUsersRequest): Promise<FindMatchingUsersResponse> {
-		const users = await this.user_service.find_matching_users(req.gender);
+	async find_matches(@AuthUser() user: User): Promise<FindMatchingUsersResponse> {
+		const res = await this.user_service.find_matches(user.guid);
 
-		return { user_guids: users.map(user => user.guid) };
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		return { user_guids: res.val.map(user => user.guid) };
 	}
 
 	@UseGuards(JwtAuthGuard)
