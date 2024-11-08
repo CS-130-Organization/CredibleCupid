@@ -277,6 +277,9 @@ const Profile = ({
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
+    if (!birthdayMs || isNaN(birthdayMs)) {
+      return "Age not provided"; // or return a fallback value if preferred
+    }
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -328,7 +331,10 @@ const Profile = ({
         console.log("Successfully fetched profile");
         // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
         const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        // const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        const formattedBirthday = (birthdayDate instanceof Date && !isNaN(birthdayDate))
+        ? birthdayDate.toISOString().split('T')[0]
+        : ""; // Set to empty or null if invalid
 
         // Add date_of_birth to the data object
         const updatedUserData = {
@@ -778,7 +784,7 @@ const Profile = ({
               {/* <div style={styles.infoSection}> */}
                 <div style={styles.header}>
                   <h2 style={styles.nameAgeGender}>
-                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
+                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}{userData?.gender ? ` ${userData?.gender}` : ''} 
                     </h2>
                   <div style={styles.getScoreStyle(credibilityScore)}>
                     <Star size={16} />

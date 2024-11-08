@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
-import logo from '../assets/images/logo.png';
 import { Link, useNavigate } from "react-router-dom";
+import logo from '../assets/images/logo.png';
+
 
 const colors = {
   green: {
@@ -123,27 +124,34 @@ const styles = {
   }
 };
 
-function Login() {
+function Signup() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     setIsLoading(true);
 
     InitDefaultCredibleCupidClient(null);
     let apiInstance = new CredibleCupid.AuthApi();
     let loginRequest = new CredibleCupid.LoginRequest(username, password);
 
-    apiInstance.authLogin(loginRequest, (error, data, response) => {
+    apiInstance.authSignup(loginRequest, (error, data, response) => {
       if (error) {
         console.error(response);
         console.error(response.body.message);
         console.error(response.body.statusCode);
+        setError(response.body.message);
       } else {
-        console.log("Successfully logged in!")
+        console.log("Successfully signed up!")
+        setSuccess('Account created successfully! Please log in.');
         InitDefaultCredibleCupidClient(data.jwt);
 
         sessionStorage.setItem("jwtToken", data.jwt);
@@ -157,7 +165,7 @@ function Login() {
             console.log("Refreshed auth token!");
           }
         });
-        navigate("/profile");
+        navigate("/profilepage");
       }
       setIsLoading(false);
     });
@@ -179,8 +187,8 @@ function Login() {
   />
 </div>
         <div>
-          <h1 style={styles.title}>Welcome Back</h1>
-          <p style={styles.subtitle}>Sign in to continue to Credible Cupid</p>
+          <h1 style={styles.title}>Register</h1>
+          <p style={styles.subtitle}>Create an account for Credible Cupid</p>
         </div>
         <form style={styles.form} onSubmit={handleSubmit}>
           <div style={styles.inputGroup}>
@@ -239,6 +247,8 @@ function Login() {
               }}
             />
           </div>
+          {/* {error && <div style={styles.subtitle} className="text-red-500 text-sm">{error}</div>}
+          {success && <div style={styles.subtitle} className="text-green-500 text-sm">{success}</div>} */}
           <button
             style={styles.button}
             type="submit"
@@ -256,19 +266,19 @@ function Login() {
               e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
             }}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
+
         <div style={styles.subtitle}>
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-rose-500 hover:text-rose-600">
-            Sign up
+          Already have an account?{' '}
+          <Link to="/login" className="text-rose-500 hover:text-rose-600">
+            Log in
           </Link>
       </div>
       </div>
-
     </div>
   );
 }
 
-export default Login;
+export default Signup;

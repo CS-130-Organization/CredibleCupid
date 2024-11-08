@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import CardStack from './components/CardStack'
 import ProfileCard from './pages/ProfileCard'
@@ -15,6 +16,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/profilepage" element={<Profile />} />
           <Route exact path="/profile" element={<CardStack/>} />
           {/* ... other routes ... */}
