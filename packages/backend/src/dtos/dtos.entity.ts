@@ -82,15 +82,6 @@ export class GetUserResponse {
 	occupation: string;
 }
 
-export class FindMatchingUsersRequest {
-	/*
-	 * The gender of the user.
-	 */
-	@IsOptional()
-	@IsEnum(Gender)
-	gender: Gender;
-}
-
 export class FindMatchingUsersResponse {
 	/*
 	 * The list of matching user GUIDs 
