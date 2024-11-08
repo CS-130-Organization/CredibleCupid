@@ -34,7 +34,7 @@ const colors = {
 const styles = {
   container: {
     width: '390px',
-    height: '844px',
+    // height: '844px',
     position: 'relative',
     background: `linear-gradient(145deg, ${colors.gray.lighter} 0%, ${colors.white} 100%)`,
     display: 'flex',
@@ -77,7 +77,7 @@ const styles = {
     color: colors.gray.text,
     opacity: 0.8,
     margin: '0',
-    textAlign: 'flex-start',
+    textAlign: 'left',
   },
   form: {
     width: '100%',
@@ -99,6 +99,20 @@ const styles = {
     textAlign: 'left',
     alignSelf: 'flex-start', 
     marginBottom: '4px', 
+
+    // backgroundColor: colors.green.light,
+    // color: colors.white,
+    // padding: '16px 24px',
+    // borderRadius: '12px',
+    // border: 'none',
+    // fontWeight: '600',
+    // cursor: 'pointer',
+    // transition: 'all 0.2s ease',
+    // fontSize: '16px',
+    // width: '100%',
+    // marginTop: '12px',
+    // boxShadow: `0 2px 8px ${colors.black.opacity10}`,
+    
   },
   input: {
     width: '100%',
@@ -412,7 +426,7 @@ const Profile = ({
 
   const ProfileContainer = styled('div')({
     ...styles.container,
-    maxWidth: '600px',
+    // maxWidth: '600px',
     margin: 'auto',
     padding: '20px',
     display: 'flex',
@@ -433,6 +447,7 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
+        <ProfileContainer>
           <button 
           style={styles.button}
           type="button" 
@@ -448,7 +463,280 @@ const Profile = ({
             e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
           }}
           >Done Editing</button>
-          <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
+
+          
+        <div style={styles.loginBox}>
+          <form style={styles.form} onSubmit={handleUpdateProfile}>
+            <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                  Email:
+                  <input
+                    style={{
+                      ...styles.input,
+                      ':focus': {
+                        borderColor: colors.green.light,
+                        backgroundColor: colors.white,
+                      }
+                    }}
+                    type="email"
+                    name="email"
+                    value={userData.email}
+                    onChange={handleChange}
+                    disabled
+                  />
+                </label>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                First Name:
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="text"
+                  name="first_name"
+                  value={userData.first_name}
+                  onChange={handleChange}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.green.light;
+                    e.target.style.backgroundColor = colors.white;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.gray.border;
+                    e.target.style.backgroundColor = colors.gray.lighter;
+                  }}
+                />
+              </label>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Last Name:
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="text"
+                  name="last_name"
+                  value={userData.last_name}
+                  onChange={handleChange}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.green.light;
+                    e.target.style.backgroundColor = colors.white;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.gray.border;
+                    e.target.style.backgroundColor = colors.gray.lighter;
+                  }}
+                />
+              </label>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Gender:
+                <select
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  name="gender"
+                  value={userData.gender}
+                  onChange={handleChange}
+                  
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Non-Binary">Non-Binary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>            
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Pronouns:
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="text"
+                  name="pronouns"
+                  value={userData.pronouns}
+                  onChange={handleChange}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.green.light;
+                    e.target.style.backgroundColor = colors.white;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.gray.border;
+                    e.target.style.backgroundColor = colors.gray.lighter;
+                  }}
+                />
+              </label>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Sexual Orientation:
+                <select
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  name="sexual_orientation"
+                  value={userData.sexual_orientation}
+                  onChange={handleChange}
+                >
+                  <option value="Straight">Straight</option>
+                  <option value="Gay">Gay</option>
+                  <option value="Lesbian">Lesbian</option>
+                  <option value="Bisexual">Bisexual</option>
+                  <option value="Asexual">Asexual</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>            
+            </div>
+            <div style={styles.inputGroup}>
+                <label style={styles.label}>
+                    Date of Birth:
+                    <input
+                        style={{
+                            ...styles.input,
+                            ':focus': {
+                                borderColor: colors.green.light,
+                                backgroundColor: colors.white,
+                            }
+                        }}
+                        type="date"
+                        name="date_of_birth"
+                        value={userData.date_of_birth}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                            e.target.style.borderColor = colors.green.light;
+                            e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                            e.target.style.borderColor = colors.gray.border;
+                            e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                    />
+                </label>
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Height (mm):
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="number"
+                  name="height_mm"
+                  value={userData.height_mm}
+                  onChange={handleChange}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.green.light;
+                    e.target.style.backgroundColor = colors.white;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.gray.border;
+                    e.target.style.backgroundColor = colors.gray.lighter;
+                  }}
+                />
+              </label>
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Occupation:
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="text"
+                  name="occupation"
+                  value={userData.occupation}
+                  onChange={handleChange}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.green.light;
+                    e.target.style.backgroundColor = colors.white;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.gray.border;
+                    e.target.style.backgroundColor = colors.gray.lighter;
+                  }}
+                />
+              </label>
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+              Bio:
+              <textarea
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                name="bio"
+                value={userData.bio}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
+            </div>
+
+            <button
+            style={styles.button} 
+            type="submit"
+            onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = colors.green.dark;
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = colors.green.light;
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+            }}
+            >Save Changes</button>
+
+
+          </form>
+        </div>
+        </ProfileContainer>
+        <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
           <Box display="flex" flexWrap="wrap" gap={1} my={2}>
             {interests.map((interest, index) => (
@@ -467,276 +755,6 @@ const Profile = ({
               onKeyDown={handleInterestKeyDown}
             />
           </Box>
-        <div style={styles.loginBox}>
-        <form style={styles.form} onSubmit={handleUpdateProfile}>
-          <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Email:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="email"
-                  name="email"
-                  value={userData.email}
-                  onChange={handleChange}
-                  disabled
-                />
-              </label>
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              First Name:
-              <input
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                type="text"
-                name="first_name"
-                value={userData.first_name}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Last Name:
-              <input
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                type="text"
-                name="last_name"
-                value={userData.last_name}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Gender:
-              <select
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                name="gender"
-                value={userData.gender}
-                onChange={handleChange}
-                
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Non-Binary">Non-Binary</option>
-                <option value="Other">Other</option>
-              </select>
-            </label>            
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Pronouns:
-              <input
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                type="text"
-                name="pronouns"
-                value={userData.pronouns}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Sexual Orientation:
-              <select
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                name="sexual_orientation"
-                value={userData.sexual_orientation}
-                onChange={handleChange}
-              >
-                <option value="Straight">Straight</option>
-                <option value="Gay">Gay</option>
-                <option value="Lesbian">Lesbian</option>
-                <option value="Bisexual">Bisexual</option>
-                <option value="Asexual">Asexual</option>
-                <option value="Other">Other</option>
-              </select>
-            </label>            
-          </div>
-          <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                  Date of Birth:
-                  <input
-                      style={{
-                          ...styles.input,
-                          ':focus': {
-                              borderColor: colors.green.light,
-                              backgroundColor: colors.white,
-                          }
-                      }}
-                      type="date"
-                      name="date_of_birth"
-                      value={userData.date_of_birth}
-                      onChange={handleChange}
-                      onFocus={(e) => {
-                          e.target.style.borderColor = colors.green.light;
-                          e.target.style.backgroundColor = colors.white;
-                      }}
-                      onBlur={(e) => {
-                          e.target.style.borderColor = colors.gray.border;
-                          e.target.style.backgroundColor = colors.gray.lighter;
-                      }}
-                  />
-              </label>
-          </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Height (mm):
-              <input
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                type="number"
-                name="height_mm"
-                value={userData.height_mm}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              Occupation:
-              <input
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                type="text"
-                name="occupation"
-                value={userData.occupation}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-            Bio:
-            <textarea
-              style={{
-                ...styles.input,
-                ':focus': {
-                  borderColor: colors.green.light,
-                  backgroundColor: colors.white,
-                }
-              }}
-              name="bio"
-              value={userData.bio}
-              onChange={handleChange}
-              onFocus={(e) => {
-                e.target.style.borderColor = colors.green.light;
-                e.target.style.backgroundColor = colors.white;
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = colors.gray.border;
-                e.target.style.backgroundColor = colors.gray.lighter;
-              }}
-            />
-          </label>
-          </div>
-
-          <button
-          style={styles.button} 
-          type="submit"
-          onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = colors.green.dark;
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = colors.green.light;
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-          }}
-          >Save Changes</button>
-
-
-        </form>
-        </div>
       </>
       ) : (
         <>
@@ -769,7 +787,7 @@ const Profile = ({
                 </div>
                   <p style={styles.subtitle}>{userData?.email || "Email"}</p>
                   <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
-                  <p style={styles.subtitle}>Instagram: @example</p>                 
+                  {/* <p style={styles.subtitle}>Instagram: @example</p>                  */}
               {/* </div> */}
               <div style={styles.detailsContainer}>
                 {userData?.occupation && (<div style={styles.detailRow}>
@@ -812,32 +830,33 @@ const Profile = ({
                 </>
               )}
 
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
-              <label style={styles.label}>Bio</label>
-              <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
-            </Box>
+              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+                <label style={styles.label}>Bio</label>
+                <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
+              </Box>
 
-            {interests.length > 0 && (
-              <div style={styles.tagsContainer}>
-                {interests.map((interest, index) => (
-                  <span key={index} style={styles.tag}>{interest}</span>
-                ))}
-              </div>
-            )}
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
-              <label style={styles.label}>Details</label>
-              <p style={styles.subtitle}>Gender: {userData?.gender}</p>
-              <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
-              <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
-              <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
-            </Box>
+              {interests.length > 0 && (
+                <div style={styles.tagsContainer}>
+                  {interests.map((interest, index) => (
+                    <span key={index} style={styles.tag}>{interest}</span>
+                  ))}
+                </div>
+              )}
 
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
-              <label style={styles.label}>Referrals</label>
-              <p style={styles.subtitle}>Person 1: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p style={styles.subtitle}>Person 2: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p style={styles.subtitle}>Person 3: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-            </Box>
+              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+                <label style={styles.label}>Details</label>
+                <p style={styles.subtitle}>Gender: {userData?.gender}</p>
+                <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
+                <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
+                <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
+              </Box>
+
+              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+                <label style={styles.label}>Referrals</label>
+                <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              </Box>
           </ProfileContainer>
         </>
       )}
