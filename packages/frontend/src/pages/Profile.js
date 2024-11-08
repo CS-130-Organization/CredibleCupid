@@ -4,9 +4,205 @@ import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
 import styled from '@emotion/styled';
+import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
+import logo from '../assets/images/logo.png';
 
-const Profile = () => {
+const colors = {
+  green: {
+    light: '#22c55e',
+    dark: '#16a34a'
+  },
+  red: {
+    light: '#ef4444'
+  },
+  gray: {
+    light: '#f8f9fa',
+    lighter: '#f3f4f6',
+    border: '#D1D5DB',
+    text: '#374151'
+  },
+  white: '#ffffff',
+  black: {
+    opacity10: 'rgba(0, 0, 0, 0.1)',
+  },
+  overlay: {
+    white: 'rgba(255, 255, 255, 0.9)'
+  }
+};
+
+const styles = {
+  container: {
+    width: '390px',
+    height: '844px',
+    position: 'relative',
+    background: `linear-gradient(145deg, ${colors.gray.lighter} 0%, ${colors.white} 100%)`,
+    display: 'flex',
+    alignItems: 'flex-start', 
+    justifyContent: 'center',
+    overflow: 'hidden', 
+  },
+  loginBox: {
+    backgroundColor: colors.white,
+    borderRadius: '0', 
+    padding: '40px 20px', 
+    width: '390px', 
+    minHeight: '844px', 
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '32px',
+    boxShadow: 'none', 
+  },
+  logoContainer: {
+    width: '100%',
+    height: '320px',
+    backgroundColor: colors.gray.lighter,
+    borderRadius: '0', 
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '8px',
+    overflow: 'hidden',
+  },
+  title: {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: colors.gray.text,
+    margin: '0 0 8px 0',
+    textAlign: 'flex-start',
+  },
+  subtitle: {
+    fontSize: '16px',
+    color: colors.gray.text,
+    opacity: 0.8,
+    margin: '0',
+    textAlign: 'flex-start',
+  },
+  form: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+  inputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    width: '100%',
+    alignItems: 'flex-start', 
+  },
+  label: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: colors.gray.text,
+    textAlign: 'left',
+    alignSelf: 'flex-start', 
+    marginBottom: '4px', 
+  },
+  input: {
+    width: '100%',
+    padding: '14px 16px',
+    fontSize: '16px',
+    border: `1px solid ${colors.gray.border}`,
+    borderRadius: '12px',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+    boxSizing: 'border-box',
+    backgroundColor: colors.gray.lighter,
+  },
+  button: {
+    backgroundColor: colors.green.light,
+    color: colors.white,
+    padding: '16px 24px',
+    borderRadius: '12px',
+    border: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    fontSize: '16px',
+    width: '100%',
+    marginTop: '12px',
+    boxShadow: `0 2px 8px ${colors.black.opacity10}`,
+  },
+  verifiedBadge: {
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    backgroundColor: `${colors.white}e6`,
+    padding: '6px 12px',
+    borderRadius: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '14px',
+    color: colors.blue,
+  },
+  infoSection: {
+    padding: '16px',
+    flex: 1,
+    overflow: 'auto',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '12px',
+  },
+  nameAgeGender: {
+    margin: 0,
+    fontSize: '24px',
+    fontWeight: 'bold',
+  },
+  getScoreStyle: (score) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: '500',
+    backgroundColor: score >= 75 ? colors.lightGreen : score >= 25 ? colors.orange : colors.lightRed,
+    color: score >= 75 ? colors.green : score >= 25 ? colors.darkOrange : colors.red,
+  }),
+  bio: {
+    fontSize: '16px',
+    color: colors.darkGray,
+    marginBottom: '16px',
+    lineHeight: '1.5',
+  },
+  detailsContainer: {
+    marginBottom: '16px',
+  },
+  detailRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '12px',
+    fontSize: '16px',
+    color: colors.darkGray,
+  },
+  tagsContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginBottom: '16px',
+  },
+  placeholderImage: {
+    backgroundColor: colors.lightGray,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: colors.darkGray,
+    fontSize: '16px',
+  }
+};
+
+const Profile = ({
+  credibilityScore = 90,
+}) => {
   const [userData, setUserData] = useState(null);
   // const [userData, setUserData] = useState(null);// maybe want a temporary user data to store changes
   const navigate = useNavigate();
@@ -52,7 +248,9 @@ const Profile = () => {
       sexual_orientation: "Straight",
       birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
       height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
-      occupation: "Dummy occupation"
+      occupation: "Dummy occupation",
+      education: "Dummy education",
+      location: "Dummy location"
     };
     
     // Set dummy data to mimic API response
@@ -82,6 +280,22 @@ const Profile = () => {
         console.error(error);
       } else {
         console.log("Successfully fetch profile")
+        setUserData(data);
+      }
+    });
+  };
+
+  const handleFetchOwnProfile = () => {
+    setIsOwner(true);
+    // setError(''); // Clear any previous errors
+
+    const apiInstance = new CredibleCupid.UserApi();
+    apiInstance.queryUser(userGuid, (error, data) => {
+      if (error) {
+        console.error(error);
+        // setError("Failed to fetch profile.");
+      } else {
+        console.log("Successfully fetched profile");
         setUserData(data);
       }
     });
@@ -155,22 +369,51 @@ const Profile = () => {
 
   if (!userData) return <div>Loading...</div>;
 
-  const ProfileContainer = styled(Paper)({
+  // const ProfileContainer = styled(Paper)({
+  //   maxWidth: '600px',
+  //   margin: '20px auto',
+  //   padding: '20px',
+  //   // borderRadius: '10px',
+  // });
+
+  const ProfileContainer = styled('div')({
+    ...styles.container,
     maxWidth: '600px',
-    margin: '20px auto',
+    margin: 'auto',
     padding: '20px',
-    // borderRadius: '10px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   });
 
   return (
     <div className="profile-page">
       <p>Profile</p>
       <br></br>
+      {/* Fetching your own profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
+
+      <button onClick={handleFetchOwnProfile}>{"My Profile"}</button>
+
 
       {isEditing && isOwner ? (
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
+                  <button 
+          style={styles.button}
+          type="button" 
+          onClick={() => setIsEditing(false)}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = colors.green.dark;
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = colors.green.light;
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+          }}
+          >Done Editing</button>
           <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
           <Box display="flex" flexWrap="wrap" gap={1} my={2}>
@@ -190,140 +433,299 @@ const Profile = () => {
               onKeyDown={handleInterestKeyDown}
             />
           </Box>
-        <form onSubmit={handleUpdateProfile}>
-          <label>
-            Email:
-            <input
-              type="email"
-              name="email"
-              value={userData.email}
-              onChange={handleChange}
-              disabled
-            />
-          </label>
-          <br></br>
-          <label>
-            Gender:
-            <select
-              name="gender"
-              value={userData.gender}
-              onChange={handleChange}
-            >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Non-Binary">Non-Binary</option>
-              <option value="Other">Other</option>
-            </select>
-          </label>
-          <br></br>
-          <label>
-            Pronouns:
-            <input
-              type="text"
-              name="pronouns"
-              value={userData.pronouns}
-              onChange={handleChange}
-            />
-          </label>
-          <br></br>
-          <label>
-            Sexual Orientation:
-            <select
-              name="sexual_orientation"
-              value={userData.sexual_orientation}
-              onChange={handleChange}
-            >
-              <option value="Straight">Straight</option>
-              <option value="Gay">Gay</option>
-              <option value="Lesbian">Lesbian</option>
-              <option value="Bisexual">Bisexual</option>
-              <option value="Asexual">Asexual</option>
-              <option value="Other">Other</option>
-            </select>
-          </label>
-          <br></br>
-          <label>
-            Height (mm):
-            <input
-              type="number"
-              name="height_mm"
-              value={userData.height_mm}
-              onChange={handleChange}
-            />
-          </label>
-          <br></br>
-          <label>
-            Occupation:
-            <input
-              type="text"
-              name="occupation"
-              value={userData.occupation}
-              onChange={handleChange}
-            />
-          </label>
-          <br></br>
-          <label>
+        <div style={styles.loginBox}>
+        <form style={styles.form} onSubmit={handleUpdateProfile}>
+          <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Email:
+                <input
+                  style={{
+                    ...styles.input,
+                    ':focus': {
+                      borderColor: colors.green.light,
+                      backgroundColor: colors.white,
+                    }
+                  }}
+                  type="email"
+                  name="email"
+                  value={userData.email}
+                  onChange={handleChange}
+                  disabled
+                />
+              </label>
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Gender:
+              <select
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                name="gender"
+                value={userData.gender}
+                onChange={handleChange}
+                
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Non-Binary">Non-Binary</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>            
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Pronouns:
+              <input
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                type="text"
+                name="pronouns"
+                value={userData.pronouns}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Sexual Orientation:
+              <select
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                name="sexual_orientation"
+                value={userData.sexual_orientation}
+                onChange={handleChange}
+              >
+                <option value="Straight">Straight</option>
+                <option value="Gay">Gay</option>
+                <option value="Lesbian">Lesbian</option>
+                <option value="Bisexual">Bisexual</option>
+                <option value="Asexual">Asexual</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>            
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Height (mm):
+              <input
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                type="number"
+                name="height_mm"
+                value={userData.height_mm}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Occupation:
+              <input
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                type="text"
+                name="occupation"
+                value={userData.occupation}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
             Bio:
             <textarea
+              style={{
+                ...styles.input,
+                ':focus': {
+                  borderColor: colors.green.light,
+                  backgroundColor: colors.white,
+                }
+              }}
               name="bio"
               value={userData.bio}
               onChange={handleChange}
+              onFocus={(e) => {
+                e.target.style.borderColor = colors.green.light;
+                e.target.style.backgroundColor = colors.white;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = colors.gray.border;
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </label>
-          <br></br>
-          <button type="submit">Save Changes</button>
-          <br></br>
-          <button type="button" onClick={() => setIsEditing(false)}>Done Editing</button>
+          </div>
+
+          <button
+          style={styles.button} 
+          type="submit"
+          onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = colors.green.dark;
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = colors.green.light;
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+          }}
+          >Save Changes</button>
+
+
         </form>
+        </div>
       </>
       ) : (
         <>
-          <ProfileContainer elevation={3}>
-            <Box display="flex" flexDirection="column" alignItems="left" textAlign="left">
+          <ProfileContainer>
               <Avatar
                 alt="Profile Picture"
                 src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
                 sx={{
-                  width: 150,
-                  height: 150,
+                  width: '100%',       // Change to max-width: 100%
+                  maxWidth: 390,
+                  height: 300,
                   marginBottom: 2,
-                  borderRadius: 0, // This makes the image rectangular
+                  marginTop: 2,
+                  borderRadius: 2, // This makes the image rectangular
                 }}
               />
-              <Typography variant="h5">{"User"}</Typography>
-              <Typography variant="subtitle1">{userData?.email || "Email"}</Typography>
-              <Typography variant="subtitle1">{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</Typography>
-              <Typography variant="subtitle1">Instagram: @example</Typography>
+              <div style={styles.verifiedBadge}>
+                <Verified size={16} />
+                <span>Verified</span>
+              </div>
+              {/* <div style={styles.infoSection}> */}
+                <div style={styles.header}>
+                  <h2 style={styles.nameAgeGender}>
+                  {"User"}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
+                    </h2>
+                  <div style={styles.getScoreStyle(credibilityScore)}>
+                    <Star size={16} />
+                    <span>{credibilityScore}%</span>
+                  </div>
+                </div>
+                  <p style={styles.subtitle}>{userData?.email || "Email"}</p>
+                  <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
+                  <p style={styles.subtitle}>Instagram: @example</p>                 
+              {/* </div> */}
+              <div style={styles.detailsContainer}>
+                {userData?.occupation && (<div style={styles.detailRow}>
+                  <Briefcase size={20} color={colors.darkGray} />
+                  <span>{userData?.occupation}</span>
+                </div>)}
+                {userData?.education && (<div style={styles.detailRow}>
+                  <GraduationCap size={20} color={colors.darkGray} />
+                  <span>{userData?.education}</span>
+                </div>)}
+                {userData?.location && (<div style={styles.detailRow}>
+                  <MapPin size={20} color={colors.darkGray} />
+                  <span>{userData?.location}</span>
+                </div>)}
+              </div>
               {isOwner ? (
-                <Box my={2}>
-                  <Button variant="contained" color="primary" onClick={() => setIsEditing(true)} sx={{ marginRight: 1 }}>
+
+                  <button 
+                  style={styles.button}
+                  type="submit"
+                  // disabled={isLoading}
+                  onClick={() => setIsEditing(true)} 
+                  onMouseOver={(e) => {
+                    // if (!isLoading) {
+                      e.currentTarget.style.backgroundColor = colors.green.dark;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                    // }
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.green.light;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                  }}
+                  >
                     Edit Profile
-                  </Button>
-                </Box>
+                  </button>
               ) : (
                 <>
                 </>
               )}
+
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
+              <label style={styles.label}>Bio</label>
+              <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
             </Box>
 
-            <Box my={2} p={2} sx={{ backgroundColor: "#f1f1f1", borderRadius: "8px" }}>
-              <Typography variant="h6">Bio</Typography>
-              <Typography>{userData?.bio || "No bio available"}</Typography>
+            {interests.length > 0 && (
+              <div style={styles.tagsContainer}>
+                {interests.map((interest, index) => (
+                  <span key={index} style={styles.tag}>{interest}</span>
+                ))}
+              </div>
+            )}
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
+              <label style={styles.label}>Details</label>
+              <p style={styles.subtitle}>Gender: {userData?.gender}</p>
+              <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
+              <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
+              <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
             </Box>
 
-            <Box my={2} p={2} sx={{ backgroundColor: "#f9f9f9", borderRadius: "8px" }}>
-              <Typography variant="h6">Details</Typography>
-              <Typography><strong>Gender:</strong> {userData?.gender}</Typography>
-              <Typography><strong>Sexual Orientation:</strong> {userData?.sexual_orientation}</Typography>
-              <Typography><strong>Height:</strong> {(userData.height_mm / 1000).toFixed(2)} meters</Typography>
-              <Typography><strong>Occupation:</strong> {userData?.occupation || "Occupation not specified"}</Typography>
-            </Box>
-
-            <Box my={2} p={2} sx={{ backgroundColor: "#e8f4fc", borderRadius: "8px" }}>
-              <Typography variant="h6">Referrals</Typography>
-              <Typography><strong>Person 1:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
-              <Typography><strong>Person 2:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
-              <Typography><strong>Person 3:</strong> i know this person from XXX, for YYY years. I would describe him as ZZZ.</Typography>
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px" }}>
+              <label style={styles.label}>Referrals</label>
+              <p style={styles.subtitle}>Person 1: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p style={styles.subtitle}>Person 2: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p style={styles.subtitle}>Person 3: i know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
             </Box>
           </ProfileContainer>
         </>
