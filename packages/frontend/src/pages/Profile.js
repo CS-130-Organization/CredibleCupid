@@ -241,12 +241,16 @@ const Profile = ({
     // Dummy user data with additional fields
     const dummyData = {
       email: "example@email.com",
+      first_name: "first_name",
+      last_name: "last_name",
       guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
       bio: "Dummy bio",
       gender: "Male",
       pronouns: "He/Him",
       sexual_orientation: "Straight",
-      birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+      // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+      birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+      date_of_birth: "1990-05-18",
       height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
       occupation: "Dummy occupation",
       education: "Dummy education",
@@ -280,7 +284,19 @@ const Profile = ({
         console.error(error);
       } else {
         console.log("Successfully fetch profile")
-        setUserData(data);
+        
+        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
+        const birthdayDate = new Date(data.birthday_ms_since_epoch);
+        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+        // Add date_of_birth to the data object
+        const updatedUserData = {
+          ...data,
+          date_of_birth: formattedBirthday,
+        };
+
+        // Update userData with the new data
+          setUserData(updatedUserData);
       }
     });
   };
@@ -296,7 +312,18 @@ const Profile = ({
         // setError("Failed to fetch profile.");
       } else {
         console.log("Successfully fetched profile");
-        setUserData(data);
+        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
+        const birthdayDate = new Date(data.birthday_ms_since_epoch);
+        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+        // Add date_of_birth to the data object
+        const updatedUserData = {
+          ...data,
+          date_of_birth: formattedBirthday,
+        };
+
+        // Update userData with the new data
+        setUserData(updatedUserData);
       }
     });
   };
@@ -317,14 +344,21 @@ const Profile = ({
     bearer.accessToken = jwtToken;
     
     let apiInstance = new CredibleCupid.UserApi();
+
+    // Convert date_of_birth to milliseconds since epoch
+    const birthdayMs = new Date(userData.date_of_birth).getTime();
+    userData.birthday_ms_since_epoch = birthdayMs;
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
+      first_name: userData.first_name,
+      last_name: userData.last_name,
       bio: userData.bio,
       gender: userData.gender,
       pronouns: userData.pronouns,
       sexual_orientation: userData.sexual_orientation,
-      birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
+      // birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
+      birthday_ms_since_epoch: birthdayMs,
       height_mm: userData.height_mm,
       occupation: userData.occupation,
   };
@@ -399,7 +433,7 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-                  <button 
+          <button 
           style={styles.button}
           type="button" 
           onClick={() => setIsEditing(false)}
@@ -453,6 +487,58 @@ const Profile = ({
                   disabled
                 />
               </label>
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              First Name:
+              <input
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                type="text"
+                name="first_name"
+                value={userData.first_name}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>
+              Last Name:
+              <input
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                type="text"
+                name="last_name"
+                value={userData.last_name}
+                onChange={handleChange}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+              />
+            </label>
           </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>
@@ -527,7 +613,32 @@ const Profile = ({
               </select>
             </label>            
           </div>
-
+          <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                  Date of Birth:
+                  <input
+                      style={{
+                          ...styles.input,
+                          ':focus': {
+                              borderColor: colors.green.light,
+                              backgroundColor: colors.white,
+                          }
+                      }}
+                      type="date"
+                      name="date_of_birth"
+                      value={userData.date_of_birth}
+                      onChange={handleChange}
+                      onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                      }}
+                      onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                      }}
+                  />
+              </label>
+          </div>
           <div style={styles.inputGroup}>
             <label style={styles.label}>
               Height (mm):
@@ -649,7 +760,7 @@ const Profile = ({
               {/* <div style={styles.infoSection}> */}
                 <div style={styles.header}>
                   <h2 style={styles.nameAgeGender}>
-                  {"User"}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
+                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
                     </h2>
                   <div style={styles.getScoreStyle(credibilityScore)}>
                     <Star size={16} />
