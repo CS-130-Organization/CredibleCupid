@@ -1,4 +1,4 @@
-import React, { useState } from 'react';\
+import React, { useState } from 'react';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
@@ -87,7 +87,6 @@ function Login() {
                 e.target.style.borderColor = colors.gray.border;
               }}
               onBlur={(e) => {
-                console.log("onblur")
                 e.target.style.backgroundColor = colors.gray.lighter;
               }}
             />
