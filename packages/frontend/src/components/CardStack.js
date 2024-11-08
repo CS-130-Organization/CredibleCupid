@@ -3,158 +3,54 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../pages/ProfileCard';
 import * as CredibleCupidApi from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
-
-const styles = {
-  cardStackContainer: {
-    width: '390px',
-    height: '844px',
-    position: 'relative',
-    backgroundColor: '#f8f9fa',
-    overflow: 'hidden',
-  },
-
-  cardContainer: {
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    perspective: '1000px',
-  },
-
-  cardWrapper: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    willChange: 'transform',
-  },
-
-  actionOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-    zIndex: 10,
-  },
-
-  actionText: {
-    fontSize: '36px',
-    fontWeight: 'bold',
-    padding: '12px 24px',
-    border: '4px solid',
-    borderRadius: '12px',
-    transform: 'rotate(-30deg)',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  },
-
-  likedText: {
-    color: '#22c55e',
-    borderColor: '#22c55e',
-  },
-
-  passedText: {
-    color: '#ef4444',
-    borderColor: '#ef4444',
-  },
-
-  emptyState: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '32px',
-    width: '300px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    zIndex: 20,
-  },
-
-  emptyStateText: {
-    color: '#ef4444',
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    textAlign: 'center',
-    margin: 0,
-  },
-
-  resetButton: {
-    backgroundColor: '#22c55e',
-    color: 'white',
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    fontSize: '16px',
-    width: '100%',
-  },
-
-  errorState: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    padding: '32px',
-    width: '300px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-    zIndex: 20,
-  },
-
-  errorText: {
-    color: '#ef4444',
-    fontSize: '1.25rem',
-    fontWeight: '600',
-    textAlign: 'center',
-    margin: 0,
-  },
-
-  retryButton: {
-    backgroundColor: '#22c55e',
-    color: 'white',
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    fontSize: '16px',
-    width: '100%',
-  }
-};
+import { colors, spacing } from '../styles/theme';
+import { cardStyles, buttonStyles } from '../styles/commonStyles';
 
 const ActionOverlay = ({ action }) => {
   if (!action) return null;
 
-  const text = action === 'like' ? 'LIKED' : 'PASSED';
-  const textStyle = {
-    ...styles.actionText,
-    ...(action === 'like' ? styles.likedText : styles.passedText),
+  const overlayStyles = {
+    container: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      pointerEvents: 'none',
+      zIndex: 10,
+    },
+    text: {
+      fontSize: '36px',
+      fontWeight: 'bold',
+      padding: `${spacing.md} ${spacing.lg}`,
+      border: '4px solid',
+      borderRadius: spacing.md,
+      transform: 'rotate(-30deg)',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      ...(action === 'like' ? {
+        color: colors.green.light,
+        borderColor: colors.green.light,
+      } : {
+        color: colors.red.light,
+        borderColor: colors.red.light,
+      })
+    }
   };
+
+  const text = action === 'like' ? 'LIKED' : 'PASSED';
 
   return (
     <motion.div
-      style={styles.actionOverlay}
+      style={overlayStyles.container}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <motion.div
-        style={textStyle}
+        style={overlayStyles.text}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", damping: 12 }}
@@ -298,19 +194,59 @@ const CardStack = () => {
     fetchMatches();
   };
 
+  // Component-specific styles
+  const styles = {
+    cardWrapper: {
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
+      willChange: 'transform',
+    },
+    emptyState: {
+      position: 'absolute',
+      left: '50%',
+      top: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: colors.white,
+      borderRadius: spacing.md,
+      padding: spacing.xl,
+      width: '300px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: spacing.lg,
+      boxShadow: `0 2px 10px ${colors.black.opacity10}`,
+      zIndex: 20,
+    },
+    emptyText: {
+      color: colors.red.light,
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      textAlign: 'center',
+      margin: 0,
+    },
+    resetButton: {
+      ...buttonStyles.base,
+      backgroundColor: colors.green.light,
+      '&:hover': {
+        backgroundColor: colors.green.dark,
+      }
+    }
+  };
+
   if (error) {
     return (
-      <div style={styles.cardStackContainer}>
-        <div style={styles.errorState}>
-          <p style={styles.errorText}>{error}</p>
+      <div style={cardStyles.container}>
+        <div style={styles.emptyState}>
+          <p style={styles.emptyText}>{error}</p>
           <button
-            style={styles.retryButton}
+            style={styles.resetButton}
             onClick={resetCards}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#16a34a';
+              e.currentTarget.style.backgroundColor = colors.green.dark;
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#22c55e';
+              e.currentTarget.style.backgroundColor = colors.green.light;
             }}
           >
             Try Again
@@ -322,17 +258,17 @@ const CardStack = () => {
 
   if (isLoading) {
     return (
-      <div style={styles.cardStackContainer}>
+      <div style={cardStyles.container}>
         <div style={styles.emptyState}>
-          <p style={styles.emptyStateText}>Loading profiles...</p>
+          <p style={styles.emptyText}>Loading profiles...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={styles.cardStackContainer}>
-      <div style={styles.cardContainer}>
+    <div style={cardStyles.container}>
+      <div style={cardStyles.content}>
         <AnimatePresence mode="wait">
           {loadedProfiles.length > 0 ? (
             <motion.div
@@ -366,15 +302,15 @@ const CardStack = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: "spring", damping: 15 }}
             >
-              <p style={styles.emptyStateText}>No more profiles to show!</p>
+              <p style={styles.emptyText}>No more profiles to show!</p>
               <button
                 style={styles.resetButton}
                 onClick={resetCards}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#16a34a';
+                  e.currentTarget.style.backgroundColor = colors.green.dark;
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = '#22c55e';
+                  e.currentTarget.style.backgroundColor = colors.green.light;
                 }}
               >
                 Find More Matches

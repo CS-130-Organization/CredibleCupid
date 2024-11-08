@@ -3,10 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import CardStack from './components/CardStack'
-import ProfileCard from './pages/ProfileCard'
-import './App.css';
 
-// ... other imports ...
+import './App.css';
 
 function App() {
   console.log('App rendering');
