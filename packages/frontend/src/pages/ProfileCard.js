@@ -1,6 +1,16 @@
-// src/components/ProfileCard/ProfileCard.js
 import React, { useState } from 'react';
 import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
+import { colors, spacing } from '../styles/theme';
+import { 
+  cardStyles, 
+  imageStyles, 
+  badgeStyles, 
+  contentStyles,
+  tagStyles,
+  textStyles,
+  detailStyles,
+  scoreStyles
+} from '../styles/commonStyles';
 import { colors, spacing } from '../styles/theme';
 import {
   cardStyles,
@@ -89,19 +99,26 @@ const ProfileCard = ({
     <div style={cardStyles.container}>
       <div style={cardStyles.content}>
         <div style={imageStyles.section}>
+    <div style={cardStyles.container}>
+      <div style={cardStyles.content}>
+        <div style={imageStyles.section}>
           {imageUrl && !imageError ? (
             <img
               src={imageUrl}
               alt={`${name}'s profile`}
               style={imageStyles.image}
               onError={() => setImageError(true)}
+              style={imageStyles.image}
+              onError={() => setImageError(true)}
             />
           ) : (
+            <div style={imageStyles.placeholder}>
             <div style={imageStyles.placeholder}>
               No image available
             </div>
           )}
           {verified && (
+            <div style={badgeStyles.verified}>
             <div style={badgeStyles.verified}>
               <Verified size={16} />
               <span>Verified</span>
@@ -112,8 +129,12 @@ const ProfileCard = ({
         <div style={contentStyles.section}>
           <div style={contentStyles.header}>
             <h2 style={contentStyles.title}>
+        <div style={contentStyles.section}>
+          <div style={contentStyles.header}>
+            <h2 style={contentStyles.title}>
               {name}{age ? `, ${age}` : ''}{gender ? ` ${gender}` : ''}
             </h2>
+            <div style={scoreStyles.tag(credibilityScore)}>
             <div style={scoreStyles.tag(credibilityScore)}>
               <Star size={16} />
               <span>{credibilityScore}%</span>
@@ -121,7 +142,11 @@ const ProfileCard = ({
           </div>
 
           <p style={textStyles.bio}>{bio}</p>
+          <p style={textStyles.bio}>{bio}</p>
 
+          <div>
+            <div style={detailStyles.row}>
+              <Briefcase size={20} color={colors.gray.dark} />
           <div>
             <div style={detailStyles.row}>
               <Briefcase size={20} color={colors.gray.dark} />
@@ -129,8 +154,12 @@ const ProfileCard = ({
             </div>
             <div style={detailStyles.row}>
               <GraduationCap size={20} color={colors.gray.dark} />
+            <div style={detailStyles.row}>
+              <GraduationCap size={20} color={colors.gray.dark} />
               <span>{education}</span>
             </div>
+            <div style={detailStyles.row}>
+              <MapPin size={20} color={colors.gray.dark} />
             <div style={detailStyles.row}>
               <MapPin size={20} color={colors.gray.dark} />
               <span>{location}</span>
@@ -139,42 +168,42 @@ const ProfileCard = ({
 
           {interests.length > 0 && (
             <div style={tagStyles.container}>
+            <div style={tagStyles.container}>
               {interests.map((interest, index) => (
+                <span key={index} style={tagStyles.tag}>{interest}</span>
                 <span key={index} style={tagStyles.tag}>{interest}</span>
               ))}
             </div>
           )}
         </div>
 
-        <div style={styles.actionContainer}>
-          <div style={styles.actions}>
-            <button
-              onClick={handleDislike}
-              style={styles.actionButton(isDisliked, false)}
-            >
-              <X
-                size={36}
-                color={isDisliked ? colors.red.dark : colors.gray.placeholder}
-              />
-              <span style={styles.buttonText(isDisliked, false)}>
-                PASS
-              </span>
-            </button>
+        <div style={styles.actions}>
+          <button
+            onClick={handleDislike}
+            style={styles.actionButton(isDisliked, false)}
+          >
+            <X 
+              size={24} 
+              color={isDisliked ? colors.red.dark : colors.gray.placeholder}
+            />
+            <span style={styles.buttonText(isDisliked, false)}>
+              PASS
+            </span>
+          </button>
 
-            <button
-              onClick={handleLike}
-              style={styles.actionButton(isLiked, true)}
-            >
-              <Heart
-                size={36}
-                color={isLiked ? colors.green.dark : colors.gray.placeholder}
-                fill={isLiked ? colors.green.dark : 'none'}
-              />
-              <span style={styles.buttonText(isLiked, true)}>
-                LIKE
-              </span>
-            </button>
-          </div>
+          <button
+            onClick={handleLike}
+            style={styles.actionButton(isLiked, true)}
+          >
+            <Heart
+              size={24}
+              color={isLiked ? colors.green.dark : colors.gray.placeholder}
+              fill={isLiked ? colors.green.dark : 'none'}
+            />
+            <span style={styles.buttonText(isLiked, true)}>
+              LIKE
+            </span>
+          </button>
         </div>
       </div>
     </div>
