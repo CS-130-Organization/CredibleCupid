@@ -45,6 +45,16 @@ export class GetUserResponse {
 	guid: string;
 
 	/*
+	 * The first name of the user.
+	 */
+	first_name: string;
+
+	/*
+	 * The last name of the user.
+	 */
+	last_name: string;
+
+	/*
 	 * The biography of the user.
 	 */
 	bio: string;
@@ -90,6 +100,16 @@ export class FindMatchingUsersResponse {
 }
 
 export class UserUpdateBioRequest {
+	/*
+	 * The first name of the user.
+	 */
+	first_name: string;
+
+	/*
+	 * The last name of the user.
+	 */
+	last_name: string;
+
 	/*
 	 * The biography of the user.
 	 */

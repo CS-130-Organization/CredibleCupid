@@ -22,11 +22,13 @@ export class UserController {
 		return { 
 			email: user.email,
 			guid: user.guid,
+			first_name: user.first_name,
+			last_name: user.last_name,
 			bio: user.bio,
 			gender: user.gender,
 			pronouns: user.pronouns,
 			sexual_orientation: user.sexual_orientation,
-			birthday_ms_since_epoch: user.birthday_ms_since_epoch,
+			birthday_ms_since_epoch: user.birthday.getTime(),
 			height_mm: user.height_mm,
 			occupation: user.occupation,
 		};
@@ -38,6 +40,8 @@ export class UserController {
 	async update_bio(@AuthUser() user: User, @Body() req: UserUpdateBioRequest): Promise<GetUserResponse> {
 		const res = await this.user_service.update_user_bio(
 			user.guid,
+			req.first_name,
+			req.last_name,
 			req.bio,
 			req.gender,
 			req.pronouns,
@@ -56,11 +60,13 @@ export class UserController {
 		return { 
 			email: updated_user.email,
 			guid: updated_user.guid,
+			first_name: updated_user.first_name,
+			last_name: updated_user.last_name,
 			bio: updated_user.bio,
 			gender: updated_user.gender,
 			pronouns: updated_user.pronouns,
 			sexual_orientation: updated_user.sexual_orientation,
-			birthday_ms_since_epoch: updated_user.birthday_ms_since_epoch,
+			birthday_ms_since_epoch: updated_user.birthday.getTime(),
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
 		};
