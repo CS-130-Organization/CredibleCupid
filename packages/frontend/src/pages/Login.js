@@ -33,29 +33,32 @@ const styles = {
     position: 'relative',
     background: `linear-gradient(145deg, ${colors.gray.lighter} 0%, ${colors.white} 100%)`,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start', 
     justifyContent: 'center',
+    overflow: 'hidden', 
   },
   loginBox: {
     backgroundColor: colors.white,
-    borderRadius: '20px',
-    padding: '40px 32px',
-    width: '320px',
+    borderRadius: '0', 
+    padding: '40px 20px', 
+    width: '390px', 
+    minHeight: '844px', 
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '32px',
-    boxShadow: `0 4px 24px ${colors.black.opacity10}`,
+    boxShadow: 'none', 
   },
   logoContainer: {
-    width: '120px',
-    height: '120px',
+    width: '100%',
+    height: '320px',
     backgroundColor: colors.gray.lighter,
-    borderRadius: '24px',
+    borderRadius: '0', 
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: '8px',
+    overflow: 'hidden',
   },
   title: {
     fontSize: '28px',
@@ -82,15 +85,15 @@ const styles = {
     flexDirection: 'column',
     gap: '8px',
     width: '100%',
-    alignItems: 'flex-start', // Ensure container is left-aligned
+    alignItems: 'flex-start', 
   },
   label: {
     fontSize: '14px',
     fontWeight: '600',
     color: colors.gray.text,
     textAlign: 'left',
-    alignSelf: 'flex-start', // Explicitly left-align the label
-    marginBottom: '4px', // Add a bit more space below the label
+    alignSelf: 'flex-start', 
+    marginBottom: '4px', 
   },
   input: {
     width: '100%',
@@ -158,18 +161,18 @@ function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.loginBox}>
-        <div style={styles.logoContainer}>
-          <img
-            src={logo} 
-            alt="Heart icon"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain', 
-              opacity: 0.7,
-            }}
-          />
-        </div>
+      <div style={styles.logoContainer}>
+  <img
+    src={logo} 
+    alt="Heart icon"
+    style={{
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover', // Changed from 'contain' to 'cover'
+      opacity: 0.7,
+    }}
+  />
+</div>
         <div>
           <h1 style={styles.title}>Welcome Back</h1>
           <p style={styles.subtitle}>Sign in to continue to Credible Cupid</p>
