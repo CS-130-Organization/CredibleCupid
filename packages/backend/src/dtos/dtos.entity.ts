@@ -136,3 +136,22 @@ export class UserUpdateBioRequest {
 	 */
 	occupation: string;
 }
+
+export class LikeUserResponse {
+	/*
+	 * The GUID of the user you liked
+	 */
+	guid: string;
+	
+	/*
+	 * True if there is a match
+	 */
+	matched: boolean;
+}
+
+export class GetLikesResponse {
+	/*
+	 * The GUIDs of all the users who have liked your profile
+	 */
+	guids: string[];
+}
