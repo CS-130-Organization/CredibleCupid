@@ -32,13 +32,13 @@ export class User {
 	readonly password: string;
 
 	@Column({ type: "text", nullable: true })
-	first_name: string;
+	first_name: string | undefined;
 
 	@Column({ type: "text", nullable: true })
-	last_name: string;
+	last_name: string | undefined;
 
 	@Column({ type: "text", nullable: true })
-	bio: string;
+	bio: string | undefined;
 
 	@Column({ type: "enum", enum: Gender, default: Gender.kOther })
 	gender: Gender;
@@ -50,7 +50,7 @@ export class User {
 	sexual_orientation: SexualOrientation;
 
 	@Column({ type: 'timestamp', nullable: true })
-	birthday: Date;
+	birthday: Date | undefined;
 
 	@Column({ type: "int", default: 0 })
 	height_mm: number;

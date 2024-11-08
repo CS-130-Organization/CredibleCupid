@@ -47,17 +47,17 @@ export class GetUserResponse {
 	/*
 	 * The first name of the user.
 	 */
-	first_name: string;
+	first_name: string | undefined;
 
 	/*
 	 * The last name of the user.
 	 */
-	last_name: string;
+	last_name: string | undefined;
 
 	/*
 	 * The biography of the user.
 	 */
-	bio: string;
+	bio: string | undefined;
 
 	/*
 	 * The gender of the user.
@@ -68,7 +68,7 @@ export class GetUserResponse {
 	/*
 	 * The pronouns of the user.
 	 */
-	pronouns: string;
+	pronouns: string | undefined;
 
 	/*
 	 * The sexual orientation of the user.
@@ -79,17 +79,17 @@ export class GetUserResponse {
 	/*
 	 * Birthdate of the user in ms since epoch
 	 */
-	birthday_ms_since_epoch: number;
+	birthday_ms_since_epoch: number | undefined;
 
 	/*
 	 * The height of the user in millimeters
 	 */
-	height_mm: number;
+	height_mm: number | undefined;
 
 	/*
 	 * The occupation of the user
 	 */
-	occupation: string;
+	occupation: string | undefined;
 }
 
 export class FindMatchingUsersResponse {
