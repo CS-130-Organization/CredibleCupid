@@ -184,6 +184,13 @@ const CardStack = () => {
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
 
+   // Calculate the age based on `birthday_ms_since_epoch`
+   const calculateAge = (birthdayMs) => {
+    const ageDifMs = Date.now() - birthdayMs;
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
   const fetchMatches = async () => {
     setIsLoading(true);
     setError(null);
@@ -228,18 +235,22 @@ const CardStack = () => {
           console.log("errrrooooor")
           console.error(error);
         } else {
+          const age = calculateAge(data.birthday_ms_since_epoch);
+          
           setLoadedProfiles(prev => [...prev, {
-            name: data.name,
-            age: data.age,
-            gender: data.gender,
-            bio: data.bio,
-            credibilityScore: data.credibilityScore,
-            occupation: data.occupation,
-            education: data.education,
-            location: data.location,
-            interests: data.interests,
-            verified: data.verified,
-            imageUrl: data.imageUrl,
+            ...((data.first_name || data.last_name) ? {
+              name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+            } : {}),
+            ...(age ? { age } : {}),  // Only include age if it exists
+            ...(data.gender ? { gender: data.gender[0] } : {}),
+            ...(data.bio ? { bio: data.bio } : {}),
+            ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
+            ...(data.occupation ? { occupation: data.occupation } : {}),
+            ...(data.education ? { education: data.education } : {}),
+            ...(data.location ? { location: data.location } : {}),
+            ...(data.interests ? { interests: data.interests } : {}),
+            ...(data.verified !== undefined ? { verified: data.verified } : {}),
+            ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
             guid: guid
           }]);
           setIsLoading(false);
