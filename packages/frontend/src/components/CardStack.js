@@ -177,6 +177,7 @@ const CardStack = () => {
   const defaultClient = CredibleCupidApi.ApiClient.instance;
   const bearer = defaultClient.authentications['bearer'];
   const jwtToken = sessionStorage.getItem("jwtToken");
+  console.log("jwtToken = ", jwtToken)
   InitDefaultCredibleCupidClient(jwtToken);
   bearer.accessToken = jwtToken;
   
@@ -196,6 +197,7 @@ const CardStack = () => {
           setMatchGuids(userGuids);
           // Load first two profiles initially for smooth transition
           if (userGuids.length > 0) {
+            console.log("first guid match = ", userGuids[0])
             loadProfile(userGuids[0]);
             if (userGuids.length > 1) {
               loadProfile(userGuids[1]);
@@ -223,6 +225,7 @@ const CardStack = () => {
     try {
       userApi.queryUser(guid, (error, data) => {
         if (error) {
+          console.log("errrrooooor")
           console.error(error);
         } else {
           setLoadedProfiles(prev => [...prev, {
