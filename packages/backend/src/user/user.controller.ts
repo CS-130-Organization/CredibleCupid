@@ -2,7 +2,7 @@ import { Body, Controller, UseGuards, Get, Post, Param, ForbiddenException } fro
 import { JwtAuthGuard, AuthUser } from "../auth/jwt.guard";
 import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User } from "../database/entities";
-import { GetUserResponse, UserUpdateBioRequest } from "../dtos/dtos.entity";
+import { GetUserResponse, UserUpdateBioRequest, GetLikesResponse } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
 
 
@@ -64,6 +64,33 @@ export class UserController {
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
 		};
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@ApiBearerAuth()
+	@Get("get_likes")
+	async get_likes(@AuthUser() user: User): Promise<GetLikesResponse> {
+		const res = await this.user_service.find_likes(user.guid);
+
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		return { guids: res.val.map(user => user.guid) };
+	}
+
+
+	@UseGuards(JwtAuthGuard)
+	@ApiBearerAuth()
+	@Get("get_likes")
+	async get_mutual_likes(@AuthUser() user: User): Promise<GetLikesResponse> {
+		const res = await this.user_service.find_mutual_likes(user.guid);
+
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		return { guids: res.val.map(user => user.guid) };
 	}
 
 }

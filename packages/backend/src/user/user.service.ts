@@ -36,7 +36,7 @@ export class UserService {
 		occupation: string
 	): Promise<Result<User, string>> {
 		return await this.data_source.transaction(async manager => {
-			const user = await manager.findOne(User, { where: { guid } })
+			const user = await manager.findOne(User, { where: { guid } });
 
 			if (!user) {
 				return Err("User does not exist!");
@@ -61,6 +61,83 @@ export class UserService {
 	}
 
 	async find_matching_users(gender?: Gender): Promise<User[]> {
-		return await this.user_repository.find({ where: { gender } })
+		return await this.user_repository.find({ relations: { passes: true }, where: { gender } })
+	}
+
+	async like_user(guid: string, cutie_guid: string): Promise<Result<boolean, string>> {
+		if (guid == cutie_guid) {
+			return Err("You cannot like yourself!");
+		}
+		return await this.data_source.transaction(async manager => {
+			const user = await manager.findOne(User, { relations: { likes: true }, where: { guid } });
+
+			if (!user) {
+				return Err("User does not exist!");
+			}
+
+			const cutie = await manager.findOne(User, { relations: { likes: true }, where: { guid: cutie_guid } })
+
+			if (!cutie) {
+				return Err("Cutie does not exist!");
+			}
+
+			user.likes.push(cutie);
+
+			await manager.save(User, user);
+
+			const matched = !!cutie.likes.find(l => l.guid == guid);
+			return Ok(matched);
+		});
+	}
+
+	async pass_user(guid: string, cutie_guid: string): Promise<Result<null, string>> {
+		if (guid == cutie_guid) {
+			return Err("You cannot pass yourself!");
+		}
+
+		return await this.data_source.transaction(async manager => {
+			const user = await manager.findOne(User, { relations: { likes: true }, where: { guid } });
+
+			if (!user) {
+				return Err("User does not exist!");
+			}
+
+			const cutie = await manager.findOne(User, { relations: { likes: true }, where: { guid: cutie_guid } })
+
+			if (!cutie) {
+				return Err("Cutie does not exist!");
+			}
+
+			const length_before = user.likes.length;
+			user.likes = user.likes.filter(l => l.guid != cutie_guid);
+			user.passes.push(cutie);
+
+			await manager.save(User, user);
+
+			return Ok(null);
+		});
+	}
+
+	async find_likes(guid: string): Promise<Result<User[], string>> {
+		const user = await this.user_repository.findOne({ where: { guid } });
+
+		if (!user) {
+			return Err("User does not exist!");
+		}
+
+		const likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user] } })
+		return Ok(likes);
+	}
+
+	async find_mutual_likes(guid: string): Promise<Result<User[], string>> {
+		const user = await this.user_repository.findOne({ where: { guid } });
+
+		if (!user) {
+			return Err("User does not exist!");
+		}
+
+		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user] } })
+
+		return Ok(likes);
 	}
 }

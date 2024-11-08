@@ -51,4 +51,12 @@ export class User {
 
 	@Column({ type: "text", nullable: true })
 	occupation: string;
+
+	@ManyToMany(() => User)
+	@JoinTable()
+	likes: User[]
+
+	@ManyToMany(() => User)
+	@JoinTable()
+	passes: User[]
 }

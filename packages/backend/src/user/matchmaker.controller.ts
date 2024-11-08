@@ -2,7 +2,7 @@ import { Body, Controller, UseGuards, Get, Post, Param, ForbiddenException, Quer
 import { JwtAuthGuard, AuthUser } from "../auth/jwt.guard";
 import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User, Gender } from "../database/entities";
-import { FindMatchingUsersResponse, FindMatchingUsersRequest } from "../dtos/dtos.entity";
+import { FindMatchingUsersResponse, FindMatchingUsersRequest, LikeUserResponse } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
 
 
@@ -14,10 +14,37 @@ export class MatchMakerController {
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
 	@Post("find_matches")
-	async find_matches(@AuthUser() user: User, @Body() req: FindMatchingUsersRequest
-	): Promise<FindMatchingUsersResponse> {
+	async find_matches(@AuthUser() user: User, @Body() req: FindMatchingUsersRequest): Promise<FindMatchingUsersResponse> {
 		const users = await this.user_service.find_matching_users(req.gender);
 
 		return { user_guids: users.map(user => user.guid) };
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@ApiBearerAuth()
+	@ApiParam({ name: "guid", required: true, description: "GUID of user to like" })
+	@Post(":guid/like")
+	async like_user(@AuthUser() user: User, @Param() param: { guid: string }): Promise<LikeUserResponse> {
+		const res = await this.user_service.like_user(user.guid, param.guid);
+
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		return { guid: param.guid, matched: res.val };
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@ApiBearerAuth()
+	@ApiParam({ name: "guid", required: true, description: "GUID of user to pass" })
+	@Post(":guid/pass")
+	async pass_user(@AuthUser() user: User, @Param() param: { guid: string }) {
+		const res = await this.user_service.pass_user(user.guid, param.guid);
+
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		return { guid: param.guid, matched: res.val };
 	}
 }
