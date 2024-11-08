@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '../pages/ProfileCard';
-import * as CredibleCupidApi from '../credible_cupid/src/index'
+import * as CredibleCupidApi from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 
 const styles = {
@@ -137,8 +137,6 @@ const styles = {
   }
 };
 
-const MIN_ACTION_DISPLAY_TIME = 500; // Minimum time to show the action overlay (ms)
-
 const ActionOverlay = ({ action }) => {
   if (!action) return null;
 
@@ -179,39 +177,43 @@ const CardStack = () => {
   const defaultClient = CredibleCupidApi.ApiClient.instance;
   const bearer = defaultClient.authentications['bearer'];
   const jwtToken = sessionStorage.getItem("jwtToken");
+  InitDefaultCredibleCupidClient(jwtToken);
   bearer.accessToken = jwtToken;
   
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
 
+  const fetchMatches = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      matchmakerApi.findMatches((error, data) => {
+        if (error) {
+          setError('Failed to fetch matches');
+          console.error(error);
+        } else {
+          const userGuids = data.user_guids || [];
+          setMatchGuids(userGuids);
+          // Load first two profiles initially for smooth transition
+          if (userGuids.length > 0) {
+            loadProfile(userGuids[0]);
+            if (userGuids.length > 1) {
+              loadProfile(userGuids[1]);
+            }
+          } else {
+            setIsLoading(false);
+          }
+        }
+      });
+    } catch (err) {
+      setError('Failed to fetch matches');
+      console.error(err);
+      setIsLoading(false);
+    }
+  };
+
   // Fetch initial matches
   useEffect(() => {
-    const fetchMatches = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        matchmakerApi.findMatches((error, data) => {
-          if (error) {
-            setError('Failed to fetch matches');
-            console.error(error);
-          } else {
-            const userGuids = data.user_guids || [];
-            setMatchGuids(userGuids);
-            // Load first two profiles initially for smooth transition
-            if (userGuids.length > 0) {
-              loadProfile(userGuids[0]);
-              if (userGuids.length > 1) {
-                loadProfile(userGuids[1]);
-              }
-            }
-          }
-        });
-      } catch (err) {
-        setError('Failed to fetch matches');
-        console.error(err);
-      }
-    };
-
     fetchMatches();
   }, []);
 
@@ -245,8 +247,8 @@ const CardStack = () => {
     }
   };
 
+  // Pre-load next profile when current profile changes
   useEffect(() => {
-    // Pre-load next profile when current profile changes
     if (loadedProfiles.length > 0 && !isLoading) {
       const currentIndex = matchGuids.findIndex(guid => guid === loadedProfiles[0].guid);
       if (currentIndex >= 0 && currentIndex < matchGuids.length - 1) {
@@ -276,7 +278,43 @@ const CardStack = () => {
     }
   };
 
-  // ... rest of the component remains the same ...
+  const resetCards = async () => {
+    setLoadedProfiles([]);
+    setMatchGuids([]);
+    fetchMatches();
+  };
+
+  if (error) {
+    return (
+      <div style={styles.cardStackContainer}>
+        <div style={styles.errorState}>
+          <p style={styles.errorText}>{error}</p>
+          <button
+            style={styles.retryButton}
+            onClick={resetCards}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#16a34a';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#22c55e';
+            }}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div style={styles.cardStackContainer}>
+        <div style={styles.emptyState}>
+          <p style={styles.emptyStateText}>Loading profiles...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.cardStackContainer}>
@@ -336,8 +374,3 @@ const CardStack = () => {
 };
 
 export default CardStack;
-
-
-
-
-
