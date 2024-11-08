@@ -28,7 +28,7 @@ export class UserController {
 			gender: user.gender,
 			pronouns: user.pronouns,
 			sexual_orientation: user.sexual_orientation,
-			birthday_ms_since_epoch: user.birthday.getTime(),
+			birthday_ms_since_epoch: user.birthday?.getTime(),
 			height_mm: user.height_mm,
 			occupation: user.occupation,
 		};
@@ -66,7 +66,7 @@ export class UserController {
 			gender: updated_user.gender,
 			pronouns: updated_user.pronouns,
 			sexual_orientation: updated_user.sexual_orientation,
-			birthday_ms_since_epoch: updated_user.birthday.getTime(),
+			birthday_ms_since_epoch: updated_user.birthday?.getTime(),
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
 		};
