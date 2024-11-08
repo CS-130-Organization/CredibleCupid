@@ -88,7 +88,6 @@ function Login() {
                 e.target.style.borderColor = colors.gray.border;
               }}
               onBlur={(e) => {
-                console.log("onblur")
                 e.target.style.backgroundColor = colors.gray.lighter;
               }}
             />
