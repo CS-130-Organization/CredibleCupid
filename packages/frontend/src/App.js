@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
@@ -28,7 +28,6 @@ const styles = {
 
 function App() {
   const location = useLocation();
-
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentWrapper}>
