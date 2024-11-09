@@ -1,10 +1,16 @@
-import { Body, Controller, UseGuards, Get, Post, Param, ForbiddenException } from '@nestjs/common';
+import { Body, Controller, UseGuards, Get, Res, Post, Param, ForbiddenException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
+import { Response } from 'express';
+
 import { JwtAuthGuard, AuthUser } from "../auth/jwt.guard";
 import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User } from "../database/entities";
 import { GetUserResponse, UserUpdateBioRequest, GetLikesResponse } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
 
+import * as fs from "fs";
 
 @ApiTags('user')
 @Controller('user')
@@ -33,6 +39,19 @@ export class UserController {
 			occupation: user.occupation,
 		};
 	}
+
+	@ApiParam({ name: "guid", required: true, description: "User GUID" })
+	@Get(":guid/pic")
+	async profile_pic_user(@Param() param: { guid: string }, @Res() response: Response) {
+		
+		const res = await this.user_service.get_user_profile_pic(param.guid);
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
+
+		response.sendFile(res.val);
+	}
+
 
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
@@ -70,6 +89,31 @@ export class UserController {
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
 		};
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@ApiBearerAuth()
+	@UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes("multipart/form-data")
+	@ApiBody({
+		required: true,
+		schema: {
+			type: "object",
+			properties: {
+				file: {
+					type: "string",
+					format: "binary",
+				}
+			}
+		}
+	})
+	@Post("upload_profile_picture")
+	async upload_profile_pic(@AuthUser() user: User, @UploadedFile() file: Express.Multer.File) {
+		const res = await this.user_service.update_user_profile_pic(user.guid, file);
+
+		if (res.err) {
+			throw new ForbiddenException(res.val);
+		}
 	}
 
 	@UseGuards(JwtAuthGuard)
