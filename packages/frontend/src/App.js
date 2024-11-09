@@ -28,6 +28,7 @@ const styles = {
 
 function App() {
   const location = useLocation();
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentWrapper}>
