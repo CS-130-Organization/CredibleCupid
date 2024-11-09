@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
-import { 
-  cardStyles, 
-  imageStyles, 
-  badgeStyles, 
+import {
+  cardStyles,
+  imageStyles,
+  badgeStyles,
   contentStyles,
   tagStyles,
   textStyles,
@@ -13,8 +13,8 @@ import {
   scoreStyles
 } from '../styles/commonStyles';
 
-const ProfileCard = ({ 
-  onLike, 
+const ProfileCard = ({
+  onLike,
   onPass,
   name = 'Anonymous',
   age = '',
@@ -46,29 +46,41 @@ const ProfileCard = ({
 
   // Only styles specific to this implementation
   const styles = {
+    actionContainer: {
+      width: '100%',
+      position: 'absolute',
+      bottom: 0,
+      left: 0, // Add this to ensure left alignment
+      backgroundColor: colors.white,
+      borderTop: `1px solid ${colors.gray.lighter}`,
+      paddingBottom: '70px'
+    },
     actions: {
       display: 'flex',
-      borderTop: `1px solid ${colors.gray.lighter}`,
-      padding: spacing.sm,
-      backgroundColor: colors.white
+      padding: spacing.lg,
+      gap: spacing.md,
+      width: '100%',
+      boxSizing: 'border-box', // Add this
+      justifyContent: 'center' // Change to center
     },
     actionButton: (isActive, isLike) => ({
-      flex: 1,
-      padding: spacing.md,
-      marginLeft: isLike ? spacing.sm : 0,
+      flex: 0.5, // Change from 1 to 0.5
+      padding: spacing.xl,
+      height: '80px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: spacing.sm,
+      gap: spacing.md,
       border: 'none',
-      borderRadius: spacing.md,
+      borderRadius: spacing.lg,
       cursor: 'pointer',
       transition: 'all 0.2s ease',
-      backgroundColor: isActive ? (isLike ? '#dcfce7' : '#fee2e2') : colors.white
+      backgroundColor: isActive ? (isLike ? '#dcfce7' : '#fee2e2') : colors.white,
+      maxWidth: '170px' // Add fixed max width
     }),
     buttonText: (isActive, isLike) => ({
       fontWeight: '600',
-      fontSize: '16px',
+      fontSize: '24px',
       color: isActive ? (isLike ? colors.green.dark : colors.red.dark) : colors.gray.dark
     })
   };
@@ -134,33 +146,35 @@ const ProfileCard = ({
           )}
         </div>
 
-        <div style={styles.actions}>
-          <button
-            onClick={handleDislike}
-            style={styles.actionButton(isDisliked, false)}
-          >
-            <X 
-              size={24} 
-              color={isDisliked ? colors.red.dark : colors.gray.placeholder}
-            />
-            <span style={styles.buttonText(isDisliked, false)}>
-              PASS
-            </span>
-          </button>
+        <div style={styles.actionContainer}>
+          <div style={styles.actions}>
+            <button
+              onClick={handleDislike}
+              style={styles.actionButton(isDisliked, false)}
+            >
+              <X
+                size={36}
+                color={isDisliked ? colors.red.dark : colors.gray.placeholder}
+              />
+              <span style={styles.buttonText(isDisliked, false)}>
+                PASS
+              </span>
+            </button>
 
-          <button
-            onClick={handleLike}
-            style={styles.actionButton(isLiked, true)}
-          >
-            <Heart
-              size={24}
-              color={isLiked ? colors.green.dark : colors.gray.placeholder}
-              fill={isLiked ? colors.green.dark : 'none'}
-            />
-            <span style={styles.buttonText(isLiked, true)}>
-              LIKE
-            </span>
-          </button>
+            <button
+              onClick={handleLike}
+              style={styles.actionButton(isLiked, true)}
+            >
+              <Heart
+                size={36}
+                color={isLiked ? colors.green.dark : colors.gray.placeholder}
+                fill={isLiked ? colors.green.dark : 'none'}
+              />
+              <span style={styles.buttonText(isLiked, true)}>
+                LIKE
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
