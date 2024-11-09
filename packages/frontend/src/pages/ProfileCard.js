@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
-import { 
-  cardStyles, 
-  imageStyles, 
-  badgeStyles, 
+import {
+  cardStyles,
+  imageStyles,
+  badgeStyles,
   contentStyles,
   tagStyles,
   textStyles,
@@ -177,33 +177,35 @@ const ProfileCard = ({
           )}
         </div>
 
-        <div style={styles.actions}>
-          <button
-            onClick={handleDislike}
-            style={styles.actionButton(isDisliked, false)}
-          >
-            <X 
-              size={24} 
-              color={isDisliked ? colors.red.dark : colors.gray.placeholder}
-            />
-            <span style={styles.buttonText(isDisliked, false)}>
-              PASS
-            </span>
-          </button>
+        <div style={styles.actionContainer}>
+          <div style={styles.actions}>
+            <button
+              onClick={handleDislike}
+              style={styles.actionButton(isDisliked, false)}
+            >
+              <X
+                size={36}
+                color={isDisliked ? colors.red.dark : colors.gray.placeholder}
+              />
+              <span style={styles.buttonText(isDisliked, false)}>
+                PASS
+              </span>
+            </button>
 
-          <button
-            onClick={handleLike}
-            style={styles.actionButton(isLiked, true)}
-          >
-            <Heart
-              size={24}
-              color={isLiked ? colors.green.dark : colors.gray.placeholder}
-              fill={isLiked ? colors.green.dark : 'none'}
-            />
-            <span style={styles.buttonText(isLiked, true)}>
-              LIKE
-            </span>
-          </button>
+            <button
+              onClick={handleLike}
+              style={styles.actionButton(isLiked, true)}
+            >
+              <Heart
+                size={36}
+                color={isLiked ? colors.green.dark : colors.gray.placeholder}
+                fill={isLiked ? colors.green.dark : 'none'}
+              />
+              <span style={styles.buttonText(isLiked, true)}>
+                LIKE
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
