@@ -6,7 +6,7 @@ export const cardStyles = {
     width: '390px',
     height: '844px',
     backgroundColor: colors.white,
-    position: 'relative', // Make sure this is set
+    position: 'relative',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
