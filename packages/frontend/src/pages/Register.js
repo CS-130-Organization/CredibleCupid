@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
-import { buttonStyles, inputStyles, cardStyles } from '../styles/commonStyles';
+import { buttonStyles, linkStyles, inputStyles, cardStyles, formStyles, contentContainerStyles, subheadingStyles, titleStyles, logoStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
 
 function Register() {
@@ -21,7 +21,7 @@ function Register() {
         occupation: '',
         bio: '',
         profileImage: null,
-        referralEmails: ['', '', ''] // Array for 3 email addresses
+        referralEmails: ['', '', '']
     });
     const [previewImage, setPreviewImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -156,7 +156,6 @@ function Register() {
                     htmlFor="profile-image-upload"
                     style={{
                         ...buttonStyles.base,
-                        display: 'inline-block',
                         cursor: 'pointer',
                         textAlign: 'center'
                     }}
@@ -261,7 +260,7 @@ function Register() {
                         ...inputStyles.input,
                         backgroundColor: colors.gray.lighter,
                         height: '40px',
-                        padding: '8px 12px'
+                        padding: '8px 12px' // special dimensions for dropdown
                     }}
                     name="gender"
                     value={formData.gender}
@@ -414,9 +413,8 @@ function Register() {
     const StepReferrals = () => (
         <>
             <div style={{
+                subheadingStyles,
                 marginBottom: spacing.md,
-                textAlign: 'center',
-                color: colors.gray.text
             }}>
                 Please provide 3 email addresses for referrals
             </div>
@@ -465,55 +463,21 @@ function Register() {
             alignItems: 'center'
         }}>
             {/* Logo Section */}
-            <div style={{
-                width: '120px',
-                height: '120px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: '60px',
-                flexShrink: 0
-            }}>
+            <div style={logoStyles.container}>
                 <img
                     src={logo}
                     alt="Heart icon"
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        opacity: 0.9
-                    }}
+                    style={logoStyles.image}
                 />
             </div>
 
             {/* Content Container */}
-            <div style={{
-                width: '100%',
-                padding: `0 ${spacing.xl} ${spacing.xl} ${spacing.xl}`,
-                maxWidth: '350px',
-                marginTop: spacing.xl,
-                flexGrow: 1,
-                overflow: 'auto'
-            }}>
+            <div style={contentContainerStyles.container}>
                 {/* Header Section */}
-                <div style={{
-                    textAlign: 'center',
-                    marginBottom: spacing.xl
-                }}>
-                    <h1 style={{
-                        fontSize: '32px',
-                        fontWeight: '600',
-                        color: colors.gray.text,
-                        margin: `0 0 ${spacing.xs} 0`
-                    }}>
-                        Create Account
-                    </h1>
-                    <p style={{
-                        fontSize: '16px',
-                        color: colors.gray.text,
-                        opacity: 0.7,
-                        margin: 0
-                    }}>
+                <div style={contentContainerStyles.header}>
+                    <h1 style={titleStyles}> Create Account </h1>
+                    <ProgressBar />
+                    <p style={subheadingStyles}>
                         {step === 1 && 'Step 1: Account Details'}
                         {step === 2 && 'Step 2: Personal Information'}
                         {step === 3 && 'Step 3: About You'}
@@ -543,12 +507,7 @@ function Register() {
 
                 {/* Form Section */}
                 <form
-                    style={{
-                        width: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: spacing.lg
-                    }}
+                    style={formStyles}
                     onSubmit={
                         (formData.gender === 'male' ? step === 4 : step === 3)
                             ? handleSubmit
@@ -606,22 +565,14 @@ function Register() {
                     </div>
                 </form>
 
-                {/* Login Link */}
-                <p style={{
-                    textAlign: 'center',
-                    marginTop: spacing.lg,
-                    fontSize: '14px',
-                    color: colors.gray.text
-                }}>
-                    Already have an account?{' '}
-                    <Link to="/login" style={{
-                        color: colors.primary,
-                        textDecoration: 'none',
-                        fontWeight: '500'
-                    }}>
-                        Sign in here
-                    </Link>
-                </p>
+                {/* Login Link - Only show on first step */}
+                {step === 1 && (
+                    <p style={linkStyles.nonLink}>
+                        Already have an account?{' '}
+                        <Link to="/login" style={linkStyles.link}>
+                            Sign in here
+                        </Link>
+                    </p>)}
             </div>
         </div>
     );

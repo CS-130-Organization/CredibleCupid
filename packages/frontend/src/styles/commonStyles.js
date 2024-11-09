@@ -67,7 +67,19 @@ export const inputStyles = {
   }
 };
 
-// New reusable styles
+export const subheadingStyles = {
+  fontSize: '16px',
+  color: colors.gray.text,
+  opacity: 0.7,
+  margin: 0
+}
+
+export const titleStyles = {
+  fontSize: '32px',
+  fontWeight: '600',
+  color: colors.gray.text,
+  margin: `0 0 ${spacing.xs} 0`
+}
 export const imageStyles = {
   section: {
     width: '100%',
@@ -175,3 +187,57 @@ export const scoreStyles = {
     color: score >= 75 ? colors.green.dark : score >= 25 ? colors.orange.dark : colors.red.dark
   })
 };
+
+export const logoStyles = {
+  container: {
+    width: '120px',
+    height: '120px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '60px',
+    flexShrink: 0
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    opacity: 0.9
+  }
+};
+
+export const contentContainerStyles = {
+  container: {
+    width: '100%',
+    padding: `0 ${spacing.xl} ${spacing.xl} ${spacing.xl}`,
+    maxWidth: '350px',
+    marginTop: spacing.xl,
+    flexGrow: 1,
+    overflow: 'auto'
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: spacing.xl
+  },
+}
+
+export const formStyles = {
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: spacing.lg
+}
+
+export const linkStyles = {
+  nonLink: {
+    textAlign: 'center',
+    marginTop: spacing.lg,
+    fontSize: '14px',
+    color: colors.gray.text
+  },
+  link: {
+    color: colors.primary,
+    textDecoration: 'none',
+    fontWeight: '500'
+  }
+}
