@@ -44,7 +44,7 @@ export class User {
 	gender: Gender;
 
 	@Column({ type: "text", nullable: true })
-	pronouns: string;
+	pronouns: string | undefined;
 
 	@Column({ type: "enum", enum: SexualOrientation, default: SexualOrientation.kOther })
 	sexual_orientation: SexualOrientation;
@@ -56,7 +56,7 @@ export class User {
 	height_mm: number;
 
 	@Column({ type: "text", nullable: true })
-	occupation: string;
+	occupation: string | undefined;
 
 	@ManyToMany(() => User)
 	@JoinTable()
@@ -65,4 +65,7 @@ export class User {
 	@ManyToMany(() => User)
 	@JoinTable()
 	passes: User[]
+
+	@Column({ type: "text", nullable: true })
+	profile_pic: string | undefined;
 }

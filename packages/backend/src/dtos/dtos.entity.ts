@@ -1,4 +1,6 @@
 import { IsOptional, IsEmail, IsNotEmpty, IsInt, ValidateIf, IsEnum } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { Express } from 'express'
 import { Gender, SexualOrientation } from "../database/entities"
 
 export class LoginRequest {

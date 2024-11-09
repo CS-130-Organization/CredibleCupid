@@ -5,6 +5,8 @@ import { Repository, DataSource } from "typeorm";;
 import { User, Gender, SexualOrientation } from "../database/entities";
 import { Ok, Err, Result } from "ts-results";
 
+import * as fs from "fs";
+
 
 
 @Injectable()
@@ -60,6 +62,39 @@ export class UserService {
 		});
 	}
 
+	async update_user_profile_pic(guid: string, file: Express.Multer.File): Promise<Result<null, string>> {
+		return await this.data_source.transaction(async manager => {
+			const user = await manager.findOne(User, { where: { guid } });
+
+			if (!user) {
+				return Err("User not found!");
+			}
+
+			const filename = user.guid + "." + file.originalname.split(".").pop();
+			await fs.writeFile('/usr/uploaded/profiles/' + filename, file.buffer, { flag: "w+" }, err => {});
+
+			user.profile_pic = filename;
+
+			await manager.save(User, user);
+
+			return Ok(null);
+		});
+	}
+
+	async get_user_profile_pic(guid: string): Promise<Result<string, string>> {
+		const user = await this.user_repository.findOne({ where: { guid } });
+
+		if (!user) {
+			return Err("User not found!");
+		}
+
+		if (!user.profile_pic) {
+			return Err("Profile picture not set!");
+		}
+
+		return Ok('/usr/uploaded/profiles/' + user.profile_pic);
+	}
+
 	async find_user_with_guid(guid: string): Promise<User | null> {
 		return await this.user_repository.findOne({ where: { guid } });
 	}
@@ -95,7 +130,6 @@ export class UserService {
 			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i] } }));
 		}
 		
-		console.log(matches)
 		matches = matches.filter(i => !i.passes.find(j => j.guid == guid));
 		matches = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
 
