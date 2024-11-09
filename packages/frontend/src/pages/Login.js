@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
-import { buttonStyles, inputStyles, cardStyles } from '../styles/commonStyles';
+import { buttonStyles, linkStyles, formStyles, contentContainerStyles, titleStyles, inputStyles, cardStyles, subheadingStyles, logoStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -46,68 +46,31 @@ function Login() {
     });
   };
 
-  
+
   return (
     <div style={cardStyles.container}>
       {/* Logo Section */}
-      <div style={{
-        width: '120px', // Smaller logo
-        height: '120px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: '60px' // Push down from top
-      }}>
+      <div style={logoStyles.container}>
         <img
           src={logo}
           alt="Heart icon"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            opacity: 0.9
-          }}
+          style={logoStyles.image}
         />
       </div>
 
       {/* Content Container */}
-      <div style={{
-        width: '100%',
-        padding: '0 spacing.xl',
-        maxWidth: '350px', // Constrain width of form
-        marginTop: spacing.xl
-      }}>
+      <div style={contentContainerStyles.container}>
         {/* Header Section */}
-        <div style={{
-          textAlign: 'center',
-          marginBottom: spacing.xl
-        }}>
-          <h1 style={{
-            fontSize: '32px',
-            fontWeight: '600',
-            color: colors.gray.text,
-            margin: `0 0 ${spacing.xs} 0`
-          }}>
-            Welcome Back
-          </h1>
-          <p style={{
-            fontSize: '16px',
-            color: colors.gray.text,
-            opacity: 0.7,
-            margin: 0
-          }}>
+        <div style={contentContainerStyles.header}>
+          <h1 style={titleStyles}> Welcome Back </h1>
+          <p style={subheadingStyles}>
             Sign in to continue to Credible Cupid
           </p>
         </div>
 
         {/* Form Section */}
-        <form 
-          style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.lg
-          }}
+        <form
+          style={formStyles}
           onSubmit={handleSubmit}
         >
           {/* Username Input */}
@@ -167,18 +130,9 @@ function Login() {
           </button>
         </form>
         {/* Login Link */}
-        <p style={{
-          textAlign: 'center',
-          marginTop: spacing.lg,
-          fontSize: '14px',
-          color: colors.gray.text
-        }}>
+        <p style={linkStyles.nonLink}>
           New user?{' '}
-          <Link to="/register" style={{
-            color: colors.primary,
-            textDecoration: 'none',
-            fontWeight: '500'
-          }}>
+          <Link to="/register" style={linkStyles.link}>
             Register here
           </Link>
         </p>
