@@ -2,10 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation, useLocation, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
-import Register from './pages/Register';
 import CardStack from './components/CardStack';
+import { colors } from './styles/theme';import Register from './pages/Register';
 import NavBar from './components/NavBar'; 
-import { colors } from './styles/theme';
 import './App.css';
 
 const styles = {
@@ -27,8 +26,6 @@ const styles = {
 };
 
 function App() {
-  const location = useLocation();
-
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentWrapper}>
