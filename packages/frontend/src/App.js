@@ -2,10 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
-import UserProfile from './pages/UserProfile';
-import CardStack from './components/CardStack';
-import NavBar from './components/NavBar';
-import { colors } from './styles/theme';
+import Register from './pages/Register';
+import CardStack from './components/CardStack'
+
 import './App.css';
 
 const styles = {
@@ -34,6 +33,9 @@ function App() {
       <div style={styles.contentWrapper}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/profilepage" element={<Profile />} />
+          <Route exact path="/profile" element={<CardStack/>} />
+          <Route exact path="/register" element={<Register/>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/userprofile/:guid" element={<UserProfile />} />
           <Route path="/browse" element={<CardStack />} />
