@@ -31,6 +31,7 @@ services:
     volumes:
       - "./packages/backend/src:/usr/src/app/src"
       - "./packages/frontend/.generated:/usr/generated/"
+      - backend_profile_pics_volume:/usr/uploaded/profiles
     depends_on:
       db:
         condition: service_healthy
@@ -68,3 +69,5 @@ services:
 
 volumes:
   sqldb:
+  backend_profile_pics_volume:
+
