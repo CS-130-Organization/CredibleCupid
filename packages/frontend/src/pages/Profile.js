@@ -453,7 +453,12 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-        <ProfileContainer>
+        {/* <ProfileContainer> */}
+          
+
+          
+        <div style={styles.loginBox}>
+          <form style={styles.form} onSubmit={handleUpdateProfile}>
           <button 
           style={styles.button}
           type="button" 
@@ -469,10 +474,6 @@ const Profile = ({
             e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
           }}
           >Done Editing</button>
-
-          
-        <div style={styles.loginBox}>
-          <form style={styles.form} onSubmit={handleUpdateProfile}>
             <div style={styles.inputGroup}>
                 <label style={styles.label}>
                   Email:
@@ -741,8 +742,8 @@ const Profile = ({
 
           </form>
         </div>
-        </ProfileContainer>
-        <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
+        {/* </ProfileContainer> */}
+        {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
           <Box display="flex" flexWrap="wrap" gap={1} my={2}>
             {interests.map((interest, index) => (
@@ -760,7 +761,7 @@ const Profile = ({
               onChange={(e) => setCurrentInterest(e.target.value)}
               onKeyDown={handleInterestKeyDown}
             />
-          </Box>
+          </Box> */}
       </>
       ) : (
         <>
