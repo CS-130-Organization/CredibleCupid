@@ -5,6 +5,8 @@ import Profile from './pages/Profile';
 import CardStack from './components/CardStack';
 import { colors } from './styles/theme';import Register from './pages/Register';
 import NavBar from './components/NavBar'; 
+import { colors } from './styles/theme';
+import Register from './pages/Register';
 import './App.css';
 
 const styles = {
