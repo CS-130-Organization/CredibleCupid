@@ -9,13 +9,14 @@ import { ApiBearerAuth, ApiTags, ApiParam } from '@nestjs/swagger';
 import { User } from "../database/entities";
 import { GetUserResponse, UserUpdateBioRequest, GetLikesResponse } from "../dtos/dtos.entity";
 import { UserService } from "./user.service";
+import { ReferralService } from "./referral.service";
 
 import * as fs from "fs";
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-	constructor(private user_service: UserService) { }
+	constructor(private user_service: UserService, private referral_service: ReferralService) { }
 
 	@ApiParam({ name: "guid", required: true, description: "User GUID" })
 	@Get(":guid/query")
@@ -24,6 +25,8 @@ export class UserController {
 		if (!user) {
 			throw new ForbiddenException("User does not exist!");
 		}
+
+		const referrals = await this.referral_service.find_referrals_for_email(user.email);
 
 		return { 
 			email: user.email,
@@ -37,6 +40,7 @@ export class UserController {
 			birthday_ms_since_epoch: user.birthday?.getTime(),
 			height_mm: user.height_mm,
 			occupation: user.occupation,
+			referrals: referrals.map(i => i.guid),
 		};
 	}
 
@@ -76,6 +80,8 @@ export class UserController {
 
 		const updated_user = res.val;
 
+		const referrals = await this.referral_service.find_referrals_for_email(user.email);
+
 		return { 
 			email: updated_user.email,
 			guid: updated_user.guid,
@@ -88,6 +94,7 @@ export class UserController {
 			birthday_ms_since_epoch: updated_user.birthday?.getTime(),
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
+			referrals: referrals.map(r => r.guid),
 		};
 	}
 
