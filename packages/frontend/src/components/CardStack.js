@@ -177,7 +177,7 @@ const CardStack = () => {
   const defaultClient = CredibleCupidApi.ApiClient.instance;
   const bearer = defaultClient.authentications['bearer'];
   const jwtToken = sessionStorage.getItem("jwtToken");
-  console.log("jwtToken = ", jwtToken)
+  // console.log("jwtToken = ", jwtToken)
   InitDefaultCredibleCupidClient(jwtToken);
   bearer.accessToken = jwtToken;
   
@@ -232,7 +232,6 @@ const CardStack = () => {
     try {
       userApi.queryUser(guid, (error, data) => {
         if (error) {
-          console.log("errrrooooor")
           console.error(error);
         } else {
           const age = calculateAge(data.birthday_ms_since_epoch);
@@ -276,10 +275,28 @@ const CardStack = () => {
     if (isDragging) return;
     setIsDragging(true);
     setCurrentAction(action);
-
+    console.log("guid = " , loadedProfiles[0].guid)
+    // If action is like, call the API
+    if (action === 'like' && loadedProfiles[0]?.guid) {
+      try {
+        await matchmakerApi.likeUser(loadedProfiles[0].guid);
+        console.log('Successfully liked user:', loadedProfiles[0].guid);
+      } catch (error) {
+        // console.log("guid of liked person: ",loadedProfiles[0]?.guid )
+        console.error('Error liking user: ', loadedProfiles[0]?.guid, error);
+      }
+    } else {
+      try {
+        await matchmakerApi.passUser(loadedProfiles[0].guid);
+        console.log('Successfully passed user:', loadedProfiles[0].guid);
+      } catch (error) {
+        console.error('Error passing on user:', loadedProfiles[0].guid, error);
+      }
+    }
+  
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
-
+  
     setLoadedProfiles(prev => prev.slice(1));
     setCurrentAction(null);
     setIsDragging(false);
