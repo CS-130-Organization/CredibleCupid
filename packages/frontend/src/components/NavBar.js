@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User, Search, Heart } from 'lucide-react';
+import { colors } from '../styles/theme';
 
 const NavBar = () => {
     return (
@@ -37,8 +38,8 @@ const styles = {
         transform: 'translateX(-50%)',
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#333',
-        borderTop: '1px solid #444',
+        backgroundColor: colors.white,
+        borderTop: `1px solid ${colors.gray.border}`,
         zIndex: '10',
     },
     navLinks: {
@@ -51,7 +52,7 @@ const styles = {
         alignItems: 'center',
     },
     link: {
-        color: '#fff',
+        color: colors.gray.text,
         textDecoration: 'none',
         fontSize: '1.5rem',
         padding: '10px',
@@ -59,6 +60,10 @@ const styles = {
     icon: {
         width: '24px',
         height: '24px',
+        color: colors.gray.text,
+        '&:hover': {
+            color: colors.green.light
+        }
     }
 };
 
