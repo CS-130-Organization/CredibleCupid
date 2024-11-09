@@ -21,8 +21,8 @@ const styles = {
     width: '390px',
     height: '844px',
     position: 'relative',
-    backgroundColor: colors.white, // Add this if you want white background
-    overflow: 'hidden'
+    backgroundColor: colors.white,
+    overflow: 'auto' // Changed from 'hidden' to 'auto'
   }
 };
 
