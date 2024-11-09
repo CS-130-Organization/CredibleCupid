@@ -180,12 +180,12 @@ const CardStack = () => {
   // console.log("jwtToken = ", jwtToken)
   InitDefaultCredibleCupidClient(jwtToken);
   bearer.accessToken = jwtToken;
-  
+
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
 
-   // Calculate the age based on `birthday_ms_since_epoch`
-   const calculateAge = (birthdayMs) => {
+  // Calculate the age based on `birthday_ms_since_epoch`
+  const calculateAge = (birthdayMs) => {
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -228,6 +228,18 @@ const CardStack = () => {
 
   const loadProfile = async (guid) => {
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
+    // try {
+
+    //   matchmakerApi.likeUser(guid, (error, data, response) => {
+    //     if (error) {
+    //       console.error("MATHMKAER DID NOT WORK error");
+    //     } else {
+    //       console.log('API called successfully. Returned data: ' + data.guid, data.matched);
+    //     }
+    //   });
+    // } catch {
+    //     console.log("failed to like user: ", guid)
+    // }
 
     try {
       userApi.queryUser(guid, (error, data) => {
@@ -235,7 +247,7 @@ const CardStack = () => {
           console.error(error);
         } else {
           const age = calculateAge(data.birthday_ms_since_epoch);
-          
+
           setLoadedProfiles(prev => [...prev, {
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
@@ -275,28 +287,37 @@ const CardStack = () => {
     if (isDragging) return;
     setIsDragging(true);
     setCurrentAction(action);
-    console.log("guid = " , loadedProfiles[0].guid)
+    console.log("guid = ", loadedProfiles[0].guid)
     // If action is like, call the API
     if (action === 'like' && loadedProfiles[0]?.guid) {
       try {
-        await matchmakerApi.likeUser(loadedProfiles[0].guid);
-        console.log('Successfully liked user:', loadedProfiles[0].guid);
+        matchmakerApi.likeUser(loadedProfiles[0]?.guid, (error, data, response) => {
+          if (error) {
+            console.error(`Failed to like user ${loadedProfiles[0].guid}`);
+          } else {
+            console.log(`Liked user ${data.guid}${data.matched ? ' - Match!' : ''}`)
+          }
+        });
       } catch (error) {
-        // console.log("guid of liked person: ",loadedProfiles[0]?.guid )
-        console.error('Error liking user: ', loadedProfiles[0]?.guid, error);
+        console.error(`Error liking user ${loadedProfiles[0].guid}`);
       }
-    } else {
+    } else if (action === 'pass' && loadedProfiles[0]?.guid) {
       try {
-        await matchmakerApi.passUser(loadedProfiles[0].guid);
-        console.log('Successfully passed user:', loadedProfiles[0].guid);
+        matchmakerApi.passUser(loadedProfiles[0]?.guid, (error, data, response) => {
+          if (error) {
+            console.error(`Failed to pass user ${loadedProfiles[0].guid}`);
+          } else {
+            console.log(`Passed user ${loadedProfiles[0].guid}`);
+          }
+        });
       } catch (error) {
-        console.error('Error passing on user:', loadedProfiles[0].guid, error);
+        console.error(`Error passing user ${loadedProfiles[0].guid}`);
       }
-    }
-  
+    } 
+
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
-  
+
     setLoadedProfiles(prev => prev.slice(1));
     setCurrentAction(null);
     setIsDragging(false);
@@ -360,7 +381,7 @@ const CardStack = () => {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={1}
               onDragEnd={handleDragEnd}
-              exit={{ 
+              exit={{
                 x: currentAction === 'like' ? 300 : -300,
                 opacity: 0,
                 scale: 0.8,
@@ -377,7 +398,7 @@ const CardStack = () => {
               </AnimatePresence>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               style={styles.emptyState}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
