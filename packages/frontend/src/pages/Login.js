@@ -4,6 +4,7 @@ import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
 import { buttonStyles, inputStyles, cardStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -163,6 +164,22 @@ function Login() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        {/* Login Link */}
+        <p style={{
+          textAlign: 'center',
+          marginTop: spacing.lg,
+          fontSize: '14px',
+          color: colors.gray.text
+        }}>
+          New user?{' '}
+          <Link to="/register" style={{
+            color: colors.primary,
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}>
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );

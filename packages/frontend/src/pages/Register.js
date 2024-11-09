@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
@@ -33,19 +33,12 @@ function Register() {
 
     InitDefaultCredibleCupidClient(null);
     let apiInstance = new CredibleCupid.AuthApi();
-    let registerRequest = new CredibleCupid.RegisterRequest(
+    let registerRequest = new CredibleCupid.LoginRequest(
       formData.email,
       formData.password,
-      {
-        bio: formData.bio,
-        gender: formData.gender,
-        age: parseInt(formData.age),
-        height: parseInt(formData.height),
-        occupation: formData.occupation
-      }
     );
 
-    apiInstance.authRegister(registerRequest, (error, data, response) => {
+    apiInstance.authSignup(registerRequest, (error, data, response) => {
       if (error) {
         console.error(response);
         console.error(response.body.message);
@@ -59,7 +52,14 @@ function Register() {
   };
 
   return (
-    <div style={cardStyles.container}>
+    <div style={{
+      ...cardStyles.container,
+      height: '100vh',
+      overflow: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
       {/* Logo Section */}
       <div style={{
         width: '120px',
@@ -67,7 +67,8 @@ function Register() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: '60px'
+        marginTop: '60px',
+        flexShrink: 0
       }}>
         <img
           src={logo}
@@ -84,9 +85,11 @@ function Register() {
       {/* Content Container */}
       <div style={{
         width: '100%',
-        padding: `0 ${spacing.xl}`,
-        maxWidth: '400px',
-        marginTop: spacing.xl
+        padding: `0 ${spacing.xl} ${spacing.xl} ${spacing.xl}`,
+        maxWidth: '350px',
+        marginTop: spacing.xl,
+        flexGrow: 1,
+        overflow: 'auto'
       }}>
         {/* Header Section */}
         <div style={{
@@ -125,13 +128,23 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Email</label>
             <input
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
               placeholder="Enter your email"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
@@ -139,13 +152,23 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Password</label>
             <input
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
               placeholder="Create a password"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
@@ -155,6 +178,7 @@ function Register() {
             <textarea
               style={{
                 ...inputStyles.input,
+                backgroundColor: colors.gray.lighter,
                 minHeight: '100px',
                 resize: 'vertical'
               }}
@@ -163,6 +187,13 @@ function Register() {
               onChange={handleChange}
               required
               placeholder="Tell us about yourself"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
@@ -170,15 +201,26 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Gender</label>
             <select
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               name="gender"
               value={formData.gender}
               onChange={handleChange}
               required
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
+              <option value="non-bonary">Non-binary</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -187,7 +229,10 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Age</label>
             <input
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               type="number"
               name="age"
               value={formData.age}
@@ -196,6 +241,13 @@ function Register() {
               min="18"
               max="120"
               placeholder="Enter your age"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
@@ -203,7 +255,10 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Height (cm)</label>
             <input
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               type="number"
               name="height"
               value={formData.height}
@@ -212,6 +267,13 @@ function Register() {
               min="100"
               max="250"
               placeholder="Enter your height in cm"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
@@ -219,13 +281,23 @@ function Register() {
           <div style={inputStyles.container}>
             <label style={inputStyles.label}>Occupation</label>
             <input
-              style={inputStyles.input}
+              style={{
+                ...inputStyles.input,
+                backgroundColor: colors.gray.lighter
+              }}
               type="text"
               name="occupation"
               value={formData.occupation}
               onChange={handleChange}
               required
               placeholder="Enter your occupation"
+              onFocus={(e) => {
+                e.target.style.backgroundColor = colors.white;
+                e.target.style.borderColor = colors.gray.border;
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = colors.gray.lighter;
+              }}
             />
           </div>
 
