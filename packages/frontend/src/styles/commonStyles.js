@@ -17,7 +17,8 @@ export const cardStyles = {
     height: '100%',
     backgroundColor: colors.white,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    position: 'relative' // Add this
   }
 };
 
