@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
@@ -10,6 +11,7 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // Add this hook
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +29,6 @@ function Login() {
       } else {
         console.log("Successfully logged in!")
         InitDefaultCredibleCupidClient(data.jwt);
-
         sessionStorage.setItem("jwtToken", data.jwt);
 
         apiInstance.authRefresh((error, data, response) => {
@@ -37,6 +38,7 @@ function Login() {
             console.error(response.body.statusCode);
           } else {
             console.log("Refreshed auth token!");
+            navigate('/browse'); // Navigate to profile page
           }
         });
       }
