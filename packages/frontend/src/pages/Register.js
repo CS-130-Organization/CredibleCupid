@@ -3,105 +3,78 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
-import { buttonStyles, linkStyles, inputStyles, cardStyles, formStyles, contentContainerStyles, subheadingStyles, titleStyles, logoStyles } from '../styles/commonStyles';
+import { buttonStyles, linkStyles, formStyles, contentContainerStyles, titleStyles, inputStyles, cardStyles, subheadingStyles, logoStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
 
 function Register() {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        firstName: '',
-        lastName: '',
-        birthday: '',
-        gender: '',
-        sexualOrientation: '',
-        pronouns: '',
-        height: '',
-        occupation: '',
-        bio: '',
-        profileImage: null,
-        referralEmails: ['', '', '']
-    });
-    const [previewImage, setPreviewImage] = useState(null);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [gender, setGender] = useState('');
+    const [orientation, setOrientation] = useState('');
+    const [height, setHeight] = useState('');
+    const [occupation, setOccupation] = useState('');
+    const [birthday, setBirthday] = useState('');
+    const [bio, setBio] = useState('');
+    const [photo, setPhoto] = useState(null);
+    const [referralEmails, setReferralEmails] = useState(['', '', '']);
     const [isLoading, setIsLoading] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+    const handleNext = () => setStep(step + 1);
+    const handleBack = () => setStep(step - 1);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            alert("Passwords don't match!");
+            return;
+        }
+
+        setIsLoading(true);
+        setIsVerifying(true);
+
+        setTimeout(() => {
+            InitDefaultCredibleCupidClient(null);
+            let apiInstance = new CredibleCupid.AuthApi();
+            let registerRequest = new CredibleCupid.LoginRequest(email, password);
+
+            apiInstance.authLogin(registerRequest, (error, data, response) => {
+                setIsLoading(false);
+                if (error) {
+                    console.error(error);
+                    setIsVerifying(false);
+                } else {
+                    console.log("Successfully registered!");
+                    setTimeout(() => navigate('/login'), 5000);
+                }
+            });
+        }, 1000);
+    };
+
+    const handleFocus = (e) => {
+        e.target.style.backgroundColor = colors.white;
+        e.target.style.borderColor = colors.gray.border;
+    };
+
+    const handleBlur = (e) => {
+        e.target.style.backgroundColor = colors.gray.lighter;
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData(prevState => ({
-                ...prevState,
-                profileImage: file
-            }));
-            // Create preview URL
-            const previewUrl = URL.createObjectURL(file);
-            setPreviewImage(previewUrl);
+            setPhoto(file);
+            setPreviewImage(URL.createObjectURL(file));
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-
-        InitDefaultCredibleCupidClient(null);
-        let apiInstance = new CredibleCupid.AuthApi();
-        let registerRequest = new CredibleCupid.LoginRequest(
-            formData.email,
-            formData.password,
-        );
-
-        apiInstance.authSignup(registerRequest, (error, data, response) => {
-            if (error) {
-                console.error(response);
-                console.error(response.body.message);
-                console.error(response.body.statusCode);
-            } else {
-                console.log("Successfully registered!");
-                navigate('/login');
-            }
-            setIsLoading(false);
-        });
-    };
-
-    const nextStep = () => setStep(prev => prev + 1);
-    const prevStep = () => setStep(prev => prev - 1);
-
-    const maxSteps = formData.gender === 'male' ? 4 : 3;
-
-    const ProgressBar = () => (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '8px',
-            marginBottom: spacing.lg
-        }}>
-            {Array.from({ length: maxSteps }, (_, i) => (
-                <div
-                    key={i}
-                    style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%',
-                        backgroundColor: step >= i + 1 ? colors.primary : colors.gray.lighter,
-                        transition: 'background-color 0.3s ease'
-                    }}
-                />
-            ))}
-        </div>
-    );
-
     const ImageUpload = () => (
         <div style={inputStyles.container}>
-            <label style={inputStyles.label}>Profile Picture</label>
+            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Profile Picture</label>
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -166,292 +139,240 @@ function Register() {
         </div>
     );
 
-    // Step content components
-    const StepOne = () => (
-        <>
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Email</label>
-                <input
-                    style={inputStyles.input}
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your email"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
+    const renderStep = () => {
+        switch (step) {
+            case 1:
+                return (
+                    <div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Email</label>
+                            <input
+                                style={inputStyles.input}
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                placeholder="Enter your email"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Password</label>
-                <input
-                    style={inputStyles.input}
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    placeholder="Create a password"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
-        </>
-    );
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Password</label>
+                            <input
+                                style={inputStyles.input}
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="Create a password"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
 
-    const StepTwo = () => (
-        <>
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>First Name</label>
-                <input
-                    style={inputStyles.input}
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your first name"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Confirm Password</label>
+                            <input
+                                style={inputStyles.input}
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                placeholder="Confirm your password"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                    </div>
+                );
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Last Name</label>
-                <input
-                    style={inputStyles.input}
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your last name"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
+            case 2:
+                return (
+                    <div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Gender</label>
+                            <select
+                                style={{
+                                    ...inputStyles.input,
+                                    backgroundColor: colors.gray.lighter,
+                                    height: '52px', // Increased height
+                                }}
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}
+                                required
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            >
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="non-binary">Non-binary</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Gender</label>
-                <select
-                    style={{
-                        ...inputStyles.input,
-                        backgroundColor: colors.gray.lighter,
-                        height: '40px',
-                        padding: '8px 12px' // special dimensions for dropdown
-                    }}
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    required
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Sexual Orientation</label>
+                            <select
+                                style={{
+                                    ...inputStyles.input,
+                                    height: '52px', // Increased height
+                                }}
+                                value={orientation}
+                                onChange={(e) => setOrientation(e.target.value)}
+                                required
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            >
+                                <option value="">Select orientation</option>
+                                <option value="straight">Straight</option>
+                                <option value="gay">Gay</option>
+                                <option value="lesbian">Lesbian</option>
+                                <option value="bisexual">Bisexual</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Sexual Orientation</label>
-                <select
-                    style={{
-                        ...inputStyles.input,
-                        backgroundColor: colors.gray.lighter,
-                        height: '40px',
-                        padding: '8px 12px'
-                    }}
-                    name="sexualOrientation"
-                    value={formData.sexualOrientation}
-                    onChange={handleChange}
-                    required
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                >
-                    <option value="">Select orientation</option>
-                    <option value="straight">Straight</option>
-                    <option value="gay">Gay</option>
-                    <option value="lesbian">Lesbian</option>
-                    <option value="bisexual">Bisexual</option>
-                    <option value="asexual">Asexual</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Height (cm)</label>
+                            <input
+                                style={inputStyles.input}
+                                type="number"
+                                value={height}
+                                onChange={(e) => setHeight(e.target.value)}
+                                required
+                                placeholder="Enter your height"
+                                min="100"
+                                max="250"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Pronouns</label>
-                <input
-                    style={inputStyles.input}
-                    type="text"
-                    name="pronouns"
-                    value={formData.pronouns}
-                    onChange={handleChange}
-                    required
-                    min="100"
-                    max="250"
-                    placeholder="Enter your pronouns"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Occupation</label>
+                            <input
+                                style={inputStyles.input}
+                                type="text"
+                                value={occupation}
+                                onChange={(e) => setOccupation(e.target.value)}
+                                required
+                                placeholder="Enter your occupation"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Height (cm)</label>
-                <input
-                    style={inputStyles.input}
-                    type="number"
-                    name="height"
-                    value={formData.height}
-                    onChange={handleChange}
-                    required
-                    min="100"
-                    max="250"
-                    placeholder="Enter your height in cm"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Birthday</label>
+                            <input
+                                style={inputStyles.input}
+                                type="date"
+                                value={birthday}
+                                onChange={(e) => setBirthday(e.target.value)}
+                                required
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                    </div>
+                );
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Occupation</label>
-                <input
-                    style={inputStyles.input}
-                    type="text"
-                    name="occupation"
-                    value={formData.occupation}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your occupation"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
-        </>
-    );
+            case 3:
+                return (
+                    <div>
+                        <ImageUpload />
 
-    const StepThree = () => (
-        <>
-            <ImageUpload />
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Bio</label>
+                            <textarea
+                                style={{
+                                    ...inputStyles.input,
+                                    backgroundColor: colors.gray.lighter,
+                                    minHeight: '150px',
+                                    resize: 'vertical'
+                                }}
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                required
+                                placeholder="Tell us about yourself"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                    </div>
+                );
 
-            <div style={inputStyles.container}>
-                <label style={inputStyles.label}>Bio</label>
-                <textarea
-                    style={{
-                        ...inputStyles.input,
-                        backgroundColor: colors.gray.lighter,
-                        minHeight: '150px',
-                        padding: '8px 12px',
-                        resize: 'vertical'
-                    }}
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleChange}
-                    required
-                    placeholder="Tell us about yourself"
-                    onFocus={(e) => {
-                        e.target.style.backgroundColor = colors.white;
-                        e.target.style.borderColor = colors.gray.border;
-                    }}
-                    onBlur={(e) => {
-                        e.target.style.backgroundColor = colors.gray.lighter;
-                    }}
-                />
-            </div>
-        </>
-    );
+            case 4:
+                return (
+                    <div>
+                        {[0, 1, 2].map((index) => (
+                            <div key={index} style={inputStyles.container}>
+                                <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Referral Email {index + 1}</label>
+                                <input
+                                    style={inputStyles.input}
+                                    type="email"
+                                    value={referralEmails[index]}
+                                    onChange={(e) => {
+                                        const newEmails = [...referralEmails];
+                                        newEmails[index] = e.target.value;
+                                        setReferralEmails(newEmails);
+                                    }}
+                                    required
+                                    placeholder={`Enter referral email ${index + 1}`}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                );
 
-    const StepReferrals = () => (
-        <>
+            default:
+                return null;
+        }
+    };
+
+    const renderVerification = () => (
+        <div style={{
+            textAlign: 'center',
+            padding: spacing.xl
+        }}>
             <div style={{
-                subheadingStyles,
-                marginBottom: spacing.md,
-            }}>
-                Please provide 3 email addresses for referrals
-            </div>
-            {[0, 1, 2].map((index) => (
-                <div key={index} style={inputStyles.container}>
-                    <label style={inputStyles.label}>Referral Email {index + 1}</label>
-                    <input
-                        style={{
-                            ...inputStyles.input,
-                            backgroundColor: colors.gray.lighter,
-                            height: '40px',
-                            padding: '8px 12px'
-                        }}
-                        type="email"
-                        value={formData.referralEmails[index]}
-                        onChange={(e) => {
-                            const newEmails = [...formData.referralEmails];
-                            newEmails[index] = e.target.value;
-                            setFormData(prev => ({
-                                ...prev,
-                                referralEmails: newEmails
-                            }));
-                        }}
-                        required
-                        placeholder="Enter referral email"
-                        onFocus={(e) => {
-                            e.target.style.backgroundColor = colors.white;
-                            e.target.style.borderColor = colors.gray.border;
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.backgroundColor = colors.gray.lighter;
-                        }}
-                    />
-                </div>
-            ))}
-        </>
+                width: '60px',
+                height: '60px',
+                margin: '0 auto',
+                border: `4px solid ${colors.gray.lighter}`,
+                borderTopColor: colors.primary,
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+            }} />
+            <h2 style={titleStyles}>Verifying Your Information</h2>
+            <p style={subheadingStyles}>
+                Please wait while we process your registration.
+                You will be redirected to the login page shortly.
+            </p>
+            <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+        </div>
     );
+
+    if (isVerifying) {
+        return (
+            <div style={cardStyles.container}>
+                <div style={logoStyles.container}>
+                    <img src={logo} alt="Heart icon" style={logoStyles.image} />
+                </div>
+                {renderVerification()}
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -464,71 +385,31 @@ function Register() {
         }}>
             {/* Logo Section */}
             <div style={logoStyles.container}>
-                <img
-                    src={logo}
-                    alt="Heart icon"
-                    style={logoStyles.image}
-                />
+                <img src={logo} alt="Heart icon" style={logoStyles.image} />
             </div>
 
             {/* Content Container */}
             <div style={contentContainerStyles.container}>
                 {/* Header Section */}
                 <div style={contentContainerStyles.header}>
-                    <h1 style={titleStyles}> Create Account </h1>
-                    <ProgressBar />
+                    <h1 style={titleStyles}>Create Your Account</h1>
                     <p style={subheadingStyles}>
                         {step === 1 && 'Step 1: Account Details'}
                         {step === 2 && 'Step 2: Personal Information'}
-                        {step === 3 && 'Step 3: About You'}
-                        {step === 4 && 'Step 4: Referrals'}
+                        {step === 3 && 'Step 3: Profile Details'}
+                        {step === 4 && gender === 'male' && 'Step 4: Referrals'}
                     </p>
                 </div>
 
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    marginBottom: spacing.lg
-                }}>
-                    {Array.from({ length: formData.gender === 'male' ? 4 : 3 }, (_, i) => (
-                        <div
-                            key={i}
-                            style={{
-                                width: '8px',
-                                height: '8px',
-                                borderRadius: '50%',
-                                backgroundColor: step >= i + 1 ? colors.primary : colors.gray.lighter,
-                                transition: 'background-color 0.3s ease'
-                            }}
-                        />
-                    ))}
-                </div>
-
                 {/* Form Section */}
-                <form
-                    style={formStyles}
-                    onSubmit={
-                        (formData.gender === 'male' ? step === 4 : step === 3)
-                            ? handleSubmit
-                            : (e) => e.preventDefault()
-                    }
-                >
-                    {step === 1 && <StepOne />}
-                    {step === 2 && <StepTwo />}
-                    {step === 3 && <StepThree />}
-                    {step === 4 && formData.gender === 'male' && <StepReferrals />}
+                <form style={formStyles} onSubmit={handleSubmit}>
+                    {renderStep()}
 
-                    {/* Navigation Buttons */}
-                    <div style={{
-                        display: 'flex',
-                        gap: spacing.md,
-                        marginTop: spacing.md
-                    }}>
+                    <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
                         {step > 1 && (
                             <button
                                 type="button"
-                                onClick={prevStep}
+                                onClick={handleBack}
                                 style={{
                                     ...buttonStyles.base,
                                     flex: 1,
@@ -539,10 +420,10 @@ function Register() {
                                 Back
                             </button>
                         )}
-                        {(step < 3 || (formData.gender === 'male' && step === 3)) ? (
+                        {((step < 3) || (gender === 'male' && step === 3)) ? (
                             <button
                                 type="button"
-                                onClick={nextStep}
+                                onClick={handleNext}
                                 style={{
                                     ...buttonStyles.base,
                                     flex: 1
@@ -565,14 +446,13 @@ function Register() {
                     </div>
                 </form>
 
-                {/* Login Link - Only show on first step */}
+                {/* Login Link */}
                 {step === 1 && (
                     <p style={linkStyles.nonLink}>
                         Already have an account?{' '}
-                        <Link to="/login" style={linkStyles.link}>
-                            Sign in here
-                        </Link>
-                    </p>)}
+                        <Link to="/login" style={linkStyles.link}>Sign in here</Link>
+                    </p>
+                )}
             </div>
         </div>
     );
