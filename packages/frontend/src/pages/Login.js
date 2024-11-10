@@ -8,7 +8,7 @@ import logo from '../assets/images/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); // Add this hook
@@ -19,7 +19,7 @@ function Login() {
 
     InitDefaultCredibleCupidClient(null);
     let apiInstance = new CredibleCupid.AuthApi();
-    let loginRequest = new CredibleCupid.LoginRequest(username, password);
+    let loginRequest = new CredibleCupid.LoginRequest(email, password);
 
     apiInstance.authLogin(loginRequest, (error, data, response) => {
       if (error) {
@@ -73,23 +73,22 @@ function Login() {
           style={formStyles}
           onSubmit={handleSubmit}
         >
-          {/* Username Input */}
+          {/* Email Input */}
           <div style={inputStyles.container}>
-            <label style={inputStyles.label}>
-              Username
-            </label>
+            <label style={inputStyles.label}>Email</label>
             <input
               style={inputStyles.input}
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               onFocus={(e) => {
                 e.target.style.backgroundColor = colors.white;
                 e.target.style.borderColor = colors.gray.border;
               }}
               onBlur={(e) => {
+                console.log("onblur")
                 e.target.style.backgroundColor = colors.gray.lighter;
               }}
             />
