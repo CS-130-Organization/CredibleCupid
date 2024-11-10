@@ -4,32 +4,23 @@ import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
 import styled from '@emotion/styled';
-import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
+import { User, Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import logo from '../assets/images/logo.png';
+import { colors, spacing } from '../styles/theme';
+import { 
+  buttonStyles,
+  inputStyles,
+  cardStyles, 
+  imageStyles, 
+  badgeStyles, 
+  contentStyles,
+  tagStyles,
+  textStyles,
+  detailStyles,
+  scoreStyles
+} from '../styles/commonStyles';
 
-const colors = {
-  green: {
-    light: '#22c55e',
-    dark: '#16a34a'
-  },
-  red: {
-    light: '#ef4444'
-  },
-  gray: {
-    light: '#f8f9fa',
-    lighter: '#f3f4f6',
-    border: '#D1D5DB',
-    text: '#374151'
-  },
-  white: '#ffffff',
-  black: {
-    opacity10: 'rgba(0, 0, 0, 0.1)',
-  },
-  overlay: {
-    white: 'rgba(255, 255, 255, 0.9)'
-  }
-};
 
 const styles = {
   container: {
@@ -99,19 +90,6 @@ const styles = {
     textAlign: 'left',
     alignSelf: 'flex-start', 
     marginBottom: '4px', 
-
-    // backgroundColor: colors.green.light,
-    // color: colors.white,
-    // padding: '16px 24px',
-    // borderRadius: '12px',
-    // border: 'none',
-    // fontWeight: '600',
-    // cursor: 'pointer',
-    // transition: 'all 0.2s ease',
-    // fontSize: '16px',
-    // width: '100%',
-    // marginTop: '12px',
-    // boxShadow: `0 2px 8px ${colors.black.opacity10}`,
     
   },
   input: {
@@ -227,8 +205,8 @@ const Profile = ({
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
 
    // For interests
-   const [interests, setInterests] = useState([]); // List of interests
-   const [currentInterest, setCurrentInterest] = useState(''); // Current input
+  //  const [interests, setInterests] = useState([]); // List of interests
+  //  const [currentInterest, setCurrentInterest] = useState(''); // Current input
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
@@ -246,6 +224,7 @@ const Profile = ({
           setTokenRefreshed(true); // Set to true so this only runs once
         }
       });
+      handleFetchOwnProfile();
     } else if (!jwtToken) {
       console.error("JWT token not found. Redirecting to login.");
       navigate("/login");
@@ -268,7 +247,9 @@ const Profile = ({
       height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
       occupation: "Dummy occupation",
       education: "Dummy education",
-      location: "Dummy location"
+      location: "Dummy location",
+      verified: true,
+      // verified: True,
     };
     
     // Set dummy data to mimic API response
@@ -277,6 +258,9 @@ const Profile = ({
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
+    if (!birthdayMs || isNaN(birthdayMs)) {
+      return "Age not provided"; // or return a fallback value if preferred
+    }
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -328,7 +312,10 @@ const Profile = ({
         console.log("Successfully fetched profile");
         // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
         const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        // const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+        const formattedBirthday = (birthdayDate instanceof Date && !isNaN(birthdayDate))
+        ? birthdayDate.toISOString().split('T')[0]
+        : ""; // Set to empty or null if invalid
 
         // Add date_of_birth to the data object
         const updatedUserData = {
@@ -396,48 +383,42 @@ const Profile = ({
 
 
 
-  const inputRef = useRef(null);
-  const handleInterestKeyDown = (e) => {
-    if (e.key === ' '|| e.key === 'Enter') {
-      e.preventDefault();
-      if (currentInterest.trim()) {
-        setInterests([...interests, currentInterest.trim()]);
-        setCurrentInterest(''); // Clear the input
-      }
-      console.log(interests)
-    }else{
-      console.log("KEY PRESSED")
-    }
-  };
+  // const inputRef = useRef(null);
+  // const handleInterestKeyDown = (e) => {
+  //   if (e.key === ' '|| e.key === 'Enter') {
+  //     e.preventDefault();
+  //     if (currentInterest.trim()) {
+  //       setInterests([...interests, currentInterest.trim()]);
+  //       setCurrentInterest(''); // Clear the input
+  //     }
+  //     console.log(interests)
+  //   }else{
+  //     console.log("KEY PRESSED")
+  //   }
+  // };
 
-  const handleInterestDelete = (interestToDelete) => {
-    setInterests(interests.filter(interest => interest !== interestToDelete));
-  };
+  // const handleInterestDelete = (interestToDelete) => {
+  //   setInterests(interests.filter(interest => interest !== interestToDelete));
+  // };
 
 
   if (!userData) return <div>Loading...</div>;
 
-  // const ProfileContainer = styled(Paper)({
-  //   maxWidth: '600px',
-  //   margin: '20px auto',
-  //   padding: '20px',
-  //   // borderRadius: '10px',
-  // });
 
-  const ProfileContainer = styled('div')({
-    ...styles.container,
-    // maxWidth: '600px',
-    margin: 'auto',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  });
+  // const ProfileContainer = styled('div')({
+  //   ...styles.container,
+  //   // maxWidth: '600px',
+  //   margin: 'auto',
+  //   padding: '20px',
+  //   display: 'flex',
+  //   flexDirection: 'column',
+  //   alignItems: 'flex-start',
+  // });
 
   return (
     <div className="profile-page">
-      <p>Profile</p>
-      <br></br>
+      {/* <p>Profile</p> */}
+      {/* <br></br> */}
       {/* Fetching your own profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
 
       <button onClick={handleFetchOwnProfile}>{"My Profile"}</button>
@@ -447,7 +428,12 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-        <ProfileContainer>
+        {/* <ProfileContainer> */}
+          
+
+          
+        <div style={styles.loginBox}>
+          <form style={styles.form} onSubmit={handleUpdateProfile}>
           <button 
           style={styles.button}
           type="button" 
@@ -463,10 +449,6 @@ const Profile = ({
             e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
           }}
           >Done Editing</button>
-
-          
-        <div style={styles.loginBox}>
-          <form style={styles.form} onSubmit={handleUpdateProfile}>
             <div style={styles.inputGroup}>
                 <label style={styles.label}>
                   Email:
@@ -735,8 +717,8 @@ const Profile = ({
 
           </form>
         </div>
-        </ProfileContainer>
-        <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
+        {/* </ProfileContainer> */}
+        {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
           <Box display="flex" flexWrap="wrap" gap={1} my={2}>
             {interests.map((interest, index) => (
@@ -754,57 +736,143 @@ const Profile = ({
               onChange={(e) => setCurrentInterest(e.target.value)}
               onKeyDown={handleInterestKeyDown}
             />
-          </Box>
+          </Box> */}
       </>
       ) : (
         <>
-          <ProfileContainer>
-              <Avatar
-                alt="Profile Picture"
-                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                sx={{
-                  width: '100%',       // Change to max-width: 100%
-                  maxWidth: 390,
-                  height: 300,
-                  marginBottom: 2,
-                  marginTop: 2,
-                  borderRadius: 2, // This makes the image rectangular
-                }}
-              />
-              <div style={styles.verifiedBadge}>
-                <Verified size={16} />
-                <span>Verified</span>
-              </div>
-              {/* <div style={styles.infoSection}> */}
-                <div style={styles.header}>
-                  <h2 style={styles.nameAgeGender}>
-                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
-                    </h2>
-                  <div style={styles.getScoreStyle(credibilityScore)}>
-                    <Star size={16} />
-                    <span>{credibilityScore}%</span>
-                  </div>
-                </div>
-                  <p style={styles.subtitle}>{userData?.email || "Email"}</p>
-                  <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
-                  {/* <p style={styles.subtitle}>Instagram: @example</p>                  */}
-              {/* </div> */}
-              <div style={styles.detailsContainer}>
-                {userData?.occupation && (<div style={styles.detailRow}>
-                  <Briefcase size={20} color={colors.darkGray} />
-                  <span>{userData?.occupation}</span>
-                </div>)}
-                {userData?.education && (<div style={styles.detailRow}>
-                  <GraduationCap size={20} color={colors.darkGray} />
-                  <span>{userData?.education}</span>
-                </div>)}
-                {userData?.location && (<div style={styles.detailRow}>
-                  <MapPin size={20} color={colors.darkGray} />
-                  <span>{userData?.location}</span>
-                </div>)}
-              </div>
-              {isOwner ? (
+          <div style={{
+            width: '390px',
+            // height: '844px',
+            backgroundColor: colors.white,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            {/* Profile Image Section */}
 
+            <div style={{
+              width: '300px', // Smaller logo
+              height: '300px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: '60px' // Push down from top
+            }}>
+              {userData.image ? (
+                <img
+                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  alt={`${userData.first_name}'s profile`}
+                  // style={imageStyles.image}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    opacity: 0.9,
+                    borderRadius: 10
+                  }}
+                  />
+              ) : (
+                <img
+                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  alt={`${userData.first_name}'s profile`}
+                  // style={imageStyles.image}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    opacity: 0.9,
+                    borderRadius: 10
+                  }}
+                  />
+              )}
+              {
+                <div style={badgeStyles.verified}>
+                  <Verified size={16} />
+                  <span>Verified</span>
+                </div>
+              }
+
+            </div>
+
+            {/* Content Container */}
+            <div style={{
+              width: '100%',
+              padding: '0 spacing.xl',
+              maxWidth: '350px', // Constrain width of form
+              marginTop: spacing.xl
+            }}>
+              {/* Header Section */}
+              <div style={{
+                textAlign: 'left',
+                marginBottom: spacing.xl
+              }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: spacing.md
+                  }}>
+                    <div>
+                        <h1 style={{
+                          fontSize: '30px',
+                          fontWeight: '600',
+                          color: colors.gray.text,
+                          margin: `0 0 ${spacing.xs} 0`
+                        }}>
+                        {userData.first_name} {userData.last_name}
+                        </h1>
+                        {/* <p style={{
+                          fontSize: '16px',
+                          color: colors.gray.text,
+                          opacity: 0.7,
+                          margin: 0
+                        }}>
+                          <User size={20} color={colors.darkGray} />
+                          {userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}
+                        </p> */}
+
+                        {userData?.gender && userData?.birthday_ms_since_epoch && (<div style={{
+                          fontSize: '16px',
+                          color: colors.gray.text,
+                          opacity: 0.7,
+                          margin: 0
+                        }}>
+                          <User size={20} color={colors.darkGray} />
+                          <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}                          </span>
+                        </div>)}
+                        {userData?.location && (<div style={{
+                          fontSize: '16px',
+                          color: colors.gray.text,
+                          opacity: 0.7,
+                          margin: 0
+                        }}>
+                          <MapPin size={20} color={colors.darkGray} />
+                          <span> {userData?.location}</span>
+                        </div>)}
+                    </div>
+
+
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: spacing.xs,
+                      padding: `${spacing.xs} ${spacing.md}`,
+                      borderRadius: spacing.md,
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
+                      color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                    }}>
+                      <Star size={16} />
+                      <span>{credibilityScore}%</span>
+                    </div>                  
+                </div>
+                
+              </div>
+              {isOwner && (
                   <button 
                   style={styles.button}
                   type="submit"
@@ -825,6 +893,262 @@ const Profile = ({
                   >
                     Edit Profile
                   </button>
+              )}
+
+              {/* Form Section */}
+              <div 
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: spacing.lg
+                }}
+                // onSubmit={handleSubmit}
+              >
+                {/* Bio */}
+                <div style={inputStyles.container}>
+                  <label style={inputStyles.label}>
+                    About Me
+                  </label>
+                  <div>
+                  <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
+                  </div>
+                  {userData?.height_mm && (<div style={{
+                    fontSize: '16px',
+                    color: colors.gray.text,
+                    opacity: 0.7,
+                    margin: 0
+                  }}>
+                    <Ruler size={20} color={colors.darkGray} />
+                    <span> {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}</span>
+                  </div>)}
+                  {userData?.occupation && (<div style={{
+                    fontSize: '16px',
+                    color: colors.gray.text,
+                    opacity: 0.7,
+                    margin: 0
+                  }}>
+                    <Briefcase size={20} color={colors.darkGray} />
+                    <span> {userData?.occupation}</span>
+                  </div>)}
+                  {userData?.education && (<div style={{
+                    fontSize: '16px',
+                    color: colors.gray.text,
+                    opacity: 0.7,
+                    margin: 0
+                  }}>
+                    <GraduationCap size={20} color={colors.darkGray} />
+                    <span> {userData?.education}</span>
+                  </div>)}
+                </div>
+                {/* Details */}
+                <div style={inputStyles.container}>
+                  {/* <label style={inputStyles.label}>
+                    Details
+                  </label> */}
+                  <div>
+                    {/* <p style={detailStyles.row}>Gender: {userData?.gender}</p> */}
+                    {/* <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p> */}
+                    {/* <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p> */}
+                    {/* <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p> */}
+                    {/* <p style={styles.subtitle}>
+                      Height: {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}"
+                    </p> */}
+                    
+                  </div>
+                </div>
+                {/* Referrals */}
+                <div style={inputStyles.container}>
+                  <label style={inputStyles.label}>
+                  Referrals
+                  </label>
+                  <div>
+                    <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                    <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                    <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                  </div>
+                </div>
+                <form onSubmit={handleFetchProfile}>
+                  <div>
+                    <label htmlFor="guid">GUID:</label>
+                    <input
+                      type="text"
+                      id="guid"
+                      value={guid}
+                      onChange={(e) => setGuid(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit">Fetch Profile</button>
+                </form>
+
+
+              </div>
+            </div>
+          </div>
+
+
+
+        {/* <div style={cardStyles.container}>
+          <div style={cardStyles.content}>
+            <div style={imageStyles.section}>
+            {userData.image ? (
+              <img
+                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                alt={`${userData.first_name}'s profile`}
+                style={imageStyles.image}
+                // onError={() => setImageError(true)}
+              />
+            ) : (
+              <div style={imageStyles.placeholder}>
+                No image available
+              </div>
+            )}
+            {userData.verified && (
+              <div style={badgeStyles.verified}>
+                <Verified size={16} />
+                <span>Verified</span>
+              </div>
+            )}
+            </div>
+
+
+              <div style={contentStyles.header}>
+                <h2 style={contentStyles.title}>
+                {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}{userData?.gender ? ` ${userData?.gender}` : ''} 
+                  </h2>
+                <div style={scoreStyles.tag(credibilityScore)}>
+                  <Star size={16} />
+                  <span>{credibilityScore}%</span>
+                </div>
+              </div>
+              <p style={styles.subtitle}>{userData?.email || "Email"}</p>
+              <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
+
+                {userData?.occupation && (<div style={detailStyles.row}>
+                  <Briefcase size={20} color={colors.darkGray} />
+                  <span>{userData?.occupation}</span>
+                </div>)}
+                {userData?.education && (<div style={detailStyles.row}>
+                  <GraduationCap size={20} color={colors.darkGray} />
+                  <span>{userData?.education}</span>
+                </div>)}
+                {userData?.location && (<div style={detailStyles.row}>
+                  <MapPin size={20} color={colors.darkGray} />
+                  <span>{userData?.location}</span>
+                </div>)}
+
+                {isOwner && (
+                  <button 
+                  style={styles.button}
+                  type="submit"
+
+                  onClick={() => setIsEditing(true)} 
+                  onMouseOver={(e) => {
+
+                      e.currentTarget.style.backgroundColor = colors.green.dark;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.green.light;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                  }}
+                  >
+                    Edit Profile
+                  </button>
+                  )}
+                  
+
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+              <label style={styles.label}>Bio</label>
+              <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
+            </Box>
+
+
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+            <label style={inputStyles.label}>Details</label>
+              <p style={detailStyles.row}>Gender: {userData?.gender}</p>
+              <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
+              <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
+              <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
+            </Box>
+            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
+              <label style={inputStyles.label}>Referrals</label>
+              <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+              <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+            </Box>
+
+          </div>
+        </div> */}
+          {/* <ProfileContainer> */}
+              {/* <Avatar
+                alt="Profile Picture"
+                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                sx={{
+                  width: '100%',       // Change to max-width: 100%
+                  maxWidth: 390,
+                  height: 300,
+                  marginBottom: 2,
+                  marginTop: 2,
+                  borderRadius: 2, // This makes the image rectangular
+                }}
+              />
+              <div style={styles.verifiedBadge}>
+                <Verified size={16} />
+                <span>Verified</span>
+              </div> */}
+{/* 
+                <div style={contentStyles.header}>
+                  <h2 style={contentStyles.title}>
+                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}{userData?.gender ? ` ${userData?.gender}` : ''} 
+                    </h2>
+                  <div style={scoreStyles.tag(credibilityScore)}>
+                    <Star size={16} />
+                    <span>{credibilityScore}%</span>
+                  </div>
+                </div>
+                  <p style={styles.subtitle}>{userData?.email || "Email"}</p>
+                  <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
+
+              <div style={styles.detailsContainer}>
+                {userData?.occupation && (<div style={styles.detailRow}>
+                  <Briefcase size={20} color={colors.darkGray} />
+                  <span>{userData?.occupation}</span>
+                </div>)}
+                {userData?.education && (<div style={styles.detailRow}>
+                  <GraduationCap size={20} color={colors.darkGray} />
+                  <span>{userData?.education}</span>
+                </div>)}
+                {userData?.location && (<div style={styles.detailRow}>
+                  <MapPin size={20} color={colors.darkGray} />
+                  <span>{userData?.location}</span>
+                </div>)}
+              </div>
+              {isOwner ? (
+
+                  <button 
+                  style={styles.button}
+                  type="submit"
+
+                  onClick={() => setIsEditing(true)} 
+                  onMouseOver={(e) => {
+
+                      e.currentTarget.style.backgroundColor = colors.green.dark;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.green.light;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                  }}
+                  >
+                    Edit Profile
+                  </button>
               ) : (
                 <>
                 </>
@@ -835,13 +1159,6 @@ const Profile = ({
                 <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
               </Box>
 
-              {interests.length > 0 && (
-                <div style={styles.tagsContainer}>
-                  {interests.map((interest, index) => (
-                    <span key={index} style={styles.tag}>{interest}</span>
-                  ))}
-                </div>
-              )}
 
               <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
                 <label style={styles.label}>Details</label>
@@ -856,27 +1173,15 @@ const Profile = ({
                 <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                 <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                 <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              </Box>
-          </ProfileContainer>
+              </Box> */}
+          {/* </ProfileContainer> */}
         </>
       )}
       <br></br>
       <br></br>
       <br></br>
       {/* Fetching profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
-      <form onSubmit={handleFetchProfile}>
-        <div>
-          <label htmlFor="guid">GUID:</label>
-          <input
-            type="text"
-            id="guid"
-            value={guid}
-            onChange={(e) => setGuid(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Fetch Profile</button>
-      </form>
+
     </div>
   );
 };
