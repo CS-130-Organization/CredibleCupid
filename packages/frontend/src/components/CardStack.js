@@ -100,7 +100,6 @@ const CardStack = () => {
           setMatchGuids(userGuids);
           // Load first two profiles initially for smooth transition
           if (userGuids.length > 0) {
-            console.log("first guid match = ", userGuids[0])
             loadProfile(userGuids[0]);
             if (userGuids.length > 1) {
               loadProfile(userGuids[1]);
@@ -123,19 +122,8 @@ const CardStack = () => {
   }, []);
 
   const loadProfile = async (guid) => {
+    // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
-    // try {
-
-    //   matchmakerApi.likeUser(guid, (error, data, response) => {
-    //     if (error) {
-    //       console.error("MATHMKAER DID NOT WORK error");
-    //     } else {
-    //       console.log('API called successfully. Returned data: ' + data.guid, data.matched);
-    //     }
-    //   });
-    // } catch {
-    //     console.log("failed to like user: ", guid)
-    // }
 
     try {
       userApi.queryUser(guid, (error, data) => {
@@ -144,11 +132,11 @@ const CardStack = () => {
         } else {
           const age = calculateAge(data.birthday_ms_since_epoch);
 
-          setLoadedProfiles(prev => [...prev, {
+          setLoadedProfiles(prev => [...prev, { // only include vars if they exist
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
             } : {}),
-            ...(age ? { age } : {}),  // Only include age if it exists
+            ...(age ? { age } : {}),  
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
             ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
@@ -156,7 +144,6 @@ const CardStack = () => {
             ...(data.education ? { education: data.education } : {}),
             ...(data.location ? { location: data.location } : {}),
             ...(data.interests ? { interests: data.interests } : {}),
-            ...(data.verified !== undefined ? { verified: data.verified } : {}),
             ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
             guid: guid
           }]);

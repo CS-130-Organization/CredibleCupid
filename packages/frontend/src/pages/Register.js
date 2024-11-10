@@ -197,7 +197,7 @@ function Register() {
                                 style={{
                                     ...inputStyles.input,
                                     backgroundColor: colors.gray.lighter,
-                                    height: '52px', // Increased height
+                                    height: '52px', // Increased height for dropdown menu
                                 }}
                                 value={gender}
                                 onChange={(e) => setGender(e.target.value)}
@@ -218,7 +218,7 @@ function Register() {
                             <select
                                 style={{
                                     ...inputStyles.input,
-                                    height: '52px', // Increased height
+                                    height: '52px', // Increased height for dropdown menu
                                 }}
                                 value={orientation}
                                 onChange={(e) => setOrientation(e.target.value)}
@@ -241,9 +241,9 @@ function Register() {
                                 style={inputStyles.input}
                                 type="number"
                                 value={height}
-                                onChange={(e) => setHeight(e.target.value)}
+                                onChange={(e) => setHeight(e.target.value * 10)} // convert to mm
                                 required
-                                placeholder="Enter your height"
+                                placeholder="Enter your height (cm)"
                                 min="100"
                                 max="250"
                                 onFocus={handleFocus}
@@ -270,8 +270,12 @@ function Register() {
                             <input
                                 style={inputStyles.input}
                                 type="date"
-                                value={birthday}
-                                onChange={(e) => setBirthday(e.target.value)}
+                                value={birthday ? new Date(birthday).toISOString().split('T')[0] : ''}
+                                onChange={(e) => {
+                                    console.log(e.target.value)
+                                    const dateValue = new Date(e.target.value); 
+                                    setBirthday(dateValue.getTime()); // Convert to milliseconds
+                                }}
                                 required
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
