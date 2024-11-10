@@ -4,7 +4,7 @@ import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 // import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
 // import styled from '@emotion/styled';
-import { User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 // import logo from '../assets/images/logo.png';
 import { colors, spacing } from '../styles/theme';
@@ -194,14 +194,14 @@ const Profile = ({
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // user uploads when pressing save or on every change?
 
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
 
-   // For interests
-  //  const [interests, setInterests] = useState([]); // List of interests
-  //  const [currentInterest, setCurrentInterest] = useState(''); // Current input
+  // const [heightFeet, setHeightFeet] = useState(userData?.height_mm ? Math.floor(userData.height_mm / 25.4 / 12) : 0);
+  // const [heightInches, setHeightInches] = useState(userData?.height_mm ? Math.round((userData.height_mm / 25.4) % 12) : 0);
+  
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
@@ -221,8 +221,14 @@ const Profile = ({
             ? birthdayDate.toISOString().split('T')[0]
             : "";
 
-          const updatedUserData = { ...data, date_of_birth: formattedBirthday };
+          const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
+          const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
+            
+
+          const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
           setUserData(updatedUserData);
+
+
 
           apiInstance.profilePicUser(guid, (error, data, response) => {
             if (error) {
@@ -315,11 +321,16 @@ const Profile = ({
         const birthdayDate = new Date(data.birthday_ms_since_epoch);
         const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
+        const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
+        const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
+          
+
         // Add date_of_birth to the data object
-        const updatedUserData = {
-          ...data,
-          date_of_birth: formattedBirthday,
-        };
+        const updatedUserData = { 
+          ...data, date_of_birth: formattedBirthday, 
+          height_ft: heightFeet, 
+          height_in: heightInches };
+
 
         // Update userData with the new data
           setUserData(updatedUserData);
@@ -327,35 +338,47 @@ const Profile = ({
     });
   };
 
-  const handleFetchOwnProfile = () => {
-    setIsOwner(true);
-    // setError(''); // Clear any previous errors
+  // const handleFetchOwnProfile = () => {
+  //   setIsOwner(true);
+  //   // setError(''); // Clear any previous errors
 
-    const apiInstance = new CredibleCupid.UserApi();
-    apiInstance.queryUser(userGuid, (error, data) => {
-      if (error) {
-        console.error(error);
-        // setError("Failed to fetch profile.");
-      } else {
-        console.log("Successfully fetched profile");
-        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-        const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        // const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-        const formattedBirthday = (birthdayDate instanceof Date && !isNaN(birthdayDate))
-        ? birthdayDate.toISOString().split('T')[0]
-        : ""; // Set to empty or null if invalid
+  //   const apiInstance = new CredibleCupid.UserApi();
+  //   apiInstance.queryUser(userGuid, (error, data) => {
+  //     if (error) {
+  //       console.error(error);
+  //       // setError("Failed to fetch profile.");
+  //     } else {
+  //       console.log("Successfully fetched profile");
+  //       // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
+  //       const birthdayDate = new Date(data.birthday_ms_since_epoch);
+  //       // const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  //       const formattedBirthday = (birthdayDate instanceof Date && !isNaN(birthdayDate))
+  //       ? birthdayDate.toISOString().split('T')[0]
+  //       : ""; // Set to empty or null if invalid
 
-        // Add date_of_birth to the data object
-        const updatedUserData = {
-          ...data,
-          date_of_birth: formattedBirthday,
-        };
+  //       // Add date_of_birth to the data object
+  //       const updatedUserData = {
+  //         ...data,
+  //         date_of_birth: formattedBirthday,
+  //       };
 
-        // Update userData with the new data
-        setUserData(updatedUserData);
-      }
-    });
-  };
+  //       // Update userData with the new data
+  //       setUserData(updatedUserData);
+  //     }
+  //   });
+  // };
+
+
+
+  // const handleHeightChange = () => {
+  //   const totalInches = parseInt(heightFeet, 10) * 12 + parseInt(heightInches, 10);
+  //   const mmHeight = totalInches * 25.4;
+    
+  //   // Check if userData exists before updating height
+  //   if (userData) {
+  //     setUserData((prevData) => ({ ...prevData, height_mm: mmHeight }));
+  //   }
+  // };
 
   const handleUpdateProfile = (e) => {
     e.preventDefault();
@@ -377,9 +400,19 @@ const Profile = ({
     // Convert date_of_birth to milliseconds since epoch
     const birthdayMs = new Date(userData.date_of_birth).getTime();
     userData.birthday_ms_since_epoch = birthdayMs;
+
+    // convert Height
+    const totalInches = parseInt(userData.height_ft, 10) * 12 + parseInt(userData.height_in, 10);
+    const mmHeight = totalInches * 25.4;
+    
+    // Check if userData exists before updating height
+    // if (userData) {
+    //   setUserData((prevData) => ({ ...prevData, height_mm: mmHeight }));
+    // }
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
+      email: userData.email,
       first_name: userData.first_name,
       last_name: userData.last_name,
       bio: userData.bio,
@@ -387,8 +420,11 @@ const Profile = ({
       pronouns: userData.pronouns,
       sexual_orientation: userData.sexual_orientation,
       // birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
+      date_of_birth: userData.date_of_birth,
       birthday_ms_since_epoch: birthdayMs,
-      height_mm: userData.height_mm,
+      height_mm: mmHeight,
+      height_ft: userData.height_ft,
+      height_in: userData.height_in,
       occupation: userData.occupation,
   };
     console.log(JSON.stringify(userUpdateBioRequest)); // new CredibleCupidApi.UserUpdateBioRequest(); puts the data as an entry in a bio object
@@ -398,7 +434,7 @@ const Profile = ({
         console.error("Failed to update profile:", error);
       } else {
         console.log("Successfully updated bio");
-        setUserData(data); // Update the state with new data
+        setUserData(userUpdateBioRequest); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
     });
@@ -482,13 +518,19 @@ const Profile = ({
             flexDirection: 'column',
             alignItems: 'center'
           }}>
-            <div style={{
+            <div 
+            style={{
               width: '100%',
               padding: '0 spacing.xl',
               maxWidth: '350px', // Constrain width of form
               marginTop: spacing.xl
             }}>
-              <form style={styles.form} onSubmit={handleUpdateProfile}>
+              <form style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '24px',
+              }} onSubmit={handleUpdateProfile}>
                 {/* back button */}
                 <button 
                 style={styles.button}
@@ -508,13 +550,13 @@ const Profile = ({
 
                 {/* Upload Image */}
                 <div style={{
-                width: '300px', // Smaller logo
-                height: '300px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: '60px' // Push down from top
-              }}>
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: '60px' // Push down from top
+                }}>
                 {profilePicUrl ? (
                   <img
                     src={profilePicUrl}
@@ -726,7 +768,13 @@ const Profile = ({
                           />
                       </label>
                   </div>
-                  <div style={styles.inputGroup}>
+                  {/* <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '8px',
+                    width: '100%',
+                    alignItems: 'flex-start', 
+                  }}>
                     <label style={styles.label}>
                       Height (mm):
                       <input
@@ -751,7 +799,79 @@ const Profile = ({
                         }}
                       />
                     </label>
-                  </div>
+                  </div> */}
+                  <div style={{
+                      display: 'flex',
+                      // flexDirection: 'row',
+                      gap: '8px',
+                      width: '50%',
+                      alignItems: 'flex-start', 
+                    }}>
+                    {/* Height */}
+                      <label style={styles.label}>
+                        Height:
+                      
+                    {/* Feet input */}
+                    <div  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          style={{
+                            ...styles.input,
+                            width: '100px', // Adjust width to make it more compact if needed
+                            ':focus': {
+                              borderColor: colors.green.light,
+                              backgroundColor: colors.white,
+                            }
+                          }}
+                          type="number"
+                          name="height_ft"
+                          value={userData.height_ft}
+                          // onChange={(e) => setHeightFeet(e.target.value)}
+                          onChange={handleChange}
+                          // onBlur={handleHeightChange}
+                          placeholder="Feet"
+                          onFocus={(e) => {
+                            e.target.style.borderColor = colors.green.light;
+                            e.target.style.backgroundColor = colors.white;
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = colors.gray.border;
+                            e.target.style.backgroundColor = colors.gray.lighter;
+                          }}
+                        />
+                        <span>ft</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                        style={{
+                          ...styles.input,
+                          width: '100px', // Adjust width as needed
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="number"
+                        name="height_in"
+                        value={userData.height_in}
+                        // onChange={(e) => setHeightInches(e.target.value)}
+                        onChange={handleChange}
+                        // onBlur={handleHeightChange}
+                        placeholder="Inches"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                      <span>in</span>
+                    </div>
+                    </label>
+                        
+                        
+                </div>
 
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>
