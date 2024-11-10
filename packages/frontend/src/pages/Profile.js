@@ -4,7 +4,7 @@ import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 // import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
 // import styled from '@emotion/styled';
-import { Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 // import logo from '../assets/images/logo.png';
 import { colors, spacing } from '../styles/theme';
@@ -982,12 +982,15 @@ const Profile = ({
             {/* Profile Image Section */}
 
             <div style={{
-              width: '300px', // Smaller logo
-              height: '300px',
+              // width: '300px', // Smaller logo
+              // height: '300px',
+              width: '100%',
+              height: '300px', // Adjust height as needed
+              position: 'relative', // Needed for absolute positioning within this div
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginTop: '60px' // Push down from top
+              // marginTop: '60px' // Push down from top
             }}>
               {profilePicUrl ? (
                 <img
@@ -997,9 +1000,10 @@ const Profile = ({
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
+                    // objectFit: 'contain',
+                    objectFit: 'cover', // Adjusts how image scales
                     opacity: 0.9,
-                    borderRadius: 10
+                    borderRadius: 0
                   }}
                   />
               ) : (
@@ -1010,14 +1014,26 @@ const Profile = ({
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
+                    // objectFit: 'contain',
+                    objectFit: 'cover', // Adjusts how image scales
                     opacity: 0.9,
                     borderRadius: 10
                   }}
                   />
               )}
               {
-                <div style={badgeStyles.verified}>
+                <div style={{
+                  position: 'absolute',
+                  top: '10px', // Adjusts distance from top of image
+                  right: '10px', // Adjusts distance from left of image
+                  backgroundColor: colors.primary, // Set background color to make it stand out
+                  color: colors.white,
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}>
                   <Verified size={16} />
                   <span>Verified</span>
                 </div>
@@ -1027,166 +1043,193 @@ const Profile = ({
 
             {/* Content Container */}
             <div style={{
-              width: '100%',
-              padding: '0 spacing.xl',
-              maxWidth: '350px', // Constrain width of form
-              marginTop: spacing.xl
+              // width: '100%',
+              // padding: '0 spacing.xl',
+              // maxWidth: '350px', // Constrain width of form
+              // marginTop: spacing.xl
+              marginTop: '-30px', // Negative margin to overlap the bottom of the image
+              backgroundColor: colors.white,
+              width: '98%',
+              padding: '16px',
+              boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
+              borderRadius: '64px',
+              position: 'relative',
+              zIndex: 1, // Ensures it appears above the image
             }}>
-              {/* Header Section */}
               <div style={{
-                textAlign: 'left',
-                marginBottom: spacing.xl
+                width: '90%',
+                // padding: '0 spacing.xl',
+                padding: '20px',
+                maxWidth: '300px', // Constrain width of form
+                // marginTop: spacing.xl
+                // marginTop: '20px', 
+                margin: '10px', 
               }}>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: spacing.md
-                  }}>
-                    <div>
-                        <h1 style={{
-                          fontSize: '30px',
-                          fontWeight: '600',
-                          color: colors.gray.text,
-                          margin: `0 0 ${spacing.xs} 0`
-                        }}>
-                        {userData.first_name} {userData.last_name}
-                        </h1>
-
-                        {userData?.gender && userData?.birthday_ms_since_epoch && (<div style={{
-                          fontSize: '16px',
-                          color: colors.gray.text,
-                          opacity: 0.7,
-                          margin: 0
-                        }}>
-                          <User size={20} color={colors.darkGray} />
-                          <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}, {userData?.pronouns ? ` ${userData?.pronouns}` : ''} </span>
-                        </div>)}
-                        {userData?.location && (<div style={{
-                          fontSize: '16px',
-                          color: colors.gray.text,
-                          opacity: 0.7,
-                          margin: 0
-                        }}>
-                          <MapPin size={20} color={colors.darkGray} />
-                          <span> {userData?.location}</span>
-                        </div>)}
-                    </div>
-
-
-                    <div style={{
+                {/* Header Section */}
+                <div style={{
+                  textAlign: 'left',
+                  marginBottom: spacing.xl
+                }}>
+                  <div
+                    style={{
                       display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: spacing.xs,
-                      padding: `${spacing.xs} ${spacing.md}`,
-                      borderRadius: spacing.md,
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
-                      color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: spacing.md
                     }}>
-                      <Star size={16} />
-                      <span>{credibilityScore}%</span>
-                    </div>                  
-                </div>
-                
-              </div>
-              {isOwner && (
-                  <button 
-                  style={styles.button}
-                  type="submit"
-                  // disabled={isLoading}
-                  onClick={() => setIsEditing(true)} 
-                  onMouseOver={(e) => {
-                    // if (!isLoading) {
-                      e.currentTarget.style.backgroundColor = colors.green.dark;
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-                    // }
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.green.light;
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-                  }}
-                  >
-                    Edit Profile
-                  </button>
-              )}
+                      <div>
+                          <h1 style={{
+                            fontSize: '30px',
+                            fontWeight: '600',
+                            color: colors.gray.text,
+                            margin: `0 0 ${spacing.xs} 0`
+                          }}>
+                          {userData.first_name} {userData.last_name}
+                          </h1>
 
-              {/* Info Section */}
-              <div 
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: spacing.lg
-                }}
-                // onSubmit={handleSubmit}
-              >
-                {/* Bio */}
-                <div style={inputStyles.container}>
-                  <label style={inputStyles.label}>
-                    About Me
-                  </label>
-                  <div>
-                  <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
-                  </div>
-                  {userData?.height_mm && (<div style={{
-                    fontSize: '16px',
-                    color: colors.gray.text,
-                    opacity: 0.7,
-                    margin: 0
-                  }}>
-                    <Ruler size={20} color={colors.darkGray} />
-                    <span> {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}</span>
-                  </div>)}
-                  {userData?.occupation && (<div style={{
-                    fontSize: '16px',
-                    color: colors.gray.text,
-                    opacity: 0.7,
-                    margin: 0
-                  }}>
-                    <Briefcase size={20} color={colors.darkGray} />
-                    <span> {userData?.occupation}</span>
-                  </div>)}
-                  {userData?.education && (<div style={{
-                    fontSize: '16px',
-                    color: colors.gray.text,
-                    opacity: 0.7,
-                    margin: 0
-                  }}>
-                    <GraduationCap size={20} color={colors.darkGray} />
-                    <span> {userData?.education}</span>
-                  </div>)}
-                </div>
+                          {userData?.gender && userData?.birthday_ms_since_epoch && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <User size={20} color={colors.darkGray} />
+                            <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}, {userData?.pronouns ? ` ${userData?.pronouns}` : ''} </span>
+                          </div>)}
+                          {userData?.email && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <Instagram size={20} color={colors.darkGray} />
+                            <span> {userData?.email}</span>
+                          </div>)}
+                          {userData?.location && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <MapPin size={20} color={colors.darkGray} />
+                            <span> {userData?.location}</span>
+                          </div>)}
+                      </div>
 
-                {/* Referrals */}
-                <div style={inputStyles.container}>
-                  <label style={inputStyles.label}>
-                  Referrals
-                  </label>
-                  <div>
-                    <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                    <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                    <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: spacing.xs,
+                        padding: `${spacing.xs} ${spacing.md}`,
+                        borderRadius: spacing.md,
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
+                        color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                      }}>
+                        <Star size={16} />
+                        <span>{credibilityScore}%</span>
+                      </div>                  
+                  </div>
+                  
+                </div>
+                {isOwner && (
+                    <button 
+                    style={styles.button}
+                    type="submit"
+                    // disabled={isLoading}
+                    onClick={() => setIsEditing(true)} 
+                    onMouseOver={(e) => {
+                      // if (!isLoading) {
+                        e.currentTarget.style.backgroundColor = colors.green.dark;
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                      // }
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.green.light;
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                    }}
+                    >
+                      Edit Profile
+                    </button>
+                )}
+
+                {/* Info Section */}
+                <div 
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: spacing.lg
+                  }}
+                  // onSubmit={handleSubmit}
+                >
+                  {/* Bio */}
+                  <div style={inputStyles.container}>
+                    <label style={inputStyles.label}>
+                      About Me
+                    </label>
+                    <div>
+                    <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
+                    </div>
+                    {userData?.height_mm && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <Ruler size={20} color={colors.darkGray} />
+                      <span> {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}</span>
+                    </div>)}
+                    {userData?.occupation && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <Briefcase size={20} color={colors.darkGray} />
+                      <span> {userData?.occupation}</span>
+                    </div>)}
+                    {userData?.education && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <GraduationCap size={20} color={colors.darkGray} />
+                      <span> {userData?.education}</span>
+                    </div>)}
+                  </div>
+
+                  {/* Referrals */}
+                  <div style={inputStyles.container}>
+                    <label style={inputStyles.label}>
+                    Referrals
+                    </label>
+                    <div>
+                      <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                      <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                      <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleFetchProfile}>
+                    <div>
+                      <label htmlFor="guid">GUID:</label>
+                      <input
+                        type="text"
+                        id="guid"
+                        value={guid}
+                        onChange={(e) => setGuid(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button type="submit">Fetch Profile</button>
+                  </form>
                   </div>
                 </div>
-                <form onSubmit={handleFetchProfile}>
-                  <div>
-                    <label htmlFor="guid">GUID:</label>
-                    <input
-                      type="text"
-                      id="guid"
-                      value={guid}
-                      onChange={(e) => setGuid(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="submit">Fetch Profile</button>
-                </form>
-              </div>
             </div>
           </div>
         </>
