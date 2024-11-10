@@ -2,23 +2,15 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
-import styled from '@emotion/styled';
-import { User, Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+// import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
+// import styled from '@emotion/styled';
+import { User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
-import logo from '../assets/images/logo.png';
+// import logo from '../assets/images/logo.png';
 import { colors, spacing } from '../styles/theme';
 import { 
-  buttonStyles,
   inputStyles,
-  cardStyles, 
-  imageStyles, 
   badgeStyles, 
-  contentStyles,
-  tagStyles,
-  textStyles,
-  detailStyles,
-  scoreStyles
 } from '../styles/commonStyles';
 
 
@@ -201,6 +193,9 @@ const Profile = ({
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
+  const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
 
@@ -210,6 +205,39 @@ const Profile = ({
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
+
+    const fetchProfile = (guid) => {
+      setIsOwner(true);
+
+      const apiInstance = new CredibleCupid.UserApi();
+      apiInstance.queryUser(guid, (error, data) => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("Successfully fetched profile");
+
+          const birthdayDate = new Date(data.birthday_ms_since_epoch);
+          const formattedBirthday = birthdayDate instanceof Date && !isNaN(birthdayDate)
+            ? birthdayDate.toISOString().split('T')[0]
+            : "";
+
+          const updatedUserData = { ...data, date_of_birth: formattedBirthday };
+          setUserData(updatedUserData);
+
+          apiInstance.profilePicUser(guid, (error, data, response) => {
+            if (error) {
+              console.error("Error fetching profile picture:", error);
+            } else {
+              // Assuming response contains the URL to the profile picture
+              setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
+
+              console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
+            }
+          });
+        }
+      });
+    };
+
     if (jwtToken && !tokenRefreshed) {
       InitDefaultCredibleCupidClient(jwtToken);
 
@@ -222,9 +250,9 @@ const Profile = ({
           console.log('API called successfully. Returned data: ' + JSON.stringify(data, null, 2));
           sessionStorage.setItem("jwtToken", data.jwt);
           setTokenRefreshed(true); // Set to true so this only runs once
+          fetchProfile(data.user_guid); // Call fetchProfile directly
         }
       });
-      handleFetchOwnProfile();
     } else if (!jwtToken) {
       console.error("JWT token not found. Redirecting to login.");
       navigate("/login");
@@ -232,29 +260,29 @@ const Profile = ({
 
 
     // Dummy user data with additional fields
-    const dummyData = {
-      email: "example@email.com",
-      first_name: "first_name",
-      last_name: "last_name",
-      guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
-      bio: "Dummy bio",
-      gender: "Male",
-      pronouns: "He/Him",
-      sexual_orientation: "Straight",
-      // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-      birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-      date_of_birth: "1990-05-18",
-      height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
-      occupation: "Dummy occupation",
-      education: "Dummy education",
-      location: "Dummy location",
-      verified: true,
-      // verified: True,
-    };
+    // const dummyData = {
+    //   email: "example@email.com",
+    //   first_name: "first_name",
+    //   last_name: "last_name",
+    //   guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
+    //   bio: "Dummy bio",
+    //   gender: "Male",
+    //   pronouns: "He/Him",
+    //   sexual_orientation: "Straight",
+    //   // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+    //   birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+    //   date_of_birth: "1990-05-18",
+    //   height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
+    //   occupation: "Dummy occupation",
+    //   education: "Dummy education",
+    //   location: "Dummy location",
+    //   verified: true,
+    //   // verified: True,
+    // };
     
     // Set dummy data to mimic API response
-    if (!userData) setUserData(dummyData);
-  }, [userData, navigate, tokenRefreshed]);
+    // if (!userData) setUserData(dummyData);
+  }, [tokenRefreshed, navigate]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
@@ -381,47 +409,59 @@ const Profile = ({
     setUserData({ ...userData, [name]: value });
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const apiInstance = new CredibleCupid.UserApi();
+      const opts = { file }; // File selected by the user
+      try {
+        apiInstance.uploadProfilePic(opts, (error, data, response) => {
+          if (error) {
+            console.error("Error uploading profile picture:", error);
+          } else {
+            console.log("Profile picture uploaded successfully");
+            // Optionally, update the UI with the new profile picture
+            // Fetch the updated profile picture
+            // const guid = 'YOUR_USER_GUID'; // Replace with the actual GUID for the user
+            apiInstance.profilePicUser(userGuid, (error, data, response) => {
+              if (error) {
+                console.error("Error fetching profile picture:", error);
+              } else {
+                // Assuming response contains the URL to the profile picture
+                setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
+
+                console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
+              }
+            });
+          }
+        });
+        
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
+      }
+    }
+  };
+  // const handleFetchProfilePic = () => {
 
 
-  // const inputRef = useRef(null);
-  // const handleInterestKeyDown = (e) => {
-  //   if (e.key === ' '|| e.key === 'Enter') {
-  //     e.preventDefault();
-  //     if (currentInterest.trim()) {
-  //       setInterests([...interests, currentInterest.trim()]);
-  //       setCurrentInterest(''); // Clear the input
+  //   let apiInstance = new CredibleCupidApi.UserApi();
+  //   // let guid = null; // Object | User GUID
+  //   apiInstance.profilePicUser(guid, (error, data, response) => {
+  //     if (error) {
+  //       console.error(error);
+  //     } else {
+  //       console.log('API called successfully.');
   //     }
-  //     console.log(interests)
-  //   }else{
-  //     console.log("KEY PRESSED")
-  //   }
+  //   });
   // };
-
-  // const handleInterestDelete = (interestToDelete) => {
-  //   setInterests(interests.filter(interest => interest !== interestToDelete));
-  // };
-
 
   if (!userData) return <div>Loading...</div>;
 
 
-  // const ProfileContainer = styled('div')({
-  //   ...styles.container,
-  //   // maxWidth: '600px',
-  //   margin: 'auto',
-  //   padding: '20px',
-  //   display: 'flex',
-  //   flexDirection: 'column',
-  //   alignItems: 'flex-start',
-  // });
-
   return (
     <div className="profile-page">
       {/* <p>Profile</p> */}
-      {/* <br></br> */}
-      {/* Fetching your own profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
-
-      <button onClick={handleFetchOwnProfile}>{"My Profile"}</button>
+      {/* <button onClick={handleFetchOwnProfile}>{"My Profile"}</button> */}
 
 
       {isEditing && isOwner ? (
@@ -432,290 +472,359 @@ const Profile = ({
           
 
           
-        <div style={styles.loginBox}>
-          <form style={styles.form} onSubmit={handleUpdateProfile}>
-          <button 
-          style={styles.button}
-          type="button" 
-          onClick={() => setIsEditing(false)}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = colors.green.dark;
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = colors.green.light;
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-          }}
-          >Done Editing</button>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>
-                  Email:
-                  <input
+        <div style={{
+            width: '390px',
+            // height: '844px',
+            backgroundColor: colors.white,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <div style={{
+              width: '100%',
+              padding: '0 spacing.xl',
+              maxWidth: '350px', // Constrain width of form
+              marginTop: spacing.xl
+            }}>
+              <form style={styles.form} onSubmit={handleUpdateProfile}>
+                {/* back button */}
+                <button 
+                style={styles.button}
+                type="button" 
+                onClick={() => setIsEditing(false)}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.green.dark;
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.green.light;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                }}
+                >Done Editing</button>
+
+                {/* Upload Image */}
+                <div style={{
+                width: '300px', // Smaller logo
+                height: '300px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginTop: '60px' // Push down from top
+              }}>
+                {profilePicUrl ? (
+                  <img
+                    src={profilePicUrl}
+                    alt={`${userData.first_name}'s profile`}
+                    // style={imageStyles.image}
                     style={{
-                      ...styles.input,
-                      ':focus': {
-                        borderColor: colors.green.light,
-                        backgroundColor: colors.white,
-                      }
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      opacity: 0.9,
+                      borderRadius: 10
                     }}
-                    type="email"
-                    name="email"
-                    value={userData.email}
-                    onChange={handleChange}
-                    disabled
-                  />
-                </label>
+                    />
+                ) : (
+                  <img
+                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                    alt={`${userData.first_name}'s profile`}
+                    // style={imageStyles.image}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      opacity: 0.9,
+                      borderRadius: 10
+                    }}
+                    />
+                )}
             </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                First Name:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="first_name"
-                  value={userData.first_name}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Last Name:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="last_name"
-                  value={userData.last_name}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Gender:
-                <select
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  name="gender"
-                  value={userData.gender}
-                  onChange={handleChange}
-                  
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-Binary">Non-Binary</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>            
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Pronouns:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="pronouns"
-                  value={userData.pronouns}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Sexual Orientation:
-                <select
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  name="sexual_orientation"
-                  value={userData.sexual_orientation}
-                  onChange={handleChange}
-                >
-                  <option value="Straight">Straight</option>
-                  <option value="Gay">Gay</option>
-                  <option value="Lesbian">Lesbian</option>
-                  <option value="Bisexual">Bisexual</option>
-                  <option value="Asexual">Asexual</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>            
-            </div>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>
-                    Date of Birth:
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>
+                    Upload Profile Picture:
                     <input
-                        style={{
+                      style={styles.input}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </div>
+
+                {/* The rest */}
+                  <div style={styles.inputGroup}>
+                      <label style={styles.label}>
+                        Email:
+                        <input
+                          style={{
                             ...styles.input,
                             ':focus': {
-                                borderColor: colors.green.light,
-                                backgroundColor: colors.white,
+                              borderColor: colors.green.light,
+                              backgroundColor: colors.white,
                             }
+                          }}
+                          type="email"
+                          name="email"
+                          value={userData.email}
+                          onChange={handleChange}
+                          disabled
+                        />
+                      </label>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      First Name:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
                         }}
-                        type="date"
-                        name="date_of_birth"
-                        value={userData.date_of_birth}
+                        type="text"
+                        name="first_name"
+                        value={userData.first_name}
                         onChange={handleChange}
                         onFocus={(e) => {
-                            e.target.style.borderColor = colors.green.light;
-                            e.target.style.backgroundColor = colors.white;
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
                         }}
                         onBlur={(e) => {
-                            e.target.style.borderColor = colors.gray.border;
-                            e.target.style.backgroundColor = colors.gray.lighter;
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
                         }}
+                      />
+                    </label>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Last Name:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="last_name"
+                        value={userData.last_name}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Gender:
+                      <select
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        name="gender"
+                        value={userData.gender}
+                        onChange={handleChange}
+                        
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-Binary">Non-Binary</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </label>            
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Pronouns:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="pronouns"
+                        value={userData.pronouns}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Sexual Orientation:
+                      <select
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        name="sexual_orientation"
+                        value={userData.sexual_orientation}
+                        onChange={handleChange}
+                      >
+                        <option value="Straight">Straight</option>
+                        <option value="Gay">Gay</option>
+                        <option value="Lesbian">Lesbian</option>
+                        <option value="Bisexual">Bisexual</option>
+                        <option value="Asexual">Asexual</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </label>            
+                  </div>
+                  <div style={styles.inputGroup}>
+                      <label style={styles.label}>
+                          Date of Birth:
+                          <input
+                              style={{
+                                  ...styles.input,
+                                  ':focus': {
+                                      borderColor: colors.green.light,
+                                      backgroundColor: colors.white,
+                                  }
+                              }}
+                              type="date"
+                              name="date_of_birth"
+                              value={userData.date_of_birth}
+                              onChange={handleChange}
+                              onFocus={(e) => {
+                                  e.target.style.borderColor = colors.green.light;
+                                  e.target.style.backgroundColor = colors.white;
+                              }}
+                              onBlur={(e) => {
+                                  e.target.style.borderColor = colors.gray.border;
+                                  e.target.style.backgroundColor = colors.gray.lighter;
+                              }}
+                          />
+                      </label>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Height (mm):
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="number"
+                        name="height_mm"
+                        value={userData.height_mm}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                      Occupation:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="occupation"
+                        value={userData.occupation}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>
+                    Bio:
+                    <textarea
+                      style={{
+                        ...styles.input,
+                        ':focus': {
+                          borderColor: colors.green.light,
+                          backgroundColor: colors.white,
+                        }
+                      }}
+                      name="bio"
+                      value={userData.bio}
+                      onChange={handleChange}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.green.light;
+                        e.target.style.backgroundColor = colors.white;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.gray.border;
+                        e.target.style.backgroundColor = colors.gray.lighter;
+                      }}
                     />
-                </label>
+                  </label>
+                  </div>
+
+                  <button
+                  style={styles.button} 
+                  type="submit"
+                  onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.green.dark;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.green.light;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                  }}
+                  >Save Changes</button>
+
+
+                </form>
             </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Height (mm):
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="number"
-                  name="height_mm"
-                  value={userData.height_mm}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Occupation:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="occupation"
-                  value={userData.occupation}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-              Bio:
-              <textarea
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                name="bio"
-                value={userData.bio}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-            </div>
-
-            <button
-            style={styles.button} 
-            type="submit"
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.green.dark;
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = colors.green.light;
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-            }}
-            >Save Changes</button>
-
-
-          </form>
+          
         </div>
         {/* </ProfileContainer> */}
         {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
@@ -760,9 +869,9 @@ const Profile = ({
               justifyContent: 'center',
               marginTop: '60px' // Push down from top
             }}>
-              {userData.image ? (
+              {profilePicUrl ? (
                 <img
-                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  src={profilePicUrl}
                   alt={`${userData.first_name}'s profile`}
                   // style={imageStyles.image}
                   style={{
@@ -824,15 +933,6 @@ const Profile = ({
                         }}>
                         {userData.first_name} {userData.last_name}
                         </h1>
-                        {/* <p style={{
-                          fontSize: '16px',
-                          color: colors.gray.text,
-                          opacity: 0.7,
-                          margin: 0
-                        }}>
-                          <User size={20} color={colors.darkGray} />
-                          {userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}
-                        </p> */}
 
                         {userData?.gender && userData?.birthday_ms_since_epoch && (<div style={{
                           fontSize: '16px',
@@ -841,7 +941,7 @@ const Profile = ({
                           margin: 0
                         }}>
                           <User size={20} color={colors.darkGray} />
-                          <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}                          </span>
+                          <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}, {userData?.pronouns ? ` ${userData?.pronouns}` : ''} </span>
                         </div>)}
                         {userData?.location && (<div style={{
                           fontSize: '16px',
@@ -895,7 +995,7 @@ const Profile = ({
                   </button>
               )}
 
-              {/* Form Section */}
+              {/* Info Section */}
               <div 
                 style={{
                   width: '100%',
@@ -941,22 +1041,7 @@ const Profile = ({
                     <span> {userData?.education}</span>
                   </div>)}
                 </div>
-                {/* Details */}
-                <div style={inputStyles.container}>
-                  {/* <label style={inputStyles.label}>
-                    Details
-                  </label> */}
-                  <div>
-                    {/* <p style={detailStyles.row}>Gender: {userData?.gender}</p> */}
-                    {/* <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p> */}
-                    {/* <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p> */}
-                    {/* <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p> */}
-                    {/* <p style={styles.subtitle}>
-                      Height: {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}"
-                    </p> */}
-                    
-                  </div>
-                </div>
+
                 {/* Referrals */}
                 <div style={inputStyles.container}>
                   <label style={inputStyles.label}>
@@ -981,207 +1066,14 @@ const Profile = ({
                   </div>
                   <button type="submit">Fetch Profile</button>
                 </form>
-
-
               </div>
             </div>
           </div>
-
-
-
-        {/* <div style={cardStyles.container}>
-          <div style={cardStyles.content}>
-            <div style={imageStyles.section}>
-            {userData.image ? (
-              <img
-                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                alt={`${userData.first_name}'s profile`}
-                style={imageStyles.image}
-                // onError={() => setImageError(true)}
-              />
-            ) : (
-              <div style={imageStyles.placeholder}>
-                No image available
-              </div>
-            )}
-            {userData.verified && (
-              <div style={badgeStyles.verified}>
-                <Verified size={16} />
-                <span>Verified</span>
-              </div>
-            )}
-            </div>
-
-
-              <div style={contentStyles.header}>
-                <h2 style={contentStyles.title}>
-                {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}{userData?.gender ? ` ${userData?.gender}` : ''} 
-                  </h2>
-                <div style={scoreStyles.tag(credibilityScore)}>
-                  <Star size={16} />
-                  <span>{credibilityScore}%</span>
-                </div>
-              </div>
-              <p style={styles.subtitle}>{userData?.email || "Email"}</p>
-              <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
-
-                {userData?.occupation && (<div style={detailStyles.row}>
-                  <Briefcase size={20} color={colors.darkGray} />
-                  <span>{userData?.occupation}</span>
-                </div>)}
-                {userData?.education && (<div style={detailStyles.row}>
-                  <GraduationCap size={20} color={colors.darkGray} />
-                  <span>{userData?.education}</span>
-                </div>)}
-                {userData?.location && (<div style={detailStyles.row}>
-                  <MapPin size={20} color={colors.darkGray} />
-                  <span>{userData?.location}</span>
-                </div>)}
-
-                {isOwner && (
-                  <button 
-                  style={styles.button}
-                  type="submit"
-
-                  onClick={() => setIsEditing(true)} 
-                  onMouseOver={(e) => {
-
-                      e.currentTarget.style.backgroundColor = colors.green.dark;
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.green.light;
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-                  }}
-                  >
-                    Edit Profile
-                  </button>
-                  )}
-                  
-
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-              <label style={styles.label}>Bio</label>
-              <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
-            </Box>
-
-
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-            <label style={inputStyles.label}>Details</label>
-              <p style={detailStyles.row}>Gender: {userData?.gender}</p>
-              <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
-              <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
-              <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
-            </Box>
-            <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-              <label style={inputStyles.label}>Referrals</label>
-              <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-            </Box>
-
-          </div>
-        </div> */}
-          {/* <ProfileContainer> */}
-              {/* <Avatar
-                alt="Profile Picture"
-                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                sx={{
-                  width: '100%',       // Change to max-width: 100%
-                  maxWidth: 390,
-                  height: 300,
-                  marginBottom: 2,
-                  marginTop: 2,
-                  borderRadius: 2, // This makes the image rectangular
-                }}
-              />
-              <div style={styles.verifiedBadge}>
-                <Verified size={16} />
-                <span>Verified</span>
-              </div> */}
-{/* 
-                <div style={contentStyles.header}>
-                  <h2 style={contentStyles.title}>
-                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}{userData?.gender ? ` ${userData?.gender}` : ''} 
-                    </h2>
-                  <div style={scoreStyles.tag(credibilityScore)}>
-                    <Star size={16} />
-                    <span>{credibilityScore}%</span>
-                  </div>
-                </div>
-                  <p style={styles.subtitle}>{userData?.email || "Email"}</p>
-                  <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
-
-              <div style={styles.detailsContainer}>
-                {userData?.occupation && (<div style={styles.detailRow}>
-                  <Briefcase size={20} color={colors.darkGray} />
-                  <span>{userData?.occupation}</span>
-                </div>)}
-                {userData?.education && (<div style={styles.detailRow}>
-                  <GraduationCap size={20} color={colors.darkGray} />
-                  <span>{userData?.education}</span>
-                </div>)}
-                {userData?.location && (<div style={styles.detailRow}>
-                  <MapPin size={20} color={colors.darkGray} />
-                  <span>{userData?.location}</span>
-                </div>)}
-              </div>
-              {isOwner ? (
-
-                  <button 
-                  style={styles.button}
-                  type="submit"
-
-                  onClick={() => setIsEditing(true)} 
-                  onMouseOver={(e) => {
-
-                      e.currentTarget.style.backgroundColor = colors.green.dark;
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.green.light;
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-                  }}
-                  >
-                    Edit Profile
-                  </button>
-              ) : (
-                <>
-                </>
-              )}
-
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Bio</label>
-                <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
-              </Box>
-
-
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Details</label>
-                <p style={styles.subtitle}>Gender: {userData?.gender}</p>
-                <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
-                <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
-                <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
-              </Box>
-
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Referrals</label>
-                <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              </Box> */}
-          {/* </ProfileContainer> */}
         </>
       )}
       <br></br>
       <br></br>
       <br></br>
-      {/* Fetching profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
-
     </div>
   );
 };
