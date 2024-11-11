@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Link, useNavigate } from 'react-router-dom';
 import * as CredibleCupid from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
