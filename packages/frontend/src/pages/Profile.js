@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom";
+import { Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
   inputStyles,
-  badgeStyles, 
 } from '../styles/commonStyles';
 
 
@@ -191,7 +190,6 @@ const Profile = ({
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null); // user uploads when pressing save or on every change?
 
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
@@ -302,85 +300,44 @@ const Profile = ({
     navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
   };
 
-  const handleFetchProfile = (e) => {
-    e.preventDefault();
+  // const handleFetchProfile = (e) => {
+  //   e.preventDefault();
 
-    if (guid === userGuid) {
-      setIsOwner(true);
-    } else {
-      setIsOwner(false);
-    }
+  //   if (guid === userGuid) {
+  //     setIsOwner(true);
+  //   } else {
+  //     setIsOwner(false);
+  //   }
 
-    // InitDefaultCredibleCupidClient(null);
-    const apiInstance = new CredibleCupid.UserApi();
-    apiInstance.queryUser(guid, (error, data) => {
-      if (error) {
-        console.error(error);
-      } else {
-        console.log("Successfully fetch profile")
-        
-        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-        const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-
-        const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
-        const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
-          
-
-        // Add date_of_birth to the data object
-        const updatedUserData = { 
-          ...data, date_of_birth: formattedBirthday, 
-          height_ft: heightFeet, 
-          height_in: heightInches };
-
-
-        // Update userData with the new data
-          setUserData(updatedUserData);
-      }
-    });
-  };
-
-  // const handleFetchOwnProfile = () => {
-  //   setIsOwner(true);
-  //   // setError(''); // Clear any previous errors
-
+  //   // InitDefaultCredibleCupidClient(null);
   //   const apiInstance = new CredibleCupid.UserApi();
-  //   apiInstance.queryUser(userGuid, (error, data) => {
+  //   apiInstance.queryUser(guid, (error, data) => {
   //     if (error) {
   //       console.error(error);
-  //       // setError("Failed to fetch profile.");
   //     } else {
-  //       console.log("Successfully fetched profile");
+  //       console.log("Successfully fetch profile")
+        
   //       // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
   //       const birthdayDate = new Date(data.birthday_ms_since_epoch);
-  //       // const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-  //       const formattedBirthday = (birthdayDate instanceof Date && !isNaN(birthdayDate))
-  //       ? birthdayDate.toISOString().split('T')[0]
-  //       : ""; // Set to empty or null if invalid
+  //       const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+
+  //       const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
+  //       const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
+          
 
   //       // Add date_of_birth to the data object
-  //       const updatedUserData = {
-  //         ...data,
-  //         date_of_birth: formattedBirthday,
-  //       };
+  //       const updatedUserData = { 
+  //         ...data, date_of_birth: formattedBirthday, 
+  //         height_ft: heightFeet, 
+  //         height_in: heightInches };
+
 
   //       // Update userData with the new data
-  //       setUserData(updatedUserData);
+  //         setUserData(updatedUserData);
   //     }
   //   });
   // };
 
-
-
-  // const handleHeightChange = () => {
-  //   const totalInches = parseInt(heightFeet, 10) * 12 + parseInt(heightInches, 10);
-  //   const mmHeight = totalInches * 25.4;
-    
-  //   // Check if userData exists before updating height
-  //   if (userData) {
-  //     setUserData((prevData) => ({ ...prevData, height_mm: mmHeight }));
-  //   }
-  // };
 
   const handleUpdateProfile = (e) => {
     e.preventDefault();
@@ -407,10 +364,7 @@ const Profile = ({
     const totalInches = parseInt(userData.height_ft, 10) * 12 + parseInt(userData.height_in, 10);
     const mmHeight = totalInches * 25.4;
     
-    // Check if userData exists before updating height
-    // if (userData) {
-    //   setUserData((prevData) => ({ ...prevData, height_mm: mmHeight }));
-    // }
+
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
@@ -479,19 +433,7 @@ const Profile = ({
       }
     }
   };
-  // const handleFetchProfilePic = () => {
 
-
-  //   let apiInstance = new CredibleCupidApi.UserApi();
-  //   // let guid = null; // Object | User GUID
-  //   apiInstance.profilePicUser(guid, (error, data, response) => {
-  //     if (error) {
-  //       console.error(error);
-  //     } else {
-  //       console.log('API called successfully.');
-  //     }
-  //   });
-  // };
 
   if (!userData) return <div>Loading...</div>;
 
@@ -499,18 +441,14 @@ const Profile = ({
   return (
     <div className="profile-page">
       {/* <p>Profile</p> */}
-      {/* <button onClick={handleFetchOwnProfile}>{"My Profile"}</button> */}
-
 
       {isEditing && isOwner ? (
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
         {/* <ProfileContainer> */}
-          
-
-          
-        <div style={{
+         
+        <motion.div style={{
             width: '390px',
             // height: '844px',
             backgroundColor: colors.white,
@@ -519,7 +457,11 @@ const Profile = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center'
-          }}>
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
             <div 
             style={{
               width: '100%',
@@ -947,7 +889,7 @@ const Profile = ({
                 </form>
             </div>
           
-        </div>
+        </motion.div>
         {/* </ProfileContainer> */}
         {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
@@ -971,7 +913,7 @@ const Profile = ({
       </>
       ) : (
         <>
-          <div style={{
+          <motion.div style={{
             width: '390px',
             // height: '844px',
             backgroundColor: colors.white,
@@ -980,10 +922,14 @@ const Profile = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center'
-          }}>
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
             {/* Profile Image Section */}
 
-            <div style={{
+            <motion.div style={{
               // width: '300px', // Smaller logo
               // height: '300px',
               width: '100%',
@@ -993,7 +939,11 @@ const Profile = ({
               alignItems: 'center',
               justifyContent: 'center',
               // marginTop: '60px' // Push down from top
-            }}>
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            >
               {profilePicUrl ? (
                 <img
                   src={profilePicUrl}
@@ -1024,7 +974,7 @@ const Profile = ({
                   />
               )}
               {
-                <div style={{
+                <motion.div style={{
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
                   right: '10px', // Adjusts distance from left of image
@@ -1035,16 +985,20 @@ const Profile = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                }}>
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                >
                   <Verified size={16} />
                   <span>Verified</span>
-                </div>
+                  </motion.div>
               }
 
-            </div>
+            </motion.div>
 
             {/* Content Container */}
-            <div style={{
+            <motion.div style={{
               // width: '100%',
               // padding: '0 spacing.xl',
               // maxWidth: '350px', // Constrain width of form
@@ -1065,20 +1019,27 @@ const Profile = ({
                 maxWidth: '300px', // Constrain width of form
                 // marginTop: spacing.xl
                 // marginTop: '20px', 
-                margin: '10px', 
+                marginTop: '5px', 
+                marginBottom: '10px', 
+                marginLeft: '10px', 
+                marginRight: '10px',  
               }}>
                 {/* Header Section */}
                 <div style={{
                   textAlign: 'left',
                   marginBottom: spacing.xl
                 }}>
-                  <div
+                  <motion.div
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       marginBottom: spacing.md
-                    }}>
+                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 0.5 }}
+                    >
                       <div>
                           <h1 style={{
                             fontSize: '30px',
@@ -1119,7 +1080,7 @@ const Profile = ({
                       </div>
 
 
-                      <div style={{
+                      <motion.div style={{
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: spacing.xs,
@@ -1129,11 +1090,15 @@ const Profile = ({
                         fontWeight: '500',
                         backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
                         color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
-                      }}>
+                      }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1, duration: 0.5 }}
+                      >
                         <Star size={16} />
                         <span>{credibilityScore}%</span>
-                      </div>                  
-                  </div>
+                      </motion.div>                     
+                  </motion.div>
                   
                 </div>
                 {isOwner && (
@@ -1160,7 +1125,7 @@ const Profile = ({
                 )}
 
                 {/* Info Section */}
-                <div 
+                <motion.div 
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -1168,6 +1133,9 @@ const Profile = ({
                     gap: spacing.lg
                   }}
                   // onSubmit={handleSubmit}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
                 >
                   {/* Bio */}
                   <div style={inputStyles.container}>
@@ -1207,16 +1175,19 @@ const Profile = ({
                   </div>
 
                   {/* Referrals */}
-                  <div style={inputStyles.container}>
-                    <label style={inputStyles.label}>
-                    Referrals
-                    </label>
-                    <div>
+                  <motion.div  style={inputStyles.container}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2, duration: 0.5 }}>
+                      <label style={inputStyles.label}>
+                      Referrals
+                      </label>
+                      <div>
                       <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                    </div>
-                  </div>
+                      </div>
+                  </motion.div>
                   <form onSubmit={handleTestUserProfile}>
                     <div>
                       <label htmlFor="guid">GUID:</label>
@@ -1230,10 +1201,10 @@ const Profile = ({
                     </div>
                     <button type="submit">Fetch Profile</button>
                   </form>
-                </div>
-                </div>
-            </div>
-          </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
         </>
       )}
       <br></br>
