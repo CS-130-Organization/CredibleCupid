@@ -11,7 +11,10 @@ function Register() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [gender, setGender] = useState('');
+    const [pronouns, setPronouns] = useState('')
     const [orientation, setOrientation] = useState('');
     const [height, setHeight] = useState('');
     const [occupation, setOccupation] = useState('');
@@ -23,36 +26,167 @@ function Register() {
     const [isVerifying, setIsVerifying] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const navigate = useNavigate();
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
 
-    const handleNext = () => setStep(step + 1);
+    const handleNext = () => {
+        /*
+        switch (step) {
+            case 1:
+                if (!email || !password || !confirmPassword) {
+                    const step1Missing = [];
+                    if (!email) step1Missing.push('Email');
+                    if (!password) step1Missing.push('Password');
+                    if (!confirmPassword) step1Missing.push('Confirm Password');
+
+                    setAlertMessage(`Please fill out the following field(s):\n\n${step1Missing.join(', ')}`);
+                    setShowAlert(true);
+                    return;
+                }
+
+                // password matching validation
+                if (password !== confirmPassword) {
+                    setAlertMessage("Passwords do not match");
+                    setShowAlert(true);
+                    return;
+                }
+                // Create account in db if fields are valid
+                let apiInstance = new CredibleCupid.AuthApi();
+                let registerRequest = new CredibleCupid.LoginRequest(email, password);
+
+                InitDefaultCredibleCupidClient(null);
+                apiInstance.authSignup(registerRequest, (error, data, response) => {
+                    if (error) {
+                        console.error(error);
+                        let errorMessage;
+
+                        if (error.response?.body?.message) {
+                            errorMessage = error.response.body.message;
+                        } else if (error.response?.body?.error) {
+                            errorMessage = error.response.body.error;
+                        } else {
+                            errorMessage = error.message;
+                        }
+                        setAlertMessage(errorMessage);
+                        setShowAlert(true);
+                        return;
+                    }
+                    sessionStorage.setItem("jwtToken", data.jwt);
+                    setStep(step + 1);
+                });
+                return;
+
+            case 2:
+                if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
+                    const step2Missing = [];
+                    if (!firstName) step2Missing.push('First Name')
+                    if (!lastName) step2Missing.push('Last Name')
+                    if (!gender) step2Missing.push('Gender');
+                    if (!orientation) step2Missing.push('Sexual Orientation');
+                    if (!height) step2Missing.push('Height');
+                    if (!occupation) step2Missing.push('Occupation');
+                    if (!birthday) step2Missing.push('Birthday');
+
+                    setAlertMessage(`Please fill out the following field(s):\n\n${step2Missing.join(', ')}`);
+                    setShowAlert(true);
+                    return;
+                }
+                break;
+            case 3:
+                if (!photo || !bio) {
+                    const step3Missing = [];
+                    if (!photo) step3Missing.push('Profile Photo');
+                    if (!bio) step3Missing.push('Bio');
+
+                    setAlertMessage(`Please fill out the following field(s):\n\n${step3Missing.join(', ')}`);
+                    setShowAlert(true);
+                    return;
+                }
+                // If user is not male, don't proceed to step 4
+                if (gender !== 'male') {
+                    return;
+                }
+                break;
+            case 4:
+                if (!referralEmails.every(email => email.trim() !== '')) {
+                    setAlertMessage('Please provide all three referral emails');
+                    setShowAlert(true);
+                    return;
+                }
+
+
+                // Check if user included their own email
+                const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
+                const normalizedUserEmail = email.trim().toLowerCase();
+
+                if (normalizedReferralEmails.includes(normalizedUserEmail)) {
+                    setAlertMessage('You cannot include your own email as a referral');
+                    setShowAlert(true);
+                    return;
+                }
+
+                // Check for duplicate emails using Set
+                const uniqueEmails = new Set(normalizedReferralEmails);
+                if (uniqueEmails.size !== referralEmails.length) {
+                    setAlertMessage('Referral emails must be unique');
+                    setShowAlert(true);
+                    return;
+                }
+        }
+        */
+        setStep(step + 1);
+    };
+
     const handleBack = () => setStep(step - 1);
 
     const handleSubmit = async (e) => {
+        console.log("submitting")
         e.preventDefault();
-        if (password !== confirmPassword) {
-            alert("Passwords don't match!");
-            return;
-        }
 
         setIsLoading(true);
         setIsVerifying(true);
 
-        setTimeout(() => {
-            InitDefaultCredibleCupidClient(null);
-            let apiInstance = new CredibleCupid.AuthApi();
-            let registerRequest = new CredibleCupid.LoginRequest(email, password);
+        // const jwtToken = sessionStorage.getItem("jwtToken");
+        // if (!jwtToken) {
+        //     console.error("JWT token missing. Unable to set up profile.");
+        //     return;
+        // }
 
-            apiInstance.authLogin(registerRequest, (error, data, response) => {
-                setIsLoading(false);
-                if (error) {
-                    console.error(error);
-                    setIsVerifying(false);
-                } else {
-                    console.log("Successfully registered!");
-                    setTimeout(() => navigate('/login'), 5000);
-                }
-            });
-        }, 1000);
+        const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDM2OTAsImV4cCI6MTczMTMwNzI5MH0.HyvOUiJfSu_X66WfhPiF4Gy1Ee26x5RweDvWUaIFe0E";
+
+        // Set up API client instance and authenticate with JWT
+        let defaultClient = CredibleCupid.ApiClient.instance;
+        let bearer = defaultClient.authentications['bearer'];
+        bearer.accessToken = jwtToken;
+
+        // Convert date_of_birth to milliseconds since epoch
+        const birthdayMs = new Date(birthday).getTime();
+        const heightMM = height * 10;
+
+        // Build UserUpdateBioRequest object
+        const userUpdateBioRequest = {
+            first_name: firstName,
+            last_name: lastName,
+            bio: bio,
+            gender: gender,
+            pronouns: pronouns,
+            sexual_orientation: orientation,
+            birthday_ms_since_epoch: birthdayMs,
+            height_mm: heightMM,
+            occupation: occupation,
+        };
+        console.log(JSON.stringify(userUpdateBioRequest));
+        let userApi = new CredibleCupid.UserApi();
+
+        userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
+            if (error) {
+                console.error("Failed to update profile:", error);
+            } else {
+                console.log("Successfully set up bio: ", data);
+            }
+        });
+
+        navigate('/login');
     };
 
     const handleFocus = (e) => {
@@ -71,6 +205,50 @@ function Register() {
             setPreviewImage(URL.createObjectURL(file));
         }
     };
+
+    const Alert = ({ message, onClose }) => (
+        <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+        }}>
+            <div style={{
+                backgroundColor: 'white',
+                padding: spacing.xl,
+                borderRadius: '8px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                maxWidth: '400px',
+                width: '70%'
+            }}>
+                <div style={{
+                    marginBottom: spacing.lg,
+                    fontSize: '16px',
+                    lineHeight: '1.5',
+                    color: colors.gray.text
+                }}>
+                    {message}
+                </div>
+                <button
+                    onClick={onClose}
+                    style={{
+                        ...buttonStyles.base,
+                        width: '100%',
+                        marginTop: spacing.md
+                    }}
+                >
+                    OK
+                </button>
+            </div>
+        </div>
+    );
+
 
     const ImageUpload = () => (
         <div style={inputStyles.container}>
@@ -130,7 +308,8 @@ function Register() {
                     style={{
                         ...buttonStyles.base,
                         cursor: 'pointer',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        height: '30px',
                     }}
                 >
                     {previewImage ? 'Change Photo' : 'Upload Photo'}
@@ -192,6 +371,45 @@ function Register() {
                 return (
                     <div>
                         <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>First Name</label>
+                            <input
+                                style={inputStyles.input}
+                                type="text"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                required
+                                placeholder="Enter your first name"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Last Name</label>
+                            <input
+                                style={inputStyles.input}
+                                type="text"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                required
+                                placeholder="Enter your last name"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                        <div style={inputStyles.container}>
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Pronouns</label>
+                            <input
+                                style={inputStyles.input}
+                                type="text"
+                                value={pronouns}
+                                onChange={(e) => setPronouns(e.target.value)}
+                                required
+                                placeholder="Enter your pronouns"
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                            />
+                        </div>
+                        <div style={inputStyles.container}>
                             <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Gender</label>
                             <select
                                 style={{
@@ -206,10 +424,10 @@ function Register() {
                                 onBlur={handleBlur}
                             >
                                 <option value="">Select gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="non-binary">Non-binary</option>
-                                <option value="other">Other</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Non-Binary">Non-binary</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -227,11 +445,12 @@ function Register() {
                                 onBlur={handleBlur}
                             >
                                 <option value="">Select orientation</option>
-                                <option value="straight">Straight</option>
-                                <option value="gay">Gay</option>
-                                <option value="lesbian">Lesbian</option>
-                                <option value="bisexual">Bisexual</option>
-                                <option value="other">Other</option>
+                                <option value="Straight">Straight</option>
+                                <option value="Gay">Gay</option>
+                                <option value="Lesbian">Lesbian</option>
+                                <option value="Bisexual">Bisexual</option>
+                                <option value="Aisexual">Bisexual</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -241,7 +460,7 @@ function Register() {
                                 style={inputStyles.input}
                                 type="number"
                                 value={height}
-                                onChange={(e) => setHeight(e.target.value * 10)} // convert to mm
+                                onChange={(e) => setHeight(e.target.value)} // convert to mm
                                 required
                                 placeholder="Enter your height (cm)"
                                 min="100"
@@ -270,12 +489,8 @@ function Register() {
                             <input
                                 style={inputStyles.input}
                                 type="date"
-                                value={birthday ? new Date(birthday).toISOString().split('T')[0] : ''}
-                                onChange={(e) => {
-                                    console.log(e.target.value)
-                                    const dateValue = new Date(e.target.value); 
-                                    setBirthday(dateValue.getTime()); // Convert to milliseconds
-                                }}
+                                value={birthday}
+                                onChange={(e) => { setBirthday(e.target.value) }}
                                 required
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
@@ -387,14 +602,11 @@ function Register() {
             flexDirection: 'column',
             alignItems: 'center'
         }}>
-            {/* Logo Section */}
             <div style={logoStyles.container}>
                 <img src={logo} alt="Heart icon" style={logoStyles.image} />
             </div>
 
-            {/* Content Container */}
             <div style={contentContainerStyles.container}>
-                {/* Header Section */}
                 <div style={contentContainerStyles.header}>
                     <h1 style={titleStyles}>Create Your Account</h1>
                     <p style={subheadingStyles}>
@@ -405,12 +617,11 @@ function Register() {
                     </p>
                 </div>
 
-                {/* Form Section */}
                 <form style={formStyles} onSubmit={handleSubmit}>
                     {renderStep()}
 
                     <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
-                        {step > 1 && (
+                        {step > 2 && (
                             <button
                                 type="button"
                                 onClick={handleBack}
@@ -424,7 +635,7 @@ function Register() {
                                 Back
                             </button>
                         )}
-                        {((step < 3) || (gender === 'male' && step === 3)) ? (
+                        {step === 1 ? (
                             <button
                                 type="button"
                                 onClick={handleNext}
@@ -433,24 +644,26 @@ function Register() {
                                     flex: 1
                                 }}
                             >
-                                Next
+                                Proceed to Profile Setup
                             </button>
                         ) : (
                             <button
-                                type="submit"
+                                type={(step === 4 && gender === 'male') || (step === 3 && gender !== 'male') ? "submit" : "button"}
+                                onClick={(step === 4 && gender === 'male') || (step === 3 && gender !== 'male') ? undefined : handleNext}
                                 style={{
                                     ...buttonStyles.base,
                                     flex: 1
                                 }}
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Creating Account...' : 'Create Account'}
+                                {(step === 4 && gender === 'male') || (step === 3 && gender !== 'male')
+                                    ? (isLoading ? 'Creating Account...' : 'Create Account')
+                                    : 'Next'}
                             </button>
                         )}
                     </div>
                 </form>
 
-                {/* Login Link */}
                 {step === 1 && (
                     <p style={linkStyles.nonLink}>
                         Already have an account?{' '}
@@ -458,6 +671,12 @@ function Register() {
                     </p>
                 )}
             </div>
+            {showAlert && (
+                <Alert
+                    message={alertMessage}
+                    onClose={() => setShowAlert(false)}
+                />
+            )}
         </div>
     );
 }
