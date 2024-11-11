@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
 import { 
+  imageStyles,
   inputStyles,
 } from '../styles/commonStyles';
 
@@ -337,7 +338,8 @@ function UserProfile({
                   />
               ) : (
                 <img
-                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                //   src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  src={imageStyles.placeholder}  
                   alt={`${userData.first_name}'s profile`}
                   // style={imageStyles.image}
                   style={{
@@ -355,7 +357,7 @@ function UserProfile({
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
                   right: '10px', // Adjusts distance from left of image
-                  backgroundColor: colors.primary, // Set background color to make it stand out
+                //   backgroundColor: colors.primary, // Set background color to make it stand out
                   color: colors.white,
                   padding: '4px 8px',
                   borderRadius: '8px',
@@ -419,7 +421,7 @@ function UserProfile({
                     }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <div>
                           <h1 style={{
@@ -474,7 +476,7 @@ function UserProfile({
                         }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 1, duration: 0.5 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
                         >
                             <Star size={16} />
                             <span>{credibilityScore}%</span>
@@ -493,7 +495,7 @@ function UserProfile({
                   // onSubmit={handleSubmit}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 0.5 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
                 >
                   {/* Bio */}
                   <div style={inputStyles.container}>
@@ -536,7 +538,7 @@ function UserProfile({
                     <motion.div  style={inputStyles.container}
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
-                     transition={{ delay: 1.2, duration: 0.5 }}>
+                     transition={{ delay: 1.0, duration: 0.5 }}>
                         <label style={inputStyles.label}>
                         Referrals
                         </label>
