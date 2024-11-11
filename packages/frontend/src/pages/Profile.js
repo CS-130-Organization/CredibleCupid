@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
+  imageStyles,
   inputStyles,
 } from '../styles/commonStyles';
 
@@ -462,13 +463,15 @@ const Profile = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
           >
-            <div 
+            <motion.div 
             style={{
               width: '100%',
               padding: '0 spacing.xl',
               maxWidth: '350px', // Constrain width of form
               marginTop: spacing.xl
-            }}>
+            }}initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}>
               <form style={{
                 width: '100%',
                 display: 'flex',
@@ -476,7 +479,7 @@ const Profile = ({
                 gap: '24px',
               }} onSubmit={handleUpdateProfile}>
                 {/* back button */}
-                <button 
+                {/* <button 
                 style={styles.button}
                 type="button" 
                 onClick={() => setIsEditing(false)}
@@ -490,17 +493,50 @@ const Profile = ({
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
                 }}
-                >Done Editing</button>
+                >Done Editing</button> */}
+                 {/* Back Button */}
+                  <button
+                    style={{
+                      backgroundColor: 'transparent',
+                      // backgroundColor: colors.gray.lighter,
+                      border: 'none',
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      cursor: 'pointer',
+                      fontSize: '24px',
+                      color: colors.gray.dark,
+                      // boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
+                      borderRadius: '64px',
+                      zIndex: 1, // Ensures it appears above the image
+                    }}
+                    onClick={() => setIsEditing(false)}
+                  >
+                    <ArrowLeft size={24} />
+                  </button>
+                  <div style={{
+                      // width: '100%',
+                      // height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
 
+                  }}>
+                  Edit Profile
+                  </div>
                 {/* Upload Image */}
-                <div style={{
+                <motion.div style={{
                   width: '100%',
                   height: '100%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginTop: '60px' // Push down from top
-                }}>
+                  marginTop: '3px' // Push down from top
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                >
                 {profilePicUrl ? (
                   <img
                     src={profilePicUrl}
@@ -528,8 +564,11 @@ const Profile = ({
                     }}
                     />
                 )}
-            </div>
-                <div style={styles.inputGroup}>
+            </motion.div>
+                <motion.div style={styles.inputGroup}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}>
                   <label style={styles.label}>
                     Upload Profile Picture:
                     <input
@@ -539,10 +578,13 @@ const Profile = ({
                       onChange={handleImageChange}
                     />
                   </label>
-                </div>
+                </motion.div>
 
                 {/* The rest */}
-                  <div style={styles.inputGroup}>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                       <label style={styles.label}>
                         Email:
                         <input
@@ -560,8 +602,11 @@ const Profile = ({
                           disabled
                         />
                       </label>
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       First Name:
                       <input
@@ -586,8 +631,11 @@ const Profile = ({
                         }}
                       />
                     </label>
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       Last Name:
                       <input
@@ -612,8 +660,11 @@ const Profile = ({
                         }}
                       />
                     </label>
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       Gender:
                       <select
@@ -635,8 +686,11 @@ const Profile = ({
                         <option value="Other">Other</option>
                       </select>
                     </label>            
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       Pronouns:
                       <input
@@ -661,8 +715,11 @@ const Profile = ({
                         }}
                       />
                     </label>
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       Sexual Orientation:
                       <select
@@ -685,8 +742,11 @@ const Profile = ({
                         <option value="Other">Other</option>
                       </select>
                     </label>            
-                  </div>
-                  <div style={styles.inputGroup}>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                       <label style={styles.label}>
                           Date of Birth:
                           <input
@@ -711,7 +771,7 @@ const Profile = ({
                               }}
                           />
                       </label>
-                  </div>
+                  </motion.div>
                   {/* <div style={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -744,13 +804,16 @@ const Profile = ({
                       />
                     </label>
                   </div> */}
-                  <div style={{
+                  <motion.div style={{
                       display: 'flex',
                       // flexDirection: 'row',
                       gap: '8px',
                       width: '50%',
                       alignItems: 'flex-start', 
-                    }}>
+                    }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     {/* Height */}
                       <label style={styles.label}>
                         Height:
@@ -815,9 +878,12 @@ const Profile = ({
                     </label>
                         
                         
-                </div>
+                </motion.div>
 
-                  <div style={styles.inputGroup}>
+                <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                       Occupation:
                       <input
@@ -842,9 +908,12 @@ const Profile = ({
                         }}
                       />
                     </label>
-                  </div>
+                  </motion.div>
 
-                  <div style={styles.inputGroup}>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
                     <label style={styles.label}>
                     Bio:
                     <textarea
@@ -868,7 +937,7 @@ const Profile = ({
                       }}
                     />
                   </label>
-                  </div>
+                  </motion.div>
 
                   <button
                   style={styles.button} 
@@ -887,7 +956,7 @@ const Profile = ({
 
 
                 </form>
-            </div>
+            </motion.div>
           
         </motion.div>
         {/* </ProfileContainer> */}
@@ -960,7 +1029,7 @@ const Profile = ({
                   />
               ) : (
                 <img
-                  src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  src={imageStyles.placeholder}
                   alt={`${userData.first_name}'s profile`}
                   // style={imageStyles.image}
                   style={{
@@ -1038,7 +1107,7 @@ const Profile = ({
                     }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.7, duration: 0.5 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <div>
                           <h1 style={{
@@ -1093,7 +1162,7 @@ const Profile = ({
                       }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 1, duration: 0.5 }}
+                      transition={{ delay: 0.5, duration: 0.5 }}
                       >
                         <Star size={16} />
                         <span>{credibilityScore}%</span>
@@ -1102,8 +1171,11 @@ const Profile = ({
                   
                 </div>
                 {isOwner && (
-                    <button 
+                    <motion.button 
                     style={styles.button}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
                     type="submit"
                     // disabled={isLoading}
                     onClick={() => setIsEditing(true)} 
@@ -1121,7 +1193,7 @@ const Profile = ({
                     }}
                     >
                       Edit Profile
-                    </button>
+                    </motion.button >
                 )}
 
                 {/* Info Section */}
@@ -1135,7 +1207,7 @@ const Profile = ({
                   // onSubmit={handleSubmit}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 0.5 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
                 >
                   {/* Bio */}
                   <div style={inputStyles.container}>
@@ -1178,7 +1250,7 @@ const Profile = ({
                   <motion.div  style={inputStyles.container}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1.2, duration: 0.5 }}>
+                    transition={{ delay: 1.0, duration: 0.5 }}>
                       <label style={inputStyles.label}>
                       Referrals
                       </label>
