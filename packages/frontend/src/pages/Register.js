@@ -29,8 +29,11 @@ function Register() {
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
 
+    // Add this to your state declarations
+    const [isUploading, setIsUploading] = useState(false);
+
     const handleNext = () => {
-        /*
+        
         switch (step) {
             case 1:
                 if (!email || !password || !confirmPassword) {
@@ -103,56 +106,79 @@ function Register() {
                     return;
                 }
                 // If user is not male, don't proceed to step 4
-                if (gender !== 'male') {
+                if (gender.toLowerCase() !== 'male') {
                     return;
                 }
                 break;
-            case 4:
-                if (!referralEmails.every(email => email.trim() !== '')) {
-                    setAlertMessage('Please provide all three referral emails');
-                    setShowAlert(true);
-                    return;
-                }
+            // case 4:
+            //     if (!referralEmails.every(email => email.trim() !== '')) {
+            //         setAlertMessage('Please provide all three referral emails');
+            //         setShowAlert(true);
+            //         return;
+            //     }
 
+            //     // Check if user included their own email
+            //     const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
+            //     const normalizedUserEmail = email.trim().toLowerCase();
 
-                // Check if user included their own email
-                const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
-                const normalizedUserEmail = email.trim().toLowerCase();
+            //     if (normalizedReferralEmails.includes(normalizedUserEmail)) {
+            //         setAlertMessage('You cannot include your own email as a referral');
+            //         setShowAlert(true);
+            //         return;
+            //     }
 
-                if (normalizedReferralEmails.includes(normalizedUserEmail)) {
-                    setAlertMessage('You cannot include your own email as a referral');
-                    setShowAlert(true);
-                    return;
-                }
-
-                // Check for duplicate emails using Set
-                const uniqueEmails = new Set(normalizedReferralEmails);
-                if (uniqueEmails.size !== referralEmails.length) {
-                    setAlertMessage('Referral emails must be unique');
-                    setShowAlert(true);
-                    return;
-                }
-        }
-        */
+            //     // Check for duplicate emails using Set
+            //     const uniqueEmails = new Set(normalizedReferralEmails);
+            //     if (uniqueEmails.size !== referralEmails.length) {
+            //         setAlertMessage('Referral emails must be unique');
+            //         setShowAlert(true);
+            //         return;
+            //     }
+        } 
         setStep(step + 1);
     };
 
     const handleBack = () => setStep(step - 1);
 
     const handleSubmit = async (e) => {
-        console.log("submitting")
         e.preventDefault();
+
+        if(step === 4){
+            if (!referralEmails.every(email => email.trim() !== '')) {
+                setAlertMessage('Please provide all three referral emails');
+                setShowAlert(true);
+                return;
+            }
+
+            // Check if user included their own email
+            const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
+            const normalizedUserEmail = email.trim().toLowerCase();
+
+            if (normalizedReferralEmails.includes(normalizedUserEmail)) {
+                setAlertMessage('You cannot include your own email as a referral');
+                setShowAlert(true);
+                return;
+            }
+
+            // Check for duplicate emails using Set
+            const uniqueEmails = new Set(normalizedReferralEmails);
+            if (uniqueEmails.size !== referralEmails.length) {
+                setAlertMessage('Referral emails must be unique');
+                setShowAlert(true);
+                return;
+            }
+        }
 
         setIsLoading(true);
         setIsVerifying(true);
 
-        // const jwtToken = sessionStorage.getItem("jwtToken");
-        // if (!jwtToken) {
-        //     console.error("JWT token missing. Unable to set up profile.");
-        //     return;
-        // }
+        const jwtToken = sessionStorage.getItem("jwtToken");
+        if (!jwtToken) {
+            console.error("JWT token missing. Unable to set up profile.");
+            return;
+        }
 
-        const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDM2OTAsImV4cCI6MTczMTMwNzI5MH0.HyvOUiJfSu_X66WfhPiF4Gy1Ee26x5RweDvWUaIFe0E";
+        // const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDk4NzAsImV4cCI6MTczMTMxMzQ3MH0.1OPFkI17tTnm-_x3G17ZzcLSbnXWrI_m-zHwk0WVkW4";
 
         // Set up API client instance and authenticate with JWT
         let defaultClient = CredibleCupid.ApiClient.instance;
@@ -198,14 +224,6 @@ function Register() {
         e.target.style.backgroundColor = colors.gray.lighter;
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setPhoto(file);
-            setPreviewImage(URL.createObjectURL(file));
-        }
-    };
-
     const Alert = ({ message, onClose }) => (
         <div style={{
             position: 'fixed',
@@ -249,7 +267,51 @@ function Register() {
         </div>
     );
 
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setIsUploading(true);
 
+            // Set preview immediately 
+            setPhoto(file);
+            setPreviewImage(URL.createObjectURL(file));
+
+            let defaultClient = CredibleCupid.ApiClient.instance;
+            let bearer = defaultClient.authentications['bearer'];
+            const jwtToken = sessionStorage.getItem("jwtToken");
+            if (!jwtToken) {
+                console.error("JWT token missing. Unable to set up profile.");
+                return;
+            }
+            // const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDk4NzAsImV4cCI6MTczMTMxMzQ3MH0.1OPFkI17tTnm-_x3G17ZzcLSbnXWrI_m-zHwk0WVkW4";
+            bearer.accessToken = jwtToken
+
+            let userApi = new CredibleCupid.UserApi();
+            let opts = {
+                'file': file
+            };
+
+            console.log("handling image upload")
+            InitDefaultCredibleCupidClient(jwtToken)
+            userApi.uploadProfilePic(opts, (error, data, response) => {
+                setIsUploading(false);
+
+                if (error) {
+                    console.error('Error uploading profile picture:', error);
+                    setAlertMessage('Failed to upload profile picture. Please try again.');
+                    setShowAlert(true);
+                } else {
+                    console.log('Profile picture uploaded successfully');
+                    if (data?.url) {
+                        setPreviewImage(data.url);
+                    }
+                }
+            });
+
+        }
+    };
+
+    // Then update your ImageUpload component to show loading state:
     const ImageUpload = () => (
         <div style={inputStyles.container}>
             <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Profile Picture</label>
@@ -270,7 +332,8 @@ function Register() {
                         height: '150px',
                         borderRadius: '50%',
                         overflow: 'hidden',
-                        marginBottom: spacing.md
+                        marginBottom: spacing.md,
+                        position: 'relative'
                     }}>
                         <img
                             src={previewImage}
@@ -278,9 +341,20 @@ function Register() {
                             style={{
                                 width: '100%',
                                 height: '100%',
-                                objectFit: 'cover'
+                                objectFit: 'cover',
+                                opacity: isUploading ? 0.5 : 1
                             }}
                         />
+                        {isUploading && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)'
+                            }}>
+                                Loading...
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div style={{
@@ -302,17 +376,19 @@ function Register() {
                     onChange={handleImageChange}
                     style={{ display: 'none' }}
                     id="profile-image-upload"
+                    disabled={isUploading}
                 />
                 <label
                     htmlFor="profile-image-upload"
                     style={{
                         ...buttonStyles.base,
-                        cursor: 'pointer',
+                        cursor: isUploading ? 'not-allowed' : 'pointer',
                         textAlign: 'center',
                         height: '30px',
+                        opacity: isUploading ? 0.7 : 1
                     }}
                 >
-                    {previewImage ? 'Change Photo' : 'Upload Photo'}
+                    {isUploading ? 'Uploading...' : (previewImage ? 'Change Photo' : 'Upload Photo')}
                 </label>
             </div>
         </div>
@@ -449,7 +525,7 @@ function Register() {
                                 <option value="Gay">Gay</option>
                                 <option value="Lesbian">Lesbian</option>
                                 <option value="Bisexual">Bisexual</option>
-                                <option value="Aisexual">Bisexual</option>
+                                <option value="Asexual">Asexual</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -613,7 +689,7 @@ function Register() {
                         {step === 1 && 'Step 1: Account Details'}
                         {step === 2 && 'Step 2: Personal Information'}
                         {step === 3 && 'Step 3: Profile Details'}
-                        {step === 4 && gender === 'male' && 'Step 4: Referrals'}
+                        {step === 4 && gender.toLowerCase() === 'male' && 'Step 4: Referrals'}
                     </p>
                 </div>
 
@@ -648,15 +724,15 @@ function Register() {
                             </button>
                         ) : (
                             <button
-                                type={(step === 4 && gender === 'male') || (step === 3 && gender !== 'male') ? "submit" : "button"}
-                                onClick={(step === 4 && gender === 'male') || (step === 3 && gender !== 'male') ? undefined : handleNext}
+                                type={(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male') ? "submit" : "button"}
+                                onClick={(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male') ? undefined : handleNext}
                                 style={{
                                     ...buttonStyles.base,
                                     flex: 1
                                 }}
                                 disabled={isLoading}
                             >
-                                {(step === 4 && gender === 'male') || (step === 3 && gender !== 'male')
+                                {(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male')
                                     ? (isLoading ? 'Creating Account...' : 'Create Account')
                                     : 'Next'}
                             </button>

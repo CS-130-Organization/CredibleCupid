@@ -1,10 +1,10 @@
 import React from 'react';
-import { useLocation, BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { useLocation, BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
 import CardStack from './components/CardStack';
-import NavBar from './components/NavBar'; 
+import NavBar from './components/NavBar';
 import { colors } from './styles/theme';
 import './App.css';
 
@@ -15,7 +15,8 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.gray.lighter
+    backgroundColor: colors.gray.lighter,
+
   },
   contentWrapper: {
     width: '390px',
@@ -28,6 +29,9 @@ const styles = {
 
 function App() {
   const location = useLocation();
+  const hideNavBarPaths = ['/login', '/register'];
+  const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
+
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentWrapper}>
@@ -35,10 +39,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/browse" element={<CardStack />} />
-          <Route exact path="/register" element={<Register/>} />
-        {/* ... other routes ... */}
+          <Route exact path="/register" element={<Register />} />
+          {/* ... other routes ... */}
         </Routes>
-        {location.pathname !== '/login' && <NavBar />}
+        {shouldShowNavBar && <NavBar />}
       </div>
     </div>
   );
