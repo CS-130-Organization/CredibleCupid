@@ -2,11 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-// import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
-// import styled from '@emotion/styled';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
-// import logo from '../assets/images/logo.png';
 import { colors, spacing } from '../styles/theme';
 import { 
   inputStyles,
@@ -298,6 +295,11 @@ const Profile = ({
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const handleTestUserProfile = (e) => {
+    e.preventDefault();  // Prevents the form from refreshing the page
+    navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
   };
 
   const handleFetchProfile = (e) => {
@@ -1215,7 +1217,7 @@ const Profile = ({
                       <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                     </div>
                   </div>
-                  <form onSubmit={handleFetchProfile}>
+                  <form onSubmit={handleTestUserProfile}>
                     <div>
                       <label htmlFor="guid">GUID:</label>
                       <input
@@ -1228,7 +1230,7 @@ const Profile = ({
                     </div>
                     <button type="submit">Fetch Profile</button>
                   </form>
-                  </div>
+                </div>
                 </div>
             </div>
           </div>
