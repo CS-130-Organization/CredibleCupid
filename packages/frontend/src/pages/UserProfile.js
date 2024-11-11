@@ -1,13 +1,13 @@
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; 
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
 import { 
   inputStyles,
-  badgeStyles, 
 } from '../styles/commonStyles';
 
 
@@ -252,7 +252,7 @@ function UserProfile({
       navigate("/login");
     }
 
-  }, [tokenRefreshed, navigate]);
+  }, [tokenRefreshed, navigate, guid]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
@@ -264,24 +264,49 @@ function UserProfile({
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
+  const handleBackClick = () => {
+    navigate(-1);  // Go back to the previous page
+  };
+
   if (!userData) return <p>Loading...</p>;
 
   return (
     <div className="profile-page">
       <>
-          <div style={{
-            width: '390px',
-            // height: '844px',
-            backgroundColor: colors.white,
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}>
+        <motion.div style={{
+        width: '390px',
+        // height: '844px',
+        backgroundColor: colors.white,
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+             {/* Back Button */}
+        <button
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            cursor: 'pointer',
+            fontSize: '24px',
+            color: colors.gray.text,
+            zIndex: 1, // Ensures it appears above the image
+          }}
+          onClick={handleBackClick}
+        >
+          <ArrowLeft size={24} />
+        </button>
             {/* Profile Image Section */}
 
-            <div style={{
+            <motion.div style={{
               // width: '300px', // Smaller logo
               // height: '300px',
               width: '100%',
@@ -291,7 +316,11 @@ function UserProfile({
               alignItems: 'center',
               justifyContent: 'center',
               // marginTop: '60px' // Push down from top
-            }}>
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            >
               {profilePicUrl ? (
                 <img
                   src={profilePicUrl}
@@ -322,7 +351,7 @@ function UserProfile({
                   />
               )}
               {
-                <div style={{
+                <motion.div style={{
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
                   right: '10px', // Adjusts distance from left of image
@@ -333,16 +362,20 @@ function UserProfile({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                }}>
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                >
                   <Verified size={16} />
                   <span>Verified</span>
-                </div>
+                </motion.div>
               }
 
-            </div>
+            </motion.div>
 
             {/* Content Container */}
-            <div style={{
+            <motion.div style={{
               // width: '100%',
               // padding: '0 spacing.xl',
               // maxWidth: '350px', // Constrain width of form
@@ -355,28 +388,39 @@ function UserProfile({
               borderRadius: '64px',
               position: 'relative',
               zIndex: 1, // Ensures it appears above the image
-            }}>
+            }}
+            // initial={{ opacity: 0 }}
+            // animate={{ opacity: 1 }}
+            // transition={{ delay: 0.5, duration: 0.5 }}
+            >
               <div style={{
                 width: '90%',
                 // padding: '0 spacing.xl',
                 padding: '20px',
                 maxWidth: '300px', // Constrain width of form
                 // marginTop: spacing.xl
-                // marginTop: '20px', 
-                margin: '10px', 
+                marginTop: '5px', 
+                marginBottom: '10px', 
+                marginLeft: '10px', 
+                marginRight: '10px', 
+                // margin: '10px', 
               }}>
                 {/* Header Section */}
                 <div style={{
                   textAlign: 'left',
                   marginBottom: spacing.xl
                 }}>
-                  <div
+                  <motion.div
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
                       marginBottom: spacing.md
-                    }}>
+                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 0.5 }}
+                    >
                       <div>
                           <h1 style={{
                             fontSize: '30px',
@@ -417,26 +461,29 @@ function UserProfile({
                       </div>
 
 
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: spacing.xs,
-                        padding: `${spacing.xs} ${spacing.md}`,
-                        borderRadius: spacing.md,
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
-                        color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
-                      }}>
-                        <Star size={16} />
-                        <span>{credibilityScore}%</span>
-                      </div>                  
-                  </div>
-                  
+                        <motion.div style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: spacing.xs,
+                            padding: `${spacing.xs} ${spacing.md}`,
+                            borderRadius: spacing.md,
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
+                            color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1, duration: 0.5 }}
+                        >
+                            <Star size={16} />
+                            <span>{credibilityScore}%</span>
+                        </motion.div>                  
+                    </motion.div>
                 </div>
 
                 {/* Info Section */}
-                <div 
+                <motion.div 
                   style={{
                     width: '100%',
                     display: 'flex',
@@ -444,6 +491,9 @@ function UserProfile({
                     gap: spacing.lg
                   }}
                   // onSubmit={handleSubmit}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
                 >
                   {/* Bio */}
                   <div style={inputStyles.container}>
@@ -482,21 +532,24 @@ function UserProfile({
                     </div>)}
                   </div>
 
-                  {/* Referrals */}
-                  <div style={inputStyles.container}>
-                    <label style={inputStyles.label}>
-                    Referrals
-                    </label>
-                    <div>
-                      <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                      <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                      <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                    </div>
-                  </div>
-                  </div>
+                    {/* Referrals */}
+                    <motion.div  style={inputStyles.container}
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     transition={{ delay: 1.2, duration: 0.5 }}>
+                        <label style={inputStyles.label}>
+                        Referrals
+                        </label>
+                        <div>
+                        <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                        <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                        <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                        </div>
+                    </motion.div>
+                  </motion.div>
                 </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </>
         <br></br>
         <br></br>
