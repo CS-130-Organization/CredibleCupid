@@ -169,16 +169,30 @@ function Register() {
         });
 
         // TODO: re-implement once referral + ai backend are done
-        // Start verification process
-        if (gender.toLowerCase() === 'male') {
-            // For male users, show referral verification first
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-            setVerificationStep(1); // Move to AI check
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait another 5 seconds
-        } else {
-            // For non-male users, only show AI check
-            setVerificationStep(1);
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        try {
+            // Start verification process
+            if (gender.toLowerCase() === 'male') {
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                setVerificationStep(1); // Move to AI check
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait another 5 seconds
+            } else {
+                setVerificationStep(1);
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+            }
+
+            // If AI check passes, proceed with bio update
+            userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
+                if (error) {
+                    console.error("Failed to update profile:", error);
+                    navigate('/error');
+                } else {
+                    console.log("Successfully set up bio: ", data);
+                    navigate('/success');  // Navigate to success page instead of login
+                }
+            });
+        } catch (error) {
+            console.error("Verification failed:", error);
+            navigate('/error');
         }
         navigate('/login');
     };
@@ -229,7 +243,7 @@ function Register() {
                     fontSize: '16px',
                     lineHeight: '1.5',
                     color: colors.gray.text,
-                    whiteSpace: 'pre-line' 
+                    whiteSpace: 'pre-line'
                 }}>
                     {message}
                 </div>
@@ -430,7 +444,6 @@ function Register() {
                                 type="text"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
-                                required
                                 placeholder="Enter your first name"
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
@@ -443,7 +456,6 @@ function Register() {
                                 type="text"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
-                                required
                                 placeholder="Enter your last name"
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
@@ -456,7 +468,6 @@ function Register() {
                                 type="text"
                                 value={pronouns}
                                 onChange={(e) => setPronouns(e.target.value)}
-                                required
                                 placeholder="Enter your pronouns"
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
@@ -472,7 +483,6 @@ function Register() {
                                 }}
                                 value={gender}
                                 onChange={(e) => setGender(e.target.value)}
-                                required
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
                             >
@@ -493,7 +503,6 @@ function Register() {
                                 }}
                                 value={orientation}
                                 onChange={(e) => setOrientation(e.target.value)}
-                                required
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
                             >
