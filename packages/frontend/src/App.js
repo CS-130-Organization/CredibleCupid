@@ -3,6 +3,7 @@ import { useLocation, BrowserRouter as Router, Route, Routes } from 'react-route
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import AiError from './pages/AiError';
 import CardStack from './components/CardStack';
 import NavBar from './components/NavBar';
 import { colors } from './styles/theme';
@@ -29,7 +30,7 @@ const styles = {
 
 function App() {
   const location = useLocation();
-  const hideNavBarPaths = ['/login', '/register'];
+  const hideNavBarPaths = ['/login', '/register', '/aierror'];
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
 
   return (
