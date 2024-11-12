@@ -21,19 +21,19 @@ function Register() {
     const [birthday, setBirthday] = useState('');
     const [bio, setBio] = useState('');
     const [photo, setPhoto] = useState(null);
-    const [referralEmails, setReferralEmails] = useState(['', '', '']);
     const [isLoading, setIsLoading] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const navigate = useNavigate();
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
+    const [verificationStep, setVerificationStep] = useState(0);
 
     // Add this to your state declarations
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
-        
+/*
         switch (step) {
             case 1:
                 if (!email || !password || !confirmPassword) {
@@ -110,31 +110,7 @@ function Register() {
                     return;
                 }
                 break;
-            // case 4:
-            //     if (!referralEmails.every(email => email.trim() !== '')) {
-            //         setAlertMessage('Please provide all three referral emails');
-            //         setShowAlert(true);
-            //         return;
-            //     }
-
-            //     // Check if user included their own email
-            //     const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
-            //     const normalizedUserEmail = email.trim().toLowerCase();
-
-            //     if (normalizedReferralEmails.includes(normalizedUserEmail)) {
-            //         setAlertMessage('You cannot include your own email as a referral');
-            //         setShowAlert(true);
-            //         return;
-            //     }
-
-            //     // Check for duplicate emails using Set
-            //     const uniqueEmails = new Set(normalizedReferralEmails);
-            //     if (uniqueEmails.size !== referralEmails.length) {
-            //         setAlertMessage('Referral emails must be unique');
-            //         setShowAlert(true);
-            //         return;
-            //     }
-        } 
+        } */
         setStep(step + 1);
     };
 
@@ -142,32 +118,6 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if(step === 4){
-            if (!referralEmails.every(email => email.trim() !== '')) {
-                setAlertMessage('Please provide all three referral emails');
-                setShowAlert(true);
-                return;
-            }
-
-            // Check if user included their own email
-            const normalizedReferralEmails = referralEmails.map(email => email.trim().toLowerCase());
-            const normalizedUserEmail = email.trim().toLowerCase();
-
-            if (normalizedReferralEmails.includes(normalizedUserEmail)) {
-                setAlertMessage('You cannot include your own email as a referral');
-                setShowAlert(true);
-                return;
-            }
-
-            // Check for duplicate emails using Set
-            const uniqueEmails = new Set(normalizedReferralEmails);
-            if (uniqueEmails.size !== referralEmails.length) {
-                setAlertMessage('Referral emails must be unique');
-                setShowAlert(true);
-                return;
-            }
-        }
 
         setIsLoading(true);
         setIsVerifying(true);
@@ -211,6 +161,19 @@ function Register() {
                 console.log("Successfully set up bio: ", data);
             }
         });
+
+        // Start verification process
+        if (gender.toLowerCase() === 'male') {
+            // For male users, show referral verification first
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+            setVerificationStep(1); // Move to AI check
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait another 5 seconds
+        } else {
+            // For non-male users, only show AI check
+            setVerificationStep(1);
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        }
+
 
         navigate('/login');
     };
@@ -591,7 +554,6 @@ function Register() {
                                 }}
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
-                                required
                                 placeholder="Tell us about yourself"
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
@@ -600,74 +562,48 @@ function Register() {
                     </div>
                 );
 
-            case 4:
-                return (
-                    <div>
-                        {[0, 1, 2].map((index) => (
-                            <div key={index} style={inputStyles.container}>
-                                <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Referral Email {index + 1}</label>
-                                <input
-                                    style={inputStyles.input}
-                                    type="email"
-                                    value={referralEmails[index]}
-                                    onChange={(e) => {
-                                        const newEmails = [...referralEmails];
-                                        newEmails[index] = e.target.value;
-                                        setReferralEmails(newEmails);
-                                    }}
-                                    required
-                                    placeholder={`Enter referral email ${index + 1}`}
-                                    onFocus={handleFocus}
-                                    onBlur={handleBlur}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                );
-
             default:
                 return null;
         }
     };
 
-    const renderVerification = () => (
-        <div style={{
-            textAlign: 'center',
-            padding: spacing.xl
-        }}>
-            <div style={{
-                width: '60px',
-                height: '60px',
-                margin: '0 auto',
-                border: `4px solid ${colors.gray.lighter}`,
-                borderTopColor: colors.primary,
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-            }} />
-            <h2 style={titleStyles}>Verifying Your Information</h2>
-            <p style={subheadingStyles}>
-                Please wait while we process your registration.
-                You will be redirected to the login page shortly.
-            </p>
-            <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+    const renderVerification = () => {
+        let verificationMessage;
+        if (gender.toLowerCase() === 'male') {
+            verificationMessage = verificationStep === 0 
+                ? "Verifying referrals..." 
+                : "Checking for AI profile...";
+        } else {
+            verificationMessage = "Checking for AI profile...";
         }
-      `}</style>
-        </div>
-    );
 
-    if (isVerifying) {
         return (
-            <div style={cardStyles.container}>
-                <div style={logoStyles.container}>
-                    <img src={logo} alt="Heart icon" style={logoStyles.image} />
-                </div>
-                {renderVerification()}
+            <div style={{
+                textAlign: 'center',
+                padding: spacing.xl
+            }}>
+                <div style={{
+                    width: '60px',
+                    height: '60px',
+                    margin: '0 auto',
+                    border: `4px solid ${colors.gray.lighter}`,
+                    borderTopColor: colors.primary,
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                }} />
+                <h2 style={titleStyles}>Verifying Your Information</h2>
+                <p style={subheadingStyles}>
+                    {verificationMessage}
+                </p>
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
             </div>
         );
-    }
+    };
 
     return (
         <div style={{
@@ -682,71 +618,63 @@ function Register() {
                 <img src={logo} alt="Heart icon" style={logoStyles.image} />
             </div>
 
-            <div style={contentContainerStyles.container}>
-                <div style={contentContainerStyles.header}>
-                    <h1 style={titleStyles}>Create Your Account</h1>
-                    <p style={subheadingStyles}>
-                        {step === 1 && 'Step 1: Account Details'}
-                        {step === 2 && 'Step 2: Personal Information'}
-                        {step === 3 && 'Step 3: Profile Details'}
-                        {step === 4 && gender.toLowerCase() === 'male' && 'Step 4: Referrals'}
-                    </p>
+            {isVerifying ? (
+                <div style={cardStyles.container}>
+                    {renderVerification()}
                 </div>
+            ) : (
+                <div style={contentContainerStyles.container}>
+                    <div style={contentContainerStyles.header}>
+                        <h1 style={titleStyles}>Create Your Account</h1>
+                        <p style={subheadingStyles}>
+                            {step === 1 && 'Step 1: Account Details'}
+                            {step === 2 && 'Step 2: Personal Information'}
+                            {step === 3 && 'Step 3: Profile Details'}
+                        </p>
+                    </div>
 
-                <form style={formStyles} onSubmit={handleSubmit}>
-                    {renderStep()}
+                    <form style={formStyles} onSubmit={handleSubmit}>
+                        {renderStep()}
 
-                    <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
-                        {step > 2 && (
+                        <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
+                            {step > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={handleBack}
+                                    style={{
+                                        ...buttonStyles.base,
+                                        flex: 1,
+                                        backgroundColor: colors.gray.lighter,
+                                        color: colors.gray.text
+                                    }}
+                                >
+                                    Back
+                                </button>
+                            )}
                             <button
-                                type="button"
-                                onClick={handleBack}
-                                style={{
-                                    ...buttonStyles.base,
-                                    flex: 1,
-                                    backgroundColor: colors.gray.lighter,
-                                    color: colors.gray.text
-                                }}
-                            >
-                                Back
-                            </button>
-                        )}
-                        {step === 1 ? (
-                            <button
-                                type="button"
-                                onClick={handleNext}
-                                style={{
-                                    ...buttonStyles.base,
-                                    flex: 1
-                                }}
-                            >
-                                Proceed to Profile Setup
-                            </button>
-                        ) : (
-                            <button
-                                type={(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male') ? "submit" : "button"}
-                                onClick={(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male') ? undefined : handleNext}
+                                type={step === 3 ? "submit" : "button"}
+                                onClick={step === 3 ? undefined : handleNext}
                                 style={{
                                     ...buttonStyles.base,
                                     flex: 1
                                 }}
                                 disabled={isLoading}
                             >
-                                {(step === 4 && gender.toLowerCase() === 'male') || (step === 3 && gender.toLowerCase() !== 'male')
+                                {step === 3
                                     ? (isLoading ? 'Creating Account...' : 'Create Account')
-                                    : 'Next'}
+                                    : step === 1 ? 'Proceed to Profile Setup' : 'Next'}
                             </button>
-                        )}
-                    </div>
-                </form>
+                        </div>
+                    </form>
 
-                {step === 1 && (
-                    <p style={linkStyles.nonLink}>
-                        Already have an account?{' '}
-                        <Link to="/login" style={linkStyles.link}>Sign in here</Link>
-                    </p>
-                )}
-            </div>
+                    {step === 1 && (
+                        <p style={linkStyles.nonLink}>
+                            Already have an account?{' '}
+                            <Link to="/login" style={linkStyles.link}>Sign in here</Link>
+                        </p>
+                    )}
+                </div>
+            )}
             {showAlert && (
                 <Alert
                     message={alertMessage}
