@@ -1,35 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { Button, Box, Typography, Paper, Avatar, Chip, TextField } from '@mui/material';
-import styled from '@emotion/styled';
-import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom";
-import logo from '../assets/images/logo.png';
+import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
+import { colors, spacing } from '../styles/theme';
+import { 
+  imageStyles,
+  inputStyles,
+} from '../styles/commonStyles';
 
-const colors = {
-  green: {
-    light: '#22c55e',
-    dark: '#16a34a'
-  },
-  red: {
-    light: '#ef4444'
-  },
-  gray: {
-    light: '#f8f9fa',
-    lighter: '#f3f4f6',
-    border: '#D1D5DB',
-    text: '#374151'
-  },
-  white: '#ffffff',
-  black: {
-    opacity10: 'rgba(0, 0, 0, 0.1)',
-  },
-  overlay: {
-    white: 'rgba(255, 255, 255, 0.9)'
-  }
-};
 
 const styles = {
   container: {
@@ -99,19 +79,6 @@ const styles = {
     textAlign: 'left',
     alignSelf: 'flex-start', 
     marginBottom: '4px', 
-
-    // backgroundColor: colors.green.light,
-    // color: colors.white,
-    // padding: '16px 24px',
-    // borderRadius: '12px',
-    // border: 'none',
-    // fontWeight: '600',
-    // cursor: 'pointer',
-    // transition: 'all 0.2s ease',
-    // fontSize: '16px',
-    // width: '100%',
-    // marginTop: '12px',
-    // boxShadow: `0 2px 8px ${colors.black.opacity10}`,
     
   },
   input: {
@@ -223,15 +190,56 @@ const Profile = ({
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
+  const [profilePicUrl, setProfilePicUrl] = useState(null);
+
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
 
-   // For interests
-   const [interests, setInterests] = useState([]); // List of interests
-   const [currentInterest, setCurrentInterest] = useState(''); // Current input
+  // const [heightFeet, setHeightFeet] = useState(userData?.height_mm ? Math.floor(userData.height_mm / 25.4 / 12) : 0);
+  // const [heightInches, setHeightInches] = useState(userData?.height_mm ? Math.round((userData.height_mm / 25.4) % 12) : 0);
+  
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
+
+    const fetchProfile = (guid) => {
+      setIsOwner(true);
+
+      const apiInstance = new CredibleCupid.UserApi();
+      apiInstance.queryUser(guid, (error, data) => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("Successfully fetched profile");
+
+          const birthdayDate = new Date(data.birthday_ms_since_epoch);
+          const formattedBirthday = birthdayDate instanceof Date && !isNaN(birthdayDate)
+            ? birthdayDate.toISOString().split('T')[0]
+            : "";
+
+          const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
+          const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
+            
+
+          const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
+          setUserData(updatedUserData);
+
+
+
+          apiInstance.profilePicUser(guid, (error, data, response) => {
+            if (error) {
+              console.error("Error fetching profile picture:", error);
+            } else {
+              // Assuming response contains the URL to the profile picture
+              setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
+
+              console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
+            }
+          });
+        }
+      });
+    };
+
     if (jwtToken && !tokenRefreshed) {
       InitDefaultCredibleCupidClient(jwtToken);
 
@@ -244,6 +252,7 @@ const Profile = ({
           console.log('API called successfully. Returned data: ' + JSON.stringify(data, null, 2));
           sessionStorage.setItem("jwtToken", data.jwt);
           setTokenRefreshed(true); // Set to true so this only runs once
+          fetchProfile(data.user_guid); // Call fetchProfile directly
         }
       });
     } else if (!jwtToken) {
@@ -253,94 +262,83 @@ const Profile = ({
 
 
     // Dummy user data with additional fields
-    const dummyData = {
-      email: "example@email.com",
-      first_name: "first_name",
-      last_name: "last_name",
-      guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
-      bio: "Dummy bio",
-      gender: "Male",
-      pronouns: "He/Him",
-      sexual_orientation: "Straight",
-      // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-      birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-      date_of_birth: "1990-05-18",
-      height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
-      occupation: "Dummy occupation",
-      education: "Dummy education",
-      location: "Dummy location"
-    };
+    // const dummyData = {
+    //   email: "example@email.com",
+    //   first_name: "first_name",
+    //   last_name: "last_name",
+    //   guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
+    //   bio: "Dummy bio",
+    //   gender: "Male",
+    //   pronouns: "He/Him",
+    //   sexual_orientation: "Straight",
+    //   // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+    //   birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
+    //   date_of_birth: "1990-05-18",
+    //   height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
+    //   occupation: "Dummy occupation",
+    //   education: "Dummy education",
+    //   location: "Dummy location",
+    //   verified: true,
+    //   // verified: True,
+    // };
     
     // Set dummy data to mimic API response
-    if (!userData) setUserData(dummyData);
-  }, [userData, navigate, tokenRefreshed]);
+    // if (!userData) setUserData(dummyData);
+  }, [tokenRefreshed, navigate]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
+    if (!birthdayMs || isNaN(birthdayMs)) {
+      return "Age not provided"; // or return a fallback value if preferred
+    }
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
-  const handleFetchProfile = (e) => {
-    e.preventDefault();
+  const handleTestUserProfile = (e) => {
+    e.preventDefault();  // Prevents the form from refreshing the page
+    navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
+  };
 
-    if (guid === userGuid) {
-      setIsOwner(true);
-    } else {
-      setIsOwner(false);
-    }
+  // const handleFetchProfile = (e) => {
+  //   e.preventDefault();
 
-    // InitDefaultCredibleCupidClient(null);
-    const apiInstance = new CredibleCupid.UserApi();
-    apiInstance.queryUser(guid, (error, data) => {
-      if (error) {
-        console.error(error);
-      } else {
-        console.log("Successfully fetch profile")
+  //   if (guid === userGuid) {
+  //     setIsOwner(true);
+  //   } else {
+  //     setIsOwner(false);
+  //   }
+
+  //   // InitDefaultCredibleCupidClient(null);
+  //   const apiInstance = new CredibleCupid.UserApi();
+  //   apiInstance.queryUser(guid, (error, data) => {
+  //     if (error) {
+  //       console.error(error);
+  //     } else {
+  //       console.log("Successfully fetch profile")
         
-        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-        const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  //       // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
+  //       const birthdayDate = new Date(data.birthday_ms_since_epoch);
+  //       const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
 
-        // Add date_of_birth to the data object
-        const updatedUserData = {
-          ...data,
-          date_of_birth: formattedBirthday,
-        };
+  //       const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
+  //       const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
+          
 
-        // Update userData with the new data
-          setUserData(updatedUserData);
-      }
-    });
-  };
+  //       // Add date_of_birth to the data object
+  //       const updatedUserData = { 
+  //         ...data, date_of_birth: formattedBirthday, 
+  //         height_ft: heightFeet, 
+  //         height_in: heightInches };
 
-  const handleFetchOwnProfile = () => {
-    setIsOwner(true);
-    // setError(''); // Clear any previous errors
 
-    const apiInstance = new CredibleCupid.UserApi();
-    apiInstance.queryUser(userGuid, (error, data) => {
-      if (error) {
-        console.error(error);
-        // setError("Failed to fetch profile.");
-      } else {
-        console.log("Successfully fetched profile");
-        // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-        const birthdayDate = new Date(data.birthday_ms_since_epoch);
-        const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  //       // Update userData with the new data
+  //         setUserData(updatedUserData);
+  //     }
+  //   });
+  // };
 
-        // Add date_of_birth to the data object
-        const updatedUserData = {
-          ...data,
-          date_of_birth: formattedBirthday,
-        };
-
-        // Update userData with the new data
-        setUserData(updatedUserData);
-      }
-    });
-  };
 
   const handleUpdateProfile = (e) => {
     e.preventDefault();
@@ -362,9 +360,16 @@ const Profile = ({
     // Convert date_of_birth to milliseconds since epoch
     const birthdayMs = new Date(userData.date_of_birth).getTime();
     userData.birthday_ms_since_epoch = birthdayMs;
+
+    // convert Height
+    const totalInches = parseInt(userData.height_ft, 10) * 12 + parseInt(userData.height_in, 10);
+    const mmHeight = totalInches * 25.4;
+    
+
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
+      email: userData.email,
       first_name: userData.first_name,
       last_name: userData.last_name,
       bio: userData.bio,
@@ -372,8 +377,11 @@ const Profile = ({
       pronouns: userData.pronouns,
       sexual_orientation: userData.sexual_orientation,
       // birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
+      date_of_birth: userData.date_of_birth,
       birthday_ms_since_epoch: birthdayMs,
-      height_mm: userData.height_mm,
+      height_mm: mmHeight,
+      height_ft: userData.height_ft,
+      height_in: userData.height_in,
       occupation: userData.occupation,
   };
     console.log(JSON.stringify(userUpdateBioRequest)); // new CredibleCupidApi.UserUpdateBioRequest(); puts the data as an entry in a bio object
@@ -383,7 +391,7 @@ const Profile = ({
         console.error("Failed to update profile:", error);
       } else {
         console.log("Successfully updated bio");
-        setUserData(data); // Update the state with new data
+        setUserData(userUpdateBioRequest); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
     });
@@ -394,349 +402,565 @@ const Profile = ({
     setUserData({ ...userData, [name]: value });
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const apiInstance = new CredibleCupid.UserApi();
+      const opts = { file }; // File selected by the user
+      try {
+        apiInstance.uploadProfilePic(opts, (error, data, response) => {
+          if (error) {
+            console.error("Error uploading profile picture:", error);
+          } else {
+            console.log("Profile picture uploaded successfully");
+            // Optionally, update the UI with the new profile picture
+            // Fetch the updated profile picture
+            // const guid = 'YOUR_USER_GUID'; // Replace with the actual GUID for the user
+            apiInstance.profilePicUser(userGuid, (error, data, response) => {
+              if (error) {
+                console.error("Error fetching profile picture:", error);
+              } else {
+                // Assuming response contains the URL to the profile picture
+                setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
 
-
-  const inputRef = useRef(null);
-  const handleInterestKeyDown = (e) => {
-    if (e.key === ' '|| e.key === 'Enter') {
-      e.preventDefault();
-      if (currentInterest.trim()) {
-        setInterests([...interests, currentInterest.trim()]);
-        setCurrentInterest(''); // Clear the input
+                console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
+              }
+            });
+          }
+        });
+        
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
       }
-      console.log(interests)
-    }else{
-      console.log("KEY PRESSED")
     }
-  };
-
-  const handleInterestDelete = (interestToDelete) => {
-    setInterests(interests.filter(interest => interest !== interestToDelete));
   };
 
 
   if (!userData) return <div>Loading...</div>;
 
-  // const ProfileContainer = styled(Paper)({
-  //   maxWidth: '600px',
-  //   margin: '20px auto',
-  //   padding: '20px',
-  //   // borderRadius: '10px',
-  // });
-
-  const ProfileContainer = styled('div')({
-    ...styles.container,
-    // maxWidth: '600px',
-    margin: 'auto',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  });
 
   return (
     <div className="profile-page">
-      <p>Profile</p>
-      <br></br>
-      {/* Fetching your own profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
-
-      <button onClick={handleFetchOwnProfile}>{"My Profile"}</button>
-
+      {/* <p>Profile</p> */}
 
       {isEditing && isOwner ? (
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-        <ProfileContainer>
-          <button 
-          style={styles.button}
-          type="button" 
-          onClick={() => setIsEditing(false)}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = colors.green.dark;
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+        {/* <ProfileContainer> */}
+         
+        <motion.div style={{
+            width: '390px',
+            // height: '844px',
+            backgroundColor: colors.white,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = colors.green.light;
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-          }}
-          >Done Editing</button>
-
-          
-        <div style={styles.loginBox}>
-          <form style={styles.form} onSubmit={handleUpdateProfile}>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>
-                  Email:
-                  <input
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
+            <motion.div 
+            style={{
+              width: '100%',
+              padding: '0 spacing.xl',
+              maxWidth: '350px', // Constrain width of form
+              marginTop: spacing.xl
+            }}initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: 'easeOut' }}>
+              <form style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '24px',
+              }} onSubmit={handleUpdateProfile}>
+                {/* back button */}
+                {/* <button 
+                style={styles.button}
+                type="button" 
+                onClick={() => setIsEditing(false)}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.green.dark;
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.green.light;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                }}
+                >Done Editing</button> */}
+                 {/* Back Button */}
+                  <button
                     style={{
-                      ...styles.input,
-                      ':focus': {
-                        borderColor: colors.green.light,
-                        backgroundColor: colors.white,
-                      }
+                      backgroundColor: 'transparent',
+                      // backgroundColor: colors.gray.lighter,
+                      border: 'none',
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      cursor: 'pointer',
+                      fontSize: '24px',
+                      color: colors.gray.dark,
+                      // boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
+                      borderRadius: '64px',
+                      zIndex: 1, // Ensures it appears above the image
                     }}
-                    type="email"
-                    name="email"
-                    value={userData.email}
-                    onChange={handleChange}
-                    disabled
-                  />
-                </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                First Name:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="first_name"
-                  value={userData.first_name}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Last Name:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="last_name"
-                  value={userData.last_name}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Gender:
-                <select
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  name="gender"
-                  value={userData.gender}
-                  onChange={handleChange}
-                  
+                    onClick={() => setIsEditing(false)}
+                  >
+                    <ArrowLeft size={24} />
+                  </button>
+                  <div style={{
+                      // width: '100%',
+                      // height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+
+                  }}>
+                  Edit Profile
+                  </div>
+                {/* Upload Image */}
+                <motion.div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: '3px' // Push down from top
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
                 >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-Binary">Non-Binary</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>            
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Pronouns:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="text"
-                  name="pronouns"
-                  value={userData.pronouns}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Sexual Orientation:
-                <select
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  name="sexual_orientation"
-                  value={userData.sexual_orientation}
-                  onChange={handleChange}
-                >
-                  <option value="Straight">Straight</option>
-                  <option value="Gay">Gay</option>
-                  <option value="Lesbian">Lesbian</option>
-                  <option value="Bisexual">Bisexual</option>
-                  <option value="Asexual">Asexual</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>            
-            </div>
-            <div style={styles.inputGroup}>
-                <label style={styles.label}>
-                    Date of Birth:
+                {profilePicUrl ? (
+                  <img
+                    src={profilePicUrl}
+                    alt={`${userData.first_name}'s profile`}
+                    // style={imageStyles.image}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      opacity: 0.9,
+                      borderRadius: 10
+                    }}
+                    />
+                ) : (
+                  <img
+                    src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                    alt={`${userData.first_name}'s profile`}
+                    // style={imageStyles.image}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      opacity: 0.9,
+                      borderRadius: 10
+                    }}
+                    />
+                )}
+            </motion.div>
+                <motion.div style={styles.inputGroup}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}>
+                  <label style={styles.label}>
+                    Upload Profile Picture:
                     <input
-                        style={{
+                      style={styles.input}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </motion.div>
+
+                {/* The rest */}
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                      <label style={styles.label}>
+                        Email:
+                        <input
+                          style={{
                             ...styles.input,
                             ':focus': {
-                                borderColor: colors.green.light,
-                                backgroundColor: colors.white,
+                              borderColor: colors.green.light,
+                              backgroundColor: colors.white,
                             }
+                          }}
+                          type="email"
+                          name="email"
+                          value={userData.email}
+                          onChange={handleChange}
+                          disabled
+                        />
+                      </label>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      First Name:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
                         }}
-                        type="date"
-                        name="date_of_birth"
-                        value={userData.date_of_birth}
+                        type="text"
+                        name="first_name"
+                        value={userData.first_name}
                         onChange={handleChange}
                         onFocus={(e) => {
-                            e.target.style.borderColor = colors.green.light;
-                            e.target.style.backgroundColor = colors.white;
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
                         }}
                         onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      Last Name:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="last_name"
+                        value={userData.last_name}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      Gender:
+                      <select
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        name="gender"
+                        value={userData.gender}
+                        onChange={handleChange}
+                        
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-Binary">Non-Binary</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </label>            
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      Pronouns:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="pronouns"
+                        value={userData.pronouns}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      Sexual Orientation:
+                      <select
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        name="sexual_orientation"
+                        value={userData.sexual_orientation}
+                        onChange={handleChange}
+                      >
+                        <option value="Straight">Straight</option>
+                        <option value="Gay">Gay</option>
+                        <option value="Lesbian">Lesbian</option>
+                        <option value="Bisexual">Bisexual</option>
+                        <option value="Asexual">Asexual</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </label>            
+                  </motion.div>
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                      <label style={styles.label}>
+                          Date of Birth:
+                          <input
+                              style={{
+                                  ...styles.input,
+                                  ':focus': {
+                                      borderColor: colors.green.light,
+                                      backgroundColor: colors.white,
+                                  }
+                              }}
+                              type="date"
+                              name="date_of_birth"
+                              value={userData.date_of_birth}
+                              onChange={handleChange}
+                              onFocus={(e) => {
+                                  e.target.style.borderColor = colors.green.light;
+                                  e.target.style.backgroundColor = colors.white;
+                              }}
+                              onBlur={(e) => {
+                                  e.target.style.borderColor = colors.gray.border;
+                                  e.target.style.backgroundColor = colors.gray.lighter;
+                              }}
+                          />
+                      </label>
+                  </motion.div>
+                  {/* <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '8px',
+                    width: '100%',
+                    alignItems: 'flex-start', 
+                  }}>
+                    <label style={styles.label}>
+                      Height (mm):
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="number"
+                        name="height_mm"
+                        value={userData.height_mm}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </div> */}
+                  <motion.div style={{
+                      display: 'flex',
+                      // flexDirection: 'row',
+                      gap: '8px',
+                      width: '50%',
+                      alignItems: 'flex-start', 
+                    }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    {/* Height */}
+                      <label style={styles.label}>
+                        Height:
+                      
+                    {/* Feet input */}
+                    <div  style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                          style={{
+                            ...styles.input,
+                            width: '100px', // Adjust width to make it more compact if needed
+                            ':focus': {
+                              borderColor: colors.green.light,
+                              backgroundColor: colors.white,
+                            }
+                          }}
+                          type="number"
+                          name="height_ft"
+                          value={userData.height_ft}
+                          // onChange={(e) => setHeightFeet(e.target.value)}
+                          onChange={handleChange}
+                          // onBlur={handleHeightChange}
+                          placeholder="Feet"
+                          onFocus={(e) => {
+                            e.target.style.borderColor = colors.green.light;
+                            e.target.style.backgroundColor = colors.white;
+                          }}
+                          onBlur={(e) => {
                             e.target.style.borderColor = colors.gray.border;
                             e.target.style.backgroundColor = colors.gray.lighter;
+                          }}
+                        />
+                        <span>ft</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input
+                        style={{
+                          ...styles.input,
+                          width: '100px', // Adjust width as needed
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
                         }}
+                        type="number"
+                        name="height_in"
+                        value={userData.height_in}
+                        // onChange={(e) => setHeightInches(e.target.value)}
+                        onChange={handleChange}
+                        // onBlur={handleHeightChange}
+                        placeholder="Inches"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                      <span>in</span>
+                    </div>
+                    </label>
+                        
+                        
+                </motion.div>
+
+                <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                      Occupation:
+                      <input
+                        style={{
+                          ...styles.input,
+                          ':focus': {
+                            borderColor: colors.green.light,
+                            backgroundColor: colors.white,
+                          }
+                        }}
+                        type="text"
+                        name="occupation"
+                        value={userData.occupation}
+                        onChange={handleChange}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.green.light;
+                          e.target.style.backgroundColor = colors.white;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.gray.border;
+                          e.target.style.backgroundColor = colors.gray.lighter;
+                        }}
+                      />
+                    </label>
+                  </motion.div>
+
+                  <motion.div style={styles.inputGroup}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}>
+                    <label style={styles.label}>
+                    Bio:
+                    <textarea
+                      style={{
+                        ...styles.input,
+                        ':focus': {
+                          borderColor: colors.green.light,
+                          backgroundColor: colors.white,
+                        }
+                      }}
+                      name="bio"
+                      value={userData.bio}
+                      onChange={handleChange}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.green.light;
+                        e.target.style.backgroundColor = colors.white;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.gray.border;
+                        e.target.style.backgroundColor = colors.gray.lighter;
+                      }}
                     />
-                </label>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Height (mm):
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
-                  }}
-                  type="number"
-                  name="height_mm"
-                  value={userData.height_mm}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
+                  </label>
+                  </motion.div>
 
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-                Occupation:
-                <input
-                  style={{
-                    ...styles.input,
-                    ':focus': {
-                      borderColor: colors.green.light,
-                      backgroundColor: colors.white,
-                    }
+                  <button
+                  style={styles.button} 
+                  type="submit"
+                  onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.green.dark;
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
                   }}
-                  type="text"
-                  name="occupation"
-                  value={userData.occupation}
-                  onChange={handleChange}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = colors.green.light;
-                    e.target.style.backgroundColor = colors.white;
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.green.light;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = colors.gray.border;
-                    e.target.style.backgroundColor = colors.gray.lighter;
-                  }}
-                />
-              </label>
-            </div>
-
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>
-              Bio:
-              <textarea
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                name="bio"
-                value={userData.bio}
-                onChange={handleChange}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
-              />
-            </label>
-            </div>
-
-            <button
-            style={styles.button} 
-            type="submit"
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.green.dark;
-                e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = colors.green.light;
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-            }}
-            >Save Changes</button>
+                  >Save Changes</button>
 
 
-          </form>
-        </div>
-        </ProfileContainer>
-        <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
+                </form>
+            </motion.div>
+          
+        </motion.div>
+        {/* </ProfileContainer> */}
+        {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
           <Typography variant="h6">Interests</Typography>
           <Box display="flex" flexWrap="wrap" gap={1} my={2}>
             {interests.map((interest, index) => (
@@ -754,129 +978,310 @@ const Profile = ({
               onChange={(e) => setCurrentInterest(e.target.value)}
               onKeyDown={handleInterestKeyDown}
             />
-          </Box>
+          </Box> */}
       </>
       ) : (
         <>
-          <ProfileContainer>
-              <Avatar
-                alt="Profile Picture"
-                src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                sx={{
-                  width: '100%',       // Change to max-width: 100%
-                  maxWidth: 390,
-                  height: 300,
-                  marginBottom: 2,
-                  marginTop: 2,
-                  borderRadius: 2, // This makes the image rectangular
-                }}
-              />
-              <div style={styles.verifiedBadge}>
-                <Verified size={16} />
-                <span>Verified</span>
-              </div>
-              {/* <div style={styles.infoSection}> */}
-                <div style={styles.header}>
-                  <h2 style={styles.nameAgeGender}>
-                  {userData.first_name} {userData.last_name}{userData.birthday_ms_since_epoch ? `, ${calculateAge(userData.birthday_ms_since_epoch)}` : ''}{userData?.gender ? ` ${userData?.gender}` : ''} 
-                    </h2>
-                  <div style={styles.getScoreStyle(credibilityScore)}>
-                    <Star size={16} />
-                    <span>{credibilityScore}%</span>
-                  </div>
-                </div>
-                  <p style={styles.subtitle}>{userData?.email || "Email"}</p>
-                  <p style={styles.subtitle}>{userData?.gender}, {calculateAge(userData.birthday_ms_since_epoch)}, {userData?.pronouns || "Pronouns not specified"}</p>
-                  {/* <p style={styles.subtitle}>Instagram: @example</p>                  */}
-              {/* </div> */}
-              <div style={styles.detailsContainer}>
-                {userData?.occupation && (<div style={styles.detailRow}>
-                  <Briefcase size={20} color={colors.darkGray} />
-                  <span>{userData?.occupation}</span>
-                </div>)}
-                {userData?.education && (<div style={styles.detailRow}>
-                  <GraduationCap size={20} color={colors.darkGray} />
-                  <span>{userData?.education}</span>
-                </div>)}
-                {userData?.location && (<div style={styles.detailRow}>
-                  <MapPin size={20} color={colors.darkGray} />
-                  <span>{userData?.location}</span>
-                </div>)}
-              </div>
-              {isOwner ? (
+          <motion.div style={{
+            width: '390px',
+            // height: '844px',
+            backgroundColor: colors.white,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          >
+            {/* Profile Image Section */}
 
-                  <button 
-                  style={styles.button}
-                  type="submit"
-                  // disabled={isLoading}
-                  onClick={() => setIsEditing(true)} 
-                  onMouseOver={(e) => {
-                    // if (!isLoading) {
-                      e.currentTarget.style.backgroundColor = colors.green.dark;
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
-                    // }
+            <motion.div style={{
+              // width: '300px', // Smaller logo
+              // height: '300px',
+              width: '100%',
+              height: '300px', // Adjust height as needed
+              position: 'relative', // Needed for absolute positioning within this div
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              // marginTop: '60px' // Push down from top
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              {profilePicUrl ? (
+                <img
+                  src={profilePicUrl}
+                  alt={`${userData.first_name}'s profile`}
+                  // style={imageStyles.image}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    // objectFit: 'contain',
+                    objectFit: 'cover', // Adjusts how image scales
+                    opacity: 0.9,
+                    borderRadius: 0
                   }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = colors.green.light;
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
-                  }}
-                  >
-                    Edit Profile
-                  </button>
+                  />
               ) : (
-                <>
-                </>
+                <img
+                  src={imageStyles.placeholder}
+                  alt={`${userData.first_name}'s profile`}
+                  // style={imageStyles.image}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    // objectFit: 'contain',
+                    objectFit: 'cover', // Adjusts how image scales
+                    opacity: 0.9,
+                    borderRadius: 10
+                  }}
+                  />
               )}
+              {
+                <motion.div style={{
+                  position: 'absolute',
+                  top: '10px', // Adjusts distance from top of image
+                  right: '10px', // Adjusts distance from left of image
+                  backgroundColor: colors.primary, // Set background color to make it stand out
+                  color: colors.white,
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                >
+                  <Verified size={16} />
+                  <span>Verified</span>
+                  </motion.div>
+              }
 
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Bio</label>
-                <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
-              </Box>
+            </motion.div>
 
-              {interests.length > 0 && (
-                <div style={styles.tagsContainer}>
-                  {interests.map((interest, index) => (
-                    <span key={index} style={styles.tag}>{interest}</span>
-                  ))}
+            {/* Content Container */}
+            <motion.div style={{
+              // width: '100%',
+              // padding: '0 spacing.xl',
+              // maxWidth: '350px', // Constrain width of form
+              // marginTop: spacing.xl
+              marginTop: '-30px', // Negative margin to overlap the bottom of the image
+              backgroundColor: colors.white,
+              width: '98%',
+              padding: '16px',
+              boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
+              borderRadius: '64px',
+              position: 'relative',
+              zIndex: 1, // Ensures it appears above the image
+            }}>
+              <div style={{
+                width: '90%',
+                // padding: '0 spacing.xl',
+                padding: '20px',
+                maxWidth: '300px', // Constrain width of form
+                // marginTop: spacing.xl
+                // marginTop: '20px', 
+                marginTop: '5px', 
+                marginBottom: '10px', 
+                marginLeft: '10px', 
+                marginRight: '10px',  
+              }}>
+                {/* Header Section */}
+                <div style={{
+                  textAlign: 'left',
+                  marginBottom: spacing.xl
+                }}>
+                  <motion.div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: spacing.md
+                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    >
+                      <div>
+                          <h1 style={{
+                            fontSize: '30px',
+                            fontWeight: '600',
+                            color: colors.gray.text,
+                            margin: `0 0 ${spacing.xs} 0`
+                          }}>
+                          {userData.first_name} {userData.last_name}
+                          </h1>
+
+                          {userData?.gender && userData?.birthday_ms_since_epoch && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <User size={20} color={colors.darkGray} />
+                            <span>{userData?.gender ? ` ${userData?.gender}` : ''}, {userData.birthday_ms_since_epoch ? ` ${calculateAge(userData.birthday_ms_since_epoch)}` : ', Age not provided'}, {userData?.pronouns ? ` ${userData?.pronouns}` : ''} </span>
+                          </div>)}
+                          {userData?.email && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <Instagram size={20} color={colors.darkGray} />
+                            <span> {userData?.email}</span>
+                          </div>)}
+                          {userData?.location && (<div style={{
+                            fontSize: '16px',
+                            color: colors.gray.text,
+                            opacity: 0.7,
+                            margin: 0
+                          }}>
+                            <MapPin size={20} color={colors.darkGray} />
+                            <span> {userData?.location}</span>
+                          </div>)}
+                      </div>
+
+
+                      <motion.div style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: spacing.xs,
+                        padding: `${spacing.xs} ${spacing.md}`,
+                        borderRadius: spacing.md,
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
+                        color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                      }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.5 }}
+                      >
+                        <Star size={16} />
+                        <span>{credibilityScore}%</span>
+                      </motion.div>                     
+                  </motion.div>
+                  
                 </div>
-              )}
+                {isOwner && (
+                    <motion.button 
+                    style={styles.button}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    type="submit"
+                    // disabled={isLoading}
+                    onClick={() => setIsEditing(true)} 
+                    onMouseOver={(e) => {
+                      // if (!isLoading) {
+                        e.currentTarget.style.backgroundColor = colors.green.dark;
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                      // }
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.green.light;
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                    }}
+                    >
+                      Edit Profile
+                    </motion.button >
+                )}
 
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Details</label>
-                <p style={styles.subtitle}>Gender: {userData?.gender}</p>
-                <p style={styles.subtitle}>Sexual Orientation: {userData?.sexual_orientation}</p>
-                <p style={styles.subtitle}>Height: {(userData.height_mm / 1000).toFixed(2)} meters</p>
-                <p style={styles.subtitle}>Occupation: {userData?.occupation || "Occupation not specified"}</p>
-              </Box>
+                {/* Info Section */}
+                <motion.div 
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: spacing.lg
+                  }}
+                  // onSubmit={handleSubmit}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                >
+                  {/* Bio */}
+                  <div style={inputStyles.container}>
+                    <label style={inputStyles.label}>
+                      About Me
+                    </label>
+                    <div>
+                    <p style={styles.subtitle}>{userData?.bio || "No bio available"}</p>
+                    </div>
+                    {userData?.height_mm && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <Ruler size={20} color={colors.darkGray} />
+                      <span> {Math.floor(userData.height_mm / 25.4 / 12)}' {Math.round((userData.height_mm / 25.4) % 12)}</span>
+                    </div>)}
+                    {userData?.occupation && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <Briefcase size={20} color={colors.darkGray} />
+                      <span> {userData?.occupation}</span>
+                    </div>)}
+                    {userData?.education && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
+                      <GraduationCap size={20} color={colors.darkGray} />
+                      <span> {userData?.education}</span>
+                    </div>)}
+                  </div>
 
-              <Box my={2} p={2} sx={{ backgroundColor: colors.gray.border, borderRadius: "8px", width: "100%", boxSizing: 'border-box' }}>
-                <label style={styles.label}>Referrals</label>
-                <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-              </Box>
-          </ProfileContainer>
+                  {/* Referrals */}
+                  <motion.div  style={inputStyles.container}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.0, duration: 0.5 }}>
+                      <label style={inputStyles.label}>
+                      Referrals
+                      </label>
+                      <div>
+                      <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                      <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                      <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
+                      </div>
+                  </motion.div>
+                  <form onSubmit={handleTestUserProfile}>
+                    <div>
+                      <label htmlFor="guid">GUID:</label>
+                      <input
+                        type="text"
+                        id="guid"
+                        value={guid}
+                        onChange={(e) => setGuid(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button type="submit">Fetch Profile</button>
+                  </form>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
         </>
       )}
       <br></br>
       <br></br>
       <br></br>
-      {/* Fetching profile. This is just for testing. Eventually some other page could request for the profile by providing the guid*/}
-      <form onSubmit={handleFetchProfile}>
-        <div>
-          <label htmlFor="guid">GUID:</label>
-          <input
-            type="text"
-            id="guid"
-            value={guid}
-            onChange={(e) => setGuid(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Fetch Profile</button>
-      </form>
     </div>
   );
 };

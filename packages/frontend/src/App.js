@@ -18,7 +18,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.gray.lighter,
-
   },
   contentWrapper: {
     width: '390px',
@@ -40,6 +39,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/userprofile/:guid" element={<UserProfile />} />
           <Route path="/browse" element={<CardStack />} />
           <Route exact path="/register" element={<Register />} />
           <Route exact path="/aierror" element={<AiError />} />
