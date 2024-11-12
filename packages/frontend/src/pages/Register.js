@@ -33,69 +33,83 @@ function Register() {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
-        
-                switch (step) {
-                    case 1:
-                        if (!email || !password || !confirmPassword) {
-                            const step1Missing = [];
-                            if (!email) step1Missing.push('Email');
-                            if (!password) step1Missing.push('Password');
-                            if (!confirmPassword) step1Missing.push('Confirm Password');
-        
-                            setAlertMessage(`Please fill out the following field(s):\n\n${step1Missing.join(', ')}`);
-                            setShowAlert(true);
-                            return;
+
+        switch (step) {
+            case 1:
+                if (!email || !password || !confirmPassword) {
+                    const step1Missing = [];
+                    if (!email) step1Missing.push('Email');
+                    if (!password) step1Missing.push('Password');
+                    if (!confirmPassword) step1Missing.push('Confirm Password');
+
+                    setAlertMessage(`Please fill out the following field(s):\n\n${step1Missing.join(', ')}`);
+                    setShowAlert(true);
+                    return;
+                }
+
+                // Check password strength
+                if (!isStrongPassword(password)) {
+                    setAlertMessage(
+                        'Please use a stronger password that includes:\n' +
+                        '• At least 8 characters\n' +
+                        '• At least one uppercase letter\n' +
+                        '• At least one lowercase letter\n' +
+                        '• At least one number\n' +
+                        '• At least one special character (@$!%*?&)'
+                    );
+                    setShowAlert(true);
+                    return;
+                }
+
+                // password matching validation
+                if (password !== confirmPassword) {
+                    setAlertMessage("Passwords do not match");
+                    setShowAlert(true);
+                    return;
+                }
+                // Create account in db if fields are valid
+                let apiInstance = new CredibleCupid.AuthApi();
+                let registerRequest = new CredibleCupid.LoginRequest(email, password);
+
+                InitDefaultCredibleCupidClient(null);
+                apiInstance.authSignup(registerRequest, (error, data, response) => {
+                    if (error) {
+                        console.error(error);
+                        let errorMessage;
+
+                        if (error.response?.body?.message) {
+                            errorMessage = error.response.body.message;
+                        } else if (error.response?.body?.error) {
+                            errorMessage = error.response.body.error;
+                        } else {
+                            errorMessage = error.message;
                         }
-        
-                        // password matching validation
-                        if (password !== confirmPassword) {
-                            setAlertMessage("Passwords do not match");
-                            setShowAlert(true);
-                            return;
-                        }
-                        // Create account in db if fields are valid
-                        let apiInstance = new CredibleCupid.AuthApi();
-                        let registerRequest = new CredibleCupid.LoginRequest(email, password);
-        
-                        InitDefaultCredibleCupidClient(null);
-                        apiInstance.authSignup(registerRequest, (error, data, response) => {
-                            if (error) {
-                                console.error(error);
-                                let errorMessage;
-        
-                                if (error.response?.body?.message) {
-                                    errorMessage = error.response.body.message;
-                                } else if (error.response?.body?.error) {
-                                    errorMessage = error.response.body.error;
-                                } else {
-                                    errorMessage = error.message;
-                                }
-                                setAlertMessage(errorMessage);
-                                setShowAlert(true);
-                                return;
-                            }
-                            sessionStorage.setItem("jwtToken", data.jwt);
-                            setStep(step + 1);
-                        });
+                        setAlertMessage(errorMessage);
+                        setShowAlert(true);
                         return;
-        
-                    case 2:
-                        if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
-                            const step2Missing = [];
-                            if (!firstName) step2Missing.push('First Name')
-                            if (!lastName) step2Missing.push('Last Name')
-                            if (!gender) step2Missing.push('Gender');
-                            if (!orientation) step2Missing.push('Sexual Orientation');
-                            if (!height) step2Missing.push('Height');
-                            if (!occupation) step2Missing.push('Occupation');
-                            if (!birthday) step2Missing.push('Birthday');
-        
-                            setAlertMessage(`Please fill out the following field(s):\n\n${step2Missing.join(', ')}`);
-                            setShowAlert(true);
-                            return;
-                        }
-                        break;
-                } 
+                    }
+                    sessionStorage.setItem("jwtToken", data.jwt);
+                    setStep(step + 1);
+                });
+                return;
+
+            case 2:
+                if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
+                    const step2Missing = [];
+                    if (!firstName) step2Missing.push('First Name')
+                    if (!lastName) step2Missing.push('Last Name')
+                    if (!gender) step2Missing.push('Gender');
+                    if (!orientation) step2Missing.push('Sexual Orientation');
+                    if (!height) step2Missing.push('Height');
+                    if (!occupation) step2Missing.push('Occupation');
+                    if (!birthday) step2Missing.push('Birthday');
+
+                    setAlertMessage(`Please fill out the following field(s):\n\n${step2Missing.join(', ')}`);
+                    setShowAlert(true);
+                    return;
+                }
+                break;
+        }
         setStep(step + 1);
     };
 
@@ -178,6 +192,17 @@ function Register() {
         e.target.style.backgroundColor = colors.gray.lighter;
     };
 
+    const isStrongPassword = (password) => {
+        // At least 8 characters long
+        // Contains at least one uppercase letter
+        // Contains at least one lowercase letter
+        // Contains at least one number
+        // Contains at least one special character
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return strongPasswordRegex.test(password);
+    };
+
+
     const Alert = ({ message, onClose }) => (
         <div style={{
             position: 'fixed',
@@ -203,7 +228,8 @@ function Register() {
                     marginBottom: spacing.lg,
                     fontSize: '16px',
                     lineHeight: '1.5',
-                    color: colors.gray.text
+                    color: colors.gray.text,
+                    whiteSpace: 'pre-line' 
                 }}>
                     {message}
                 </div>
