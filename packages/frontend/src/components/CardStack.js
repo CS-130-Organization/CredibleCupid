@@ -125,18 +125,32 @@ const CardStack = () => {
     // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
-    try {
-      userApi.queryUser(guid, (error, data) => {
-        if (error) {
-          console.error(error);
-        } else {
-          const age = calculateAge(data.birthday_ms_since_epoch);
 
-          setLoadedProfiles(prev => [...prev, { // only include vars if they exist
+    userApi.queryUser(guid, (error, data) => {
+      if (error) {
+        console.error(error);
+      } else {
+        const age = calculateAge(data.birthday_ms_since_epoch);
+
+        // Get profile picture first
+        userApi.profilePicUser(guid, (error, picData, response) => {
+          if (error) {
+            console.error(error);
+            // Still create profile without picture
+            createAndSetProfile(null);
+          } else {
+            // Create profile with picture URL
+            createAndSetProfile(response.req.url);
+          }
+        });
+
+        // Helper function to create and set profile
+        function createAndSetProfile(profileURL) {
+          setLoadedProfiles(prev => [...prev, {
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
             } : {}),
-            ...(age ? { age } : {}),  
+            ...(age ? { age } : {}),
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
             ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
@@ -144,15 +158,15 @@ const CardStack = () => {
             ...(data.education ? { education: data.education } : {}),
             ...(data.location ? { location: data.location } : {}),
             ...(data.interests ? { interests: data.interests } : {}),
-            ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
+            ...(profileURL ? { imageUrl: profileURL } : {}),
             guid: guid
           }]);
+
           setIsLoading(false);
         }
-      });
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-    }
+      }
+    });
+
   };
 
   // Pre-load next profile when current profile changes
@@ -196,7 +210,7 @@ const CardStack = () => {
       } catch (error) {
         console.error(`Error passing user ${loadedProfiles[0].guid}`);
       }
-    } 
+    }
 
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
