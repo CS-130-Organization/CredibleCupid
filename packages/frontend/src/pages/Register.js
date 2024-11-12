@@ -33,84 +33,69 @@ function Register() {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
-
-        switch (step) {
-            case 1:
-                if (!email || !password || !confirmPassword) {
-                    const step1Missing = [];
-                    if (!email) step1Missing.push('Email');
-                    if (!password) step1Missing.push('Password');
-                    if (!confirmPassword) step1Missing.push('Confirm Password');
-
-                    setAlertMessage(`Please fill out the following field(s):\n\n${step1Missing.join(', ')}`);
-                    setShowAlert(true);
-                    return;
-                }
-
-                // password matching validation
-                if (password !== confirmPassword) {
-                    setAlertMessage("Passwords do not match");
-                    setShowAlert(true);
-                    return;
-                }
-                // Create account in db if fields are valid
-                let apiInstance = new CredibleCupid.AuthApi();
-                let registerRequest = new CredibleCupid.LoginRequest(email, password);
-
-                InitDefaultCredibleCupidClient(null);
-                apiInstance.authSignup(registerRequest, (error, data, response) => {
-                    if (error) {
-                        console.error(error);
-                        let errorMessage;
-
-                        if (error.response?.body?.message) {
-                            errorMessage = error.response.body.message;
-                        } else if (error.response?.body?.error) {
-                            errorMessage = error.response.body.error;
-                        } else {
-                            errorMessage = error.message;
+        
+                switch (step) {
+                    case 1:
+                        if (!email || !password || !confirmPassword) {
+                            const step1Missing = [];
+                            if (!email) step1Missing.push('Email');
+                            if (!password) step1Missing.push('Password');
+                            if (!confirmPassword) step1Missing.push('Confirm Password');
+        
+                            setAlertMessage(`Please fill out the following field(s):\n\n${step1Missing.join(', ')}`);
+                            setShowAlert(true);
+                            return;
                         }
-                        setAlertMessage(errorMessage);
-                        setShowAlert(true);
+        
+                        // password matching validation
+                        if (password !== confirmPassword) {
+                            setAlertMessage("Passwords do not match");
+                            setShowAlert(true);
+                            return;
+                        }
+                        // Create account in db if fields are valid
+                        let apiInstance = new CredibleCupid.AuthApi();
+                        let registerRequest = new CredibleCupid.LoginRequest(email, password);
+        
+                        InitDefaultCredibleCupidClient(null);
+                        apiInstance.authSignup(registerRequest, (error, data, response) => {
+                            if (error) {
+                                console.error(error);
+                                let errorMessage;
+        
+                                if (error.response?.body?.message) {
+                                    errorMessage = error.response.body.message;
+                                } else if (error.response?.body?.error) {
+                                    errorMessage = error.response.body.error;
+                                } else {
+                                    errorMessage = error.message;
+                                }
+                                setAlertMessage(errorMessage);
+                                setShowAlert(true);
+                                return;
+                            }
+                            sessionStorage.setItem("jwtToken", data.jwt);
+                            setStep(step + 1);
+                        });
                         return;
-                    }
-                    sessionStorage.setItem("jwtToken", data.jwt);
-                    setStep(step + 1);
-                });
-                return;
-
-            case 2:
-                if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
-                    const step2Missing = [];
-                    if (!firstName) step2Missing.push('First Name')
-                    if (!lastName) step2Missing.push('Last Name')
-                    if (!gender) step2Missing.push('Gender');
-                    if (!orientation) step2Missing.push('Sexual Orientation');
-                    if (!height) step2Missing.push('Height');
-                    if (!occupation) step2Missing.push('Occupation');
-                    if (!birthday) step2Missing.push('Birthday');
-
-                    setAlertMessage(`Please fill out the following field(s):\n\n${step2Missing.join(', ')}`);
-                    setShowAlert(true);
-                    return;
-                }
-                break;
-            case 3:
-                if (!photo || !bio) {
-                    const step3Missing = [];
-                    if (!photo) step3Missing.push('Profile Photo');
-                    if (!bio) step3Missing.push('Bio');
-
-                    setAlertMessage(`Please fill out the following field(s):\n\n${step3Missing.join(', ')}`);
-                    setShowAlert(true);
-                    return;
-                }
-                // If user is not male, don't proceed to step 4
-                if (gender.toLowerCase() !== 'male') {
-                    return;
-                }
-                break;
-        } 
+        
+                    case 2:
+                        if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
+                            const step2Missing = [];
+                            if (!firstName) step2Missing.push('First Name')
+                            if (!lastName) step2Missing.push('Last Name')
+                            if (!gender) step2Missing.push('Gender');
+                            if (!orientation) step2Missing.push('Sexual Orientation');
+                            if (!height) step2Missing.push('Height');
+                            if (!occupation) step2Missing.push('Occupation');
+                            if (!birthday) step2Missing.push('Birthday');
+        
+                            setAlertMessage(`Please fill out the following field(s):\n\n${step2Missing.join(', ')}`);
+                            setShowAlert(true);
+                            return;
+                        }
+                        break;
+                } 
         setStep(step + 1);
     };
 
@@ -118,6 +103,16 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!photo || !bio) {
+            const step3Missing = [];
+            if (!photo) step3Missing.push('Profile Photo');
+            if (!bio) step3Missing.push('Bio');
+
+            setAlertMessage(`Please fill out the following field(s):\n\n${step3Missing.join(', ')}`);
+            setShowAlert(true);
+            return;
+        }
 
         setIsLoading(true);
         setIsVerifying(true);
@@ -149,14 +144,13 @@ function Register() {
             height_mm: heightMM,
             occupation: occupation,
         };
-        console.log(JSON.stringify(userUpdateBioRequest));
         let userApi = new CredibleCupid.UserApi();
 
         userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
             if (error) {
                 console.error("Failed to update profile:", error);
             } else {
-                console.log("Successfully set up bio: ", data);
+                console.log("Successfully set up profile: ", data);
             }
         });
 
@@ -243,7 +237,7 @@ function Register() {
                 console.error("JWT token missing. Unable to set up profile.");
                 return;
             }
-            
+
             bearer.accessToken = jwtToken
 
             let userApi = new CredibleCupid.UserApi();
@@ -564,8 +558,8 @@ function Register() {
     const renderVerification = () => {
         let verificationMessage;
         if (gender.toLowerCase() === 'male') {
-            verificationMessage = verificationStep === 0 
-                ? "Verifying referrals..." 
+            verificationMessage = verificationStep === 0
+                ? "Verifying referrals..."
                 : "Checking for AI profile...";
         } else {
             verificationMessage = "Checking for AI profile...";
@@ -645,19 +639,34 @@ function Register() {
                                     Back
                                 </button>
                             )}
-                            <button
-                                type={step === 3 ? "submit" : "button"}
-                                onClick={step === 3 ? undefined : handleNext}
-                                style={{
-                                    ...buttonStyles.base,
-                                    flex: 1
-                                }}
-                                disabled={isLoading}
-                            >
-                                {step === 3
-                                    ? (isLoading ? 'Creating Account...' : 'Create Account')
-                                    : step === 1 ? 'Proceed to Profile Setup' : 'Next'}
-                            </button>
+
+                            {/* Next button for step 1 and 2 */}
+                            {step !== 3 && (
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    style={{
+                                        ...buttonStyles.base,
+                                        flex: 1
+                                    }}
+                                >
+                                    {step === 1 ? 'Proceed to Profile Setup' : 'Next'}
+                                </button>
+                            )}
+
+                            {/* Submit button for step 3 */}
+                            {step === 3 && (
+                                <button
+                                    type="submit"
+                                    style={{
+                                        ...buttonStyles.base,
+                                        flex: 1
+                                    }}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                                </button>
+                            )}
                         </div>
                     </form>
 
