@@ -33,7 +33,7 @@ function Register() {
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
-/*
+
         switch (step) {
             case 1:
                 if (!email || !password || !confirmPassword) {
@@ -110,7 +110,7 @@ function Register() {
                     return;
                 }
                 break;
-        } */
+        } 
         setStep(step + 1);
     };
 
@@ -127,8 +127,6 @@ function Register() {
             console.error("JWT token missing. Unable to set up profile.");
             return;
         }
-
-        // const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDk4NzAsImV4cCI6MTczMTMxMzQ3MH0.1OPFkI17tTnm-_x3G17ZzcLSbnXWrI_m-zHwk0WVkW4";
 
         // Set up API client instance and authenticate with JWT
         let defaultClient = CredibleCupid.ApiClient.instance;
@@ -162,6 +160,7 @@ function Register() {
             }
         });
 
+        // TODO: re-implement once referral + ai backend are done
         // Start verification process
         if (gender.toLowerCase() === 'male') {
             // For male users, show referral verification first
@@ -173,8 +172,6 @@ function Register() {
             setVerificationStep(1);
             await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
         }
-
-
         navigate('/login');
     };
 
@@ -246,7 +243,7 @@ function Register() {
                 console.error("JWT token missing. Unable to set up profile.");
                 return;
             }
-            // const jwtToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxZGNhMDFjOC03OTAzLTQ3ZjQtYWMwOS1mNzU0Y2ZjOGFiMzAiLCJpYXQiOjE3MzEzMDk4NzAsImV4cCI6MTczMTMxMzQ3MH0.1OPFkI17tTnm-_x3G17ZzcLSbnXWrI_m-zHwk0WVkW4";
+            
             bearer.accessToken = jwtToken
 
             let userApi = new CredibleCupid.UserApi();
@@ -254,13 +251,11 @@ function Register() {
                 'file': file
             };
 
-            console.log("handling image upload")
             InitDefaultCredibleCupidClient(jwtToken)
             userApi.uploadProfilePic(opts, (error, data, response) => {
                 setIsUploading(false);
 
                 if (error) {
-                    console.error('Error uploading profile picture:', error);
                     setAlertMessage('Failed to upload profile picture. Please try again.');
                     setShowAlert(true);
                 } else {
@@ -274,7 +269,6 @@ function Register() {
         }
     };
 
-    // Then update your ImageUpload component to show loading state:
     const ImageUpload = () => (
         <div style={inputStyles.container}>
             <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Profile Picture</label>
