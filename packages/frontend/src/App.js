@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
 import AiError from './pages/AiError';
+import SuccessPage from './pages/SuccessPage';
 import CardStack from './components/CardStack';
 import NavBar from './components/NavBar';
 import { colors } from './styles/theme';
@@ -24,13 +25,13 @@ const styles = {
     height: '844px',
     position: 'relative',
     backgroundColor: colors.white,
-    overflow: 'auto' // Changed from 'hidden' to 'auto'
+    overflow: 'auto'
   }
 };
 
 function App() {
   const location = useLocation();
-  const hideNavBarPaths = ['/login', '/register', '/aierror'];
+  const hideNavBarPaths = ['/login', '/register', '/error', '/success'];
   const shouldShowNavBar = !hideNavBarPaths.includes(location.pathname);
 
   return (
