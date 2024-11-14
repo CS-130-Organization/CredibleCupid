@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import AiError from './pages/AiError';
 import SuccessPage from './pages/SuccessPage';
 import CardStack from './components/CardStack';
+import UserProfile from './pages/UserProfile'
 import NavBar from './components/NavBar';
 import { colors } from './styles/theme';
 import './App.css';
