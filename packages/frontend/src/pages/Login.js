@@ -4,7 +4,6 @@ import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
 import { buttonStyles, linkStyles, formStyles, contentContainerStyles, titleStyles, inputStyles, cardStyles, subheadingStyles, logoStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
-import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
