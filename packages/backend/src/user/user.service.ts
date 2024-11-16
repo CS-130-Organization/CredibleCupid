@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DataSource } from "typeorm";;
 
-import { User, Gender, SexualOrientation } from "../database/entities";
+import { User, Referral, Gender, SexualOrientation } from "../database/entities";
 import { Ok, Err, Result } from "ts-results";
 
 import * as fs from "fs";
@@ -40,7 +40,7 @@ export class UserService {
 		occupation: string
 	): Promise<Result<User, string>> {
 		return await this.data_source.transaction(async manager => {
-			const user = await manager.findOne(User, { where: { guid } });
+			const user = await manager.findOne(User, { relations: { referrals: true }, where: { guid } });
 
 			if (!user) {
 				return Err("User does not exist!");
@@ -57,6 +57,16 @@ export class UserService {
 			user.occupation = occupation;
 
 			await manager.save(User, user);
+
+			if (user.gender == Gender.kMale) {
+				const referrals = await manager.find(Referral, { relations: { user: true }, where: { email: user.email.toLowerCase() } })
+				if (referrals.length < 3) {
+					return Err("Male user does not have enough referrals! You need to have at least 3 referrals in order to use CredibleCupid.");
+				}
+
+				// Remove all referrals if you are a male.
+				user.referrals = [];
+			}
 
 			return Ok(user);
 		});
@@ -96,7 +106,7 @@ export class UserService {
 	}
 
 	async find_user_with_guid(guid: string): Promise<User | null> {
-		return await this.user_repository.findOne({ where: { guid } });
+		return await this.user_repository.findOne({ relations: { referrals: true },  where: { guid } });
 	}
 
 	async find_matches(guid: string): Promise<Result<User[], string>> {
@@ -211,5 +221,34 @@ export class UserService {
 		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user] } })
 
 		return Ok(likes);
+	}
+
+	async send_referral(guid: string, email: string, message: string): Promise<Result<null, string>> {
+		return await this.data_source.transaction(async manager => {
+			const user = await manager.findOne(User, { relations: { referrals: true }, where: { guid } });
+
+			if (!user) {
+				return Err("User does not exist!");
+			}
+
+			if (user.gender == Gender.kMale) {
+				return Err("Men are not allowed to send referrals.");
+			}
+
+			const existing_referral = await manager.findOne(Referral, { relations: { user: true }, where: { email, user } })
+			if (existing_referral) {
+				return Err("You already referred this email!");
+			}
+
+			const referral = new Referral();
+			referral.email = email.toLowerCase();
+			referral.message = message;
+			referral.user = user;
+
+			await manager.save(Referral, referral);
+
+			return Ok(null);
+		});
+
 	}
 }

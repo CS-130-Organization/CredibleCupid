@@ -92,7 +92,13 @@ export class GetUserResponse {
 	 * The occupation of the user
 	 */
 	occupation: string | undefined;
+
+	/*
+	 * The GUIDs of the referrals for this user.
+	 */
+	referrals: string[];
 }
+
 
 export class FindMatchingUsersResponse {
 	/*
@@ -167,4 +173,38 @@ export class GetLikesResponse {
 	 * The GUIDs of all the users who have liked your profile
 	 */
 	guids: string[];
+}
+
+export class SendReferralRequest {
+	/*
+	 * The email of the user you wish to refer.
+	 */
+	email: string;
+
+	/*
+	 * The message of the referral to give readers more information.
+	 */
+	message: string;
+}
+
+export class GetReferralResponse {
+	/*
+	 * The GUID of the referral.
+	 */
+	guid: string;
+
+	/*
+	 * The message in the referral.
+	 */
+	message: string;
+
+	/*
+	 * The email of the user who was referred.
+	 */
+	referee_email: string;
+
+	/*
+	 * The GUID of the user who sent the referral.
+	 */
+	referrer_guid: string;
 }
