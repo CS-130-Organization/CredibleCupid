@@ -384,10 +384,10 @@ function UserProfile({
               // marginTop: spacing.xl
               marginTop: '-30px', // Negative margin to overlap the bottom of the image
               backgroundColor: colors.white,
-              width: '98%',
+              width: '93%',
               padding: '16px',
               boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
-              borderRadius: '64px',
+              borderRadius: '40px',
               position: 'relative',
               zIndex: 1, // Ensures it appears above the image
             }}
