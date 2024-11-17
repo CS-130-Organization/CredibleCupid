@@ -6,6 +6,7 @@ import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, Graduati
 import { useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
+  buttonStyles,
   imageStyles,
   inputStyles,
 } from '../styles/commonStyles';
@@ -185,7 +186,8 @@ const Profile = ({
   credibilityScore = 90,
 }) => {
   const [userData, setUserData] = useState(null);
-  // const [userData, setUserData] = useState(null);// maybe want a temporary user data to store changes
+
+  // const [userEditData, setUserEditData] = useState(null);// maybe want a temporary user data to store changes
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
@@ -198,6 +200,13 @@ const Profile = ({
   // const [heightFeet, setHeightFeet] = useState(userData?.height_mm ? Math.floor(userData.height_mm / 25.4 / 12) : 0);
   // const [heightInches, setHeightInches] = useState(userData?.height_mm ? Math.round((userData.height_mm / 25.4) % 12) : 0);
   
+  // For referrals
+  const [isReferralFormVisible, setIsReferralFormVisible] = useState(false);
+  const [referralData, setReferralData] = useState({ email: "", message: "" });// for sending referrals
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
@@ -434,6 +443,171 @@ const Profile = ({
       }
     }
   };
+
+
+  
+  const handleSendReferral = (e) => {
+    e.preventDefault();
+    console.log("handleSendReferral")
+    
+    const jwtToken = sessionStorage.getItem("jwtToken");
+    if (!jwtToken) {
+      console.error("JWT token missing. Unable to update profile.");
+      return;
+    }
+    
+    // Set up API client instance and authenticate with JWT
+    let defaultClient = CredibleCupid.ApiClient.instance;
+    let bearer = defaultClient.authentications['bearer'];
+    bearer.accessToken = jwtToken;
+    
+    let apiInstance = new CredibleCupid.ReferralApi();
+
+    // Build SendReferralRequest object
+    const sendReferralRequest = {
+      email: referralData.email,
+      message: referralData.message,
+  };
+    console.log(JSON.stringify(sendReferralRequest)); // new CredibleCupidApi.sendReferralRequest(); puts the data as an entry in a bio object
+    // Make the update request
+    apiInstance.updateBio(sendReferralRequest, (error, data, response) => {
+      if (error) {
+        console.error("Failed to update profile:", error);
+      } else {
+        console.log("Successfully send referral bio");
+        // setUserData(userUpdateBioRequest); // Update the state with new data
+        // setIsEditing(false); // Exit edit mode
+      }
+    });
+  };
+
+  function ReferralModal({ onClose }) {
+    return (
+      <>
+        {/* Overlay */}
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.3)", // Darken background
+            // backdropFilter: "blur(3px)", // Optional: Add blur effect
+            zIndex: 1000, // Ensure it's above everything else
+          }}
+          onClick={onClose} // Close modal when clicking outside
+        />
+  
+        {/* Modal */}
+        <motion.div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "0%",
+            // transform: "translate(-50%, -50%)",
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+            zIndex: 1001, // Above overlay
+            width: "90%",
+            maxWidth: "400px",
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: -250 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          <h1 style={{fontSize: '30px',
+            fontWeight: '600',
+            color: colors.gray.text,
+            margin: `0 0 ${spacing.xs} 0`
+          }}>Send a Referral</h1>
+          <form style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '24px',
+              }} onSubmit={handleSendReferral}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Email:</label>
+              <input
+                type="referemail"
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                onChange={(e) =>
+                  setReferralData((prev) => ({ ...prev, email: e.target.value }))
+                }
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+                required
+              />
+            </div>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Message:</label>
+              <textarea
+                style={{
+                  ...styles.input,
+                  ':focus': {
+                    borderColor: colors.green.light,
+                    backgroundColor: colors.white,
+                  }
+                }}
+                onChange={(e) =>
+                  setReferralData((prev) => ({ ...prev, message: e.target.value }))
+                }
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.green.light;
+                  e.target.style.backgroundColor = colors.white;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray.border;
+                  e.target.style.backgroundColor = colors.gray.lighter;
+                }}
+                required
+              />
+            </div>
+            <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
+              <button
+                type="submit"
+                style={{
+                  ...buttonStyles.base,
+                  flex: 1
+              }}
+                
+              >
+                Send Referral
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  ...buttonStyles.base,
+                  flex: 1,
+                  backgroundColor: colors.gray.lighter,
+                  color: colors.gray.text
+              }}
+              >
+                Cancel
+              </button>              
+            </div>
+           
+          </form>
+        </motion.div>
+      </>
+    );
+  }
 
 
   if (!userData) return <div>Loading...</div>;
@@ -1105,8 +1279,8 @@ const Profile = ({
                       alignItems: 'center',
                       marginBottom: spacing.md
                     }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0}}
+                    animate={{ opacity: 1}}
                     transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <div>
@@ -1170,8 +1344,7 @@ const Profile = ({
                   </motion.div>
                   
                 </div>
-                {isOwner && (
-                    <motion.button 
+                <motion.button 
                     style={styles.button}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -1194,7 +1367,47 @@ const Profile = ({
                     >
                       Edit Profile
                     </motion.button >
-                )}
+
+                     {/* Referral Section */}
+                     {/* <div> 
+       <motion.button
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "blue",
+            color: "white",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+          onClick={openModal}
+        >
+          Refer a Guy
+        </motion.button>
+      </div> */}
+                    <motion.button
+                      style={styles.button}
+                      initial={{ opacity: 0}}
+                      animate={{ opacity: 1}}
+                      transition={{ delay: 1.0, duration: 0.5 }}
+                      // onClick={() => setIsReferralFormVisible(true)}
+                      onClick={openModal}
+                      onMouseOver={(e) => {
+                        // if (!isLoading) {
+                          e.currentTarget.style.backgroundColor = colors.green.dark;
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                        // }
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = colors.green.light;
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                      }}
+                    >
+                     + Refer a Guy
+                    </motion.button>
+
+                    {/* Modal Component */}
+                    {isModalOpen && <ReferralModal onClose={closeModal} />}
 
                 {/* Info Section */}
                 <motion.div 
