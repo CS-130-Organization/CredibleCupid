@@ -201,8 +201,7 @@ const Profile = ({
   // const [heightInches, setHeightInches] = useState(userData?.height_mm ? Math.round((userData.height_mm / 25.4) % 12) : 0);
   
   // For referrals
-  const [isReferralFormVisible, setIsReferralFormVisible] = useState(false);
-  const [referralData, setReferralData] = useState({ email: "", message: "" });// for sending referrals
+  const [referralData, setReferralData] = useState({ refemail: "", message: "" });// for sending referrals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -269,30 +268,6 @@ const Profile = ({
       navigate("/login");
     }
 
-
-    // Dummy user data with additional fields
-    // const dummyData = {
-    //   email: "example@email.com",
-    //   first_name: "first_name",
-    //   last_name: "last_name",
-    //   guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
-    //   bio: "Dummy bio",
-    //   gender: "Male",
-    //   pronouns: "He/Him",
-    //   sexual_orientation: "Straight",
-    //   // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-    //   birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-    //   date_of_birth: "1990-05-18",
-    //   height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
-    //   occupation: "Dummy occupation",
-    //   education: "Dummy education",
-    //   location: "Dummy location",
-    //   verified: true,
-    //   // verified: True,
-    // };
-    
-    // Set dummy data to mimic API response
-    // if (!userData) setUserData(dummyData);
   }, [tokenRefreshed, navigate]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
@@ -309,44 +284,6 @@ const Profile = ({
     e.preventDefault();  // Prevents the form from refreshing the page
     navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
   };
-
-  // const handleFetchProfile = (e) => {
-  //   e.preventDefault();
-
-  //   if (guid === userGuid) {
-  //     setIsOwner(true);
-  //   } else {
-  //     setIsOwner(false);
-  //   }
-
-  //   // InitDefaultCredibleCupidClient(null);
-  //   const apiInstance = new CredibleCupid.UserApi();
-  //   apiInstance.queryUser(guid, (error, data) => {
-  //     if (error) {
-  //       console.error(error);
-  //     } else {
-  //       console.log("Successfully fetch profile")
-        
-  //       // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-  //       const birthdayDate = new Date(data.birthday_ms_since_epoch);
-  //       const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-
-  //       const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
-  //       const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
-          
-
-  //       // Add date_of_birth to the data object
-  //       const updatedUserData = { 
-  //         ...data, date_of_birth: formattedBirthday, 
-  //         height_ft: heightFeet, 
-  //         height_in: heightInches };
-
-
-  //       // Update userData with the new data
-  //         setUserData(updatedUserData);
-  //     }
-  //   });
-  // };
 
 
   const handleUpdateProfile = (e) => {
@@ -465,268 +402,36 @@ const Profile = ({
 
     // Build SendReferralRequest object
     const sendReferralRequest = {
-      email: referralData.email,
+      email: referralData.refemail,
       message: referralData.message,
   };
     console.log(JSON.stringify(sendReferralRequest)); // new CredibleCupidApi.sendReferralRequest(); puts the data as an entry in a bio object
-    // Make the update request
-    apiInstance.updateBio(sendReferralRequest, (error, data, response) => {
+    // Make the sendReferral request
+    apiInstance.sendReferral(sendReferralRequest, (error, data, response) => {
       if (error) {
-        console.error("Failed to update profile:", error);
+        console.error("Failed to send referral:", error);
       } else {
-        console.log("Successfully send referral bio");
+        console.log("Successfully sent referral");
+        closeModal();
         // setUserData(userUpdateBioRequest); // Update the state with new data
         // setIsEditing(false); // Exit edit mode
       }
     });
   };
 
-  // function ReferralModal({ onClose }) {
-  //   return (
-  //     <>
-  //       {/* Overlay */}
-  //       <div
-  //         style={{
-  //           position: "fixed",
-  //           top: 0,
-  //           left: 0,
-  //           width: "100%",
-  //           height: "100%",
-  //           backgroundColor: "rgba(0, 0, 0, 0.1)", // Darken background
-  //           backdropFilter: "blur(1px)", // Optional: Add blur effect
-  //           zIndex: 1000, // Ensure it's above everything else
-  //         }}
-  //         onClick={onClose} // Close modal when clicking outside
-  //       />
-  
-  //       {/* Modal */}
-  //       <motion.div
-  //         style={{
-  //           position: "fixed",
-  //           top: "50%",
-  //           left: "4%",
-  //           // transform: "translate(-50%, -50%)",
-  //           backgroundColor: "white",
-  //           padding: "20px",
-  //           borderRadius: "10px",
-  //           boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-  //           zIndex: 1001, // Above overlay
-  //           width: "90%",
-  //           maxWidth: "320px",
-  //         }}
-  //         initial={{ opacity: 0, y: 20 }}
-  //         animate={{ opacity: 1, y: -250 }}
-  //         transition={{ duration: 0.3, ease: 'easeOut' }}
-  //         onClick={(e) => e.stopPropagation()} // Prevent overlay click event
-  //       >
-  //         <h1 style={{fontSize: '30px',
-  //           fontWeight: '600',
-  //           color: colors.gray.text,
-  //           margin: `0 0 ${spacing.xs} 0`
-  //         }}>Send a Referral</h1>
-  //         <form style={{
-  //               width: '100%',
-  //               display: 'flex',
-  //               flexDirection: 'column',
-  //               gap: '24px',
-  //             }} onSubmit={handleSendReferral}>
-  //           <div style={styles.inputGroup}>
-  //             <label style={styles.label}>Email:</label>
-  //             <input
-  //               type="referemail"
-  //               style={{
-  //                 ...styles.input,
-  //                 ':focus': {
-  //                   borderColor: colors.green.light,
-  //                   backgroundColor: colors.white,
-  //                 }
-  //               }}
-  //               // placeholder='The email of the user you wish to refer.'
-  //               onChange={(e) =>
-  //                 setReferralData((prev) => ({ ...prev, email: e.target.value }))
-  //               }
-  //               onFocus={(e) => {
-  //                 e.target.style.borderColor = colors.green.light;
-  //                 e.target.style.backgroundColor = colors.white;
-  //               }}
-  //               onBlur={(e) => {
-  //                 e.target.style.borderColor = colors.gray.border;
-  //                 e.target.style.backgroundColor = colors.gray.lighter;
-  //               }}
-  //               required
-  //             />
-  //           </div>
-  //           <div style={styles.inputGroup}>
-  //             <label style={styles.label}>Message:</label>
-  //             <textarea
-  //               style={{
-  //                 ...styles.input,
-  //                 ':focus': {
-  //                   borderColor: colors.green.light,
-  //                   backgroundColor: colors.white,
-  //                 }
-  //               }}
-  //               // placeholder='The message of the referral to give readers more information.'
-  //               onChange={(e) =>
-  //                 setReferralData((prev) => ({ ...prev, message: e.target.value }))
-  //               }
-  //               onFocus={(e) => {
-  //                 e.target.style.borderColor = colors.green.light;
-  //                 e.target.style.backgroundColor = colors.white;
-  //               }}
-  //               onBlur={(e) => {
-  //                 e.target.style.borderColor = colors.gray.border;
-  //                 e.target.style.backgroundColor = colors.gray.lighter;
-  //               }}
-  //               required
-  //             />
-  //           </div>
-  //           <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
-  //             <button
-  //               type="submit"
-  //               style={{
-  //                 ...buttonStyles.base,
-  //                 flex: 1
-  //             }}
-                
-  //             >
-  //               Send Referral
-  //             </button>
-  //             <button
-  //               type="button"
-  //               onClick={onClose}
-  //               style={{
-  //                 ...buttonStyles.base,
-  //                 flex: 1,
-  //                 backgroundColor: colors.gray.lighter,
-  //                 color: colors.gray.text
-  //             }}
-  //             >
-  //               Cancel
-  //             </button>              
-  //           </div>
-           
-  //         </form>
-  //       </motion.div>
-  //     </>
-  //   );
-  // }
-  const handleReferralInputChange = useCallback((e) => {
+  // const handleReferralInputChange = useCallback((e) => {
+  //   const { name, value } = e.target;
+  //   setReferralData({ ...userData, [name]: value });
+  // }, []);
+  const handleReferralInputChange = (e) => {
     const { name, value } = e.target;
-    setReferralData({ ...userData, [name]: value });
-  }, []);
+    setReferralData({ ...referralData, [name]: value });
+  };
 
-
-
-  // function ReferralModal({ referralData, setReferralData, onClose }) {
-  // const ReferralModal = React.memo(({ referralData, setReferralData, onClose }) => {
-  // const ReferralModal = React.memo(({referralData, setReferralData, onClose }) => {
-    
-  //   return (
-  //     <>
-  //     <div
-  //         style={{
-  //           position: "fixed",
-  //           top: 0,
-  //           left: 0,
-  //           width: "100%",
-  //           height: "100%",
-  //           backgroundColor: "rgba(0, 0, 0, 0.1)",
-  //           backdropFilter: "blur(1px)",
-  //           zIndex: 1000,
-  //         }}
-  //         onClick={onClose}
-  //       />
-  //     <motion.div style={inputStyles.container}
-  //                   initial={{ opacity: 0 }}
-  //                   animate={{ opacity: 1 }}
-  //                   transition={{ delay: 1.0, duration: 0.5 }}>
-  //                     <form onSubmit={handleSendReferral}>
-  //                     <h1>Send a Referral</h1>
-  //                       <div>
-  //                         <label>Email:</label>
-  //                         <input
-  //                           type="email"
-  //                           value={referralData.email}
-  //                           onChange={handleReferralInputChange}
-  //                           required
-  //                         />
-  //                       </div>
-  //                       <div>
-  //                         <label>Message:</label>
-  //                         <textarea
-  //                           value={referralData.message}
-  //                           onChange={handleReferralInputChange}
-  //                           required
-  //                         />
-  //                       </div>
-  //                       <button type="submit">Send Referral</button>
-  //                       <button type="button" onClick={onClose}>
-  //                         Cancel
-  //                       </button>
-  //                     </form>                    
-  //                   </motion.div>
-      {/* {console.log("rendering referral form")}
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.1)",
-            backdropFilter: "blur(1px)",
-            zIndex: 1000,
-          }}
-          onClick={onClose}
-        />
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "4%",
-            backgroundColor: "white",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            zIndex: 1001,
-            width: "90%",
-            maxWidth: "320px",
-          }}
-          // initial={{ opacity: 0, y: 20 }}
-          // animate={{ opacity: 1, y: -250 }}
-          // transition={{ duration: 0.3, ease: 'easeOut' }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h1>Send a Referral</h1>
-          <form>
-            <div>
-              <label>Email:</label>
-              <input
-                type="email"
-                value={referralData.email}
-                onChange={handleReferralInputChange}
-                required
-              />
-            </div>
-            <div>
-              <label>Message:</label>
-              <textarea
-                value={referralData.message}
-                onChange={handleReferralInputChange}
-                required
-              />
-            </div>
-            <button type="submit">Send Referral</button>
-            <button type="button" onClick={onClose}>
-              Cancel
-            </button>
-          </form>
-        </div> */}
-  //     </>
-  //   );
-  // });
-  
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setUserData({ ...userData, [name]: value });
+  // };
 
   if (!userData) return <div>Loading...</div>;
 
@@ -1467,26 +1172,11 @@ const Profile = ({
                     </motion.button >
 
                      {/* Referral Section */}
-                     {/* <div> 
-       <motion.button
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "blue",
-            color: "white",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-          onClick={openModal}
-        >
-          Refer a Guy
-        </motion.button>
-      </div> */}
-                    <motion.button
+                    {userData?.gender !== "Male" && <motion.button
                       style={styles.button}
                       initial={{ opacity: 0}}
                       animate={{ opacity: 1}}
                       transition={{ delay: 0.7, duration: 0.5 }}
-                      // onClick={() => setIsReferralFormVisible(true)}
                       onClick={openModal}
                       onMouseOver={(e) => {
                         // if (!isLoading) {
@@ -1502,24 +1192,8 @@ const Profile = ({
                       }}
                     >
                      + Refer a Guy
-                    </motion.button>
+                    </motion.button>}
 
-                    {/* Modal Component */}
-                    {/* {isModalOpen && <ReferralModal onClose={closeModal} />} */}
-                    {/* {isModalOpen && (
-                      <ReferralModal
-                        referralData={referralData} 
-                        setReferralData={setReferralData} 
-                        onClose={closeModal} 
-                      />
-                    )} */}
-                    {console.log("rendering profile (after referral form)")}
-                    {/* {isModalOpen && 
-                    <ReferralModal referralData={referralData} setReferralData={setReferralData} onClose={closeModal} 
-                    
-                    />} */}
-
-                      
                     {isModalOpen && 
                     <>
                       {/* Overlay */}
@@ -1565,7 +1239,8 @@ const Profile = ({
                                 <div style={styles.inputGroup}>
                                   <label style={styles.label}>Email:</label>
                                   <input
-                                    type="referemail"
+                                    type="refemail"
+                                    name="refemail"
                                     style={{
                                       ...styles.input,
                                       ':focus': {
@@ -1574,6 +1249,7 @@ const Profile = ({
                                       }
                                     }}
                                     // placeholder='The email of the user you wish to refer.'
+                                    value={referralData.refemail}
                                     onChange={handleReferralInputChange}
                                     onFocus={(e) => {
                                       e.target.style.borderColor = colors.green.light;
@@ -1589,6 +1265,7 @@ const Profile = ({
                                 <div style={styles.inputGroup}>
                                   <label style={styles.label}>Message:</label>
                                   <textarea
+                                    type="message"
                                     style={{
                                       ...styles.input,
                                       ':focus': {
@@ -1596,6 +1273,8 @@ const Profile = ({
                                         backgroundColor: colors.white,
                                       }
                                     }}
+                                    name="message"
+                                    value={referralData.message}
                                     // placeholder='The message of the referral to give readers more information.'
                                     onChange={handleReferralInputChange}
                                     onFocus={(e) => {
@@ -1633,35 +1312,9 @@ const Profile = ({
                                     Cancel
                                   </button>              
                                 </div>
-                              
                               </form>
-                      {/* <form onSubmit={handleSendReferral}>
-                      <h1>Send a Referral</h1>
-                        <div>
-                          <label>Email:</label>
-                          <input
-                            type="referralemail"
-                            value={referralData.email}
-                            onChange={handleReferralInputChange}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label>Message:</label>
-                          <textarea
-                            value={referralData.message}
-                            onChange={handleReferralInputChange}
-                            required
-                          />
-                        </div>
-                        <button type="submit">Send Referral</button>
-                        <button type="button" onClick={closeModal}>
-                          Cancel
-                        </button>
-                      </form>                     */}
                     </motion.div>
                     </>
-                   
                     }
 
                 {/* Info Section */}
