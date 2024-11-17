@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { TypeOrmModule } from "@nestjs/typeorm"
 
-import { User } from "./database/entities"
+import { User, Referral } from "./database/entities"
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { DATABASE_PASSWORD, DATABASE_NAME } from "./env"
@@ -17,7 +17,7 @@ import { DATABASE_PASSWORD, DATABASE_NAME } from "./env"
 			username: 'root',
 			password: DATABASE_PASSWORD,
 			database: DATABASE_NAME,
-			entities: [User],
+			entities: [User, Referral],
 			synchronize: true,
 		}),
 		AuthModule

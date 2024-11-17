@@ -100,7 +100,6 @@ const CardStack = () => {
           setMatchGuids(userGuids);
           // Load first two profiles initially for smooth transition
           if (userGuids.length > 0) {
-            console.log("first guid match = ", userGuids[0])
             loadProfile(userGuids[0]);
             if (userGuids.length > 1) {
               loadProfile(userGuids[1]);
@@ -123,32 +122,35 @@ const CardStack = () => {
   }, []);
 
   const loadProfile = async (guid) => {
+    // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
-    // try {
 
-    //   matchmakerApi.likeUser(guid, (error, data, response) => {
-    //     if (error) {
-    //       console.error("MATHMKAER DID NOT WORK error");
-    //     } else {
-    //       console.log('API called successfully. Returned data: ' + data.guid, data.matched);
-    //     }
-    //   });
-    // } catch {
-    //     console.log("failed to like user: ", guid)
-    // }
 
-    try {
-      userApi.queryUser(guid, (error, data) => {
-        if (error) {
-          console.error(error);
-        } else {
-          const age = calculateAge(data.birthday_ms_since_epoch);
+    userApi.queryUser(guid, (error, data) => {
+      if (error) {
+        console.error(error);
+      } else {
+        const age = calculateAge(data.birthday_ms_since_epoch);
 
+        // Get profile picture first
+        userApi.profilePicUser(guid, (error, picData, response) => {
+          if (error) {
+            console.error(error);
+            // Still create profile without picture
+            createAndSetProfile(null);
+          } else {
+            // Create profile with picture URL
+            createAndSetProfile(response.req.url);
+          }
+        });
+
+        // Helper function to create and set profile
+        function createAndSetProfile(profileURL) {
           setLoadedProfiles(prev => [...prev, {
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
             } : {}),
-            ...(age ? { age } : {}),  // Only include age if it exists
+            ...(age ? { age } : {}),
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
             ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
@@ -156,16 +158,15 @@ const CardStack = () => {
             ...(data.education ? { education: data.education } : {}),
             ...(data.location ? { location: data.location } : {}),
             ...(data.interests ? { interests: data.interests } : {}),
-            ...(data.verified !== undefined ? { verified: data.verified } : {}),
-            ...(data.imageUrl ? { imageUrl: data.imageUrl } : {}),
+            ...(profileURL ? { imageUrl: profileURL } : {}),
             guid: guid
           }]);
+
           setIsLoading(false);
         }
-      });
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-    }
+      }
+    });
+
   };
 
   // Pre-load next profile when current profile changes
@@ -209,7 +210,7 @@ const CardStack = () => {
       } catch (error) {
         console.error(`Error passing user ${loadedProfiles[0].guid}`);
       }
-    } 
+    }
 
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
