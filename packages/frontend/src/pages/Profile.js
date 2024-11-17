@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback , useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
@@ -481,10 +481,192 @@ const Profile = ({
     });
   };
 
-  function ReferralModal({ onClose }) {
-    return (
-      <>
-        {/* Overlay */}
+  // function ReferralModal({ onClose }) {
+  //   return (
+  //     <>
+  //       {/* Overlay */}
+  //       <div
+  //         style={{
+  //           position: "fixed",
+  //           top: 0,
+  //           left: 0,
+  //           width: "100%",
+  //           height: "100%",
+  //           backgroundColor: "rgba(0, 0, 0, 0.1)", // Darken background
+  //           backdropFilter: "blur(1px)", // Optional: Add blur effect
+  //           zIndex: 1000, // Ensure it's above everything else
+  //         }}
+  //         onClick={onClose} // Close modal when clicking outside
+  //       />
+  
+  //       {/* Modal */}
+  //       <motion.div
+  //         style={{
+  //           position: "fixed",
+  //           top: "50%",
+  //           left: "4%",
+  //           // transform: "translate(-50%, -50%)",
+  //           backgroundColor: "white",
+  //           padding: "20px",
+  //           borderRadius: "10px",
+  //           boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+  //           zIndex: 1001, // Above overlay
+  //           width: "90%",
+  //           maxWidth: "320px",
+  //         }}
+  //         initial={{ opacity: 0, y: 20 }}
+  //         animate={{ opacity: 1, y: -250 }}
+  //         transition={{ duration: 0.3, ease: 'easeOut' }}
+  //         onClick={(e) => e.stopPropagation()} // Prevent overlay click event
+  //       >
+  //         <h1 style={{fontSize: '30px',
+  //           fontWeight: '600',
+  //           color: colors.gray.text,
+  //           margin: `0 0 ${spacing.xs} 0`
+  //         }}>Send a Referral</h1>
+  //         <form style={{
+  //               width: '100%',
+  //               display: 'flex',
+  //               flexDirection: 'column',
+  //               gap: '24px',
+  //             }} onSubmit={handleSendReferral}>
+  //           <div style={styles.inputGroup}>
+  //             <label style={styles.label}>Email:</label>
+  //             <input
+  //               type="referemail"
+  //               style={{
+  //                 ...styles.input,
+  //                 ':focus': {
+  //                   borderColor: colors.green.light,
+  //                   backgroundColor: colors.white,
+  //                 }
+  //               }}
+  //               // placeholder='The email of the user you wish to refer.'
+  //               onChange={(e) =>
+  //                 setReferralData((prev) => ({ ...prev, email: e.target.value }))
+  //               }
+  //               onFocus={(e) => {
+  //                 e.target.style.borderColor = colors.green.light;
+  //                 e.target.style.backgroundColor = colors.white;
+  //               }}
+  //               onBlur={(e) => {
+  //                 e.target.style.borderColor = colors.gray.border;
+  //                 e.target.style.backgroundColor = colors.gray.lighter;
+  //               }}
+  //               required
+  //             />
+  //           </div>
+  //           <div style={styles.inputGroup}>
+  //             <label style={styles.label}>Message:</label>
+  //             <textarea
+  //               style={{
+  //                 ...styles.input,
+  //                 ':focus': {
+  //                   borderColor: colors.green.light,
+  //                   backgroundColor: colors.white,
+  //                 }
+  //               }}
+  //               // placeholder='The message of the referral to give readers more information.'
+  //               onChange={(e) =>
+  //                 setReferralData((prev) => ({ ...prev, message: e.target.value }))
+  //               }
+  //               onFocus={(e) => {
+  //                 e.target.style.borderColor = colors.green.light;
+  //                 e.target.style.backgroundColor = colors.white;
+  //               }}
+  //               onBlur={(e) => {
+  //                 e.target.style.borderColor = colors.gray.border;
+  //                 e.target.style.backgroundColor = colors.gray.lighter;
+  //               }}
+  //               required
+  //             />
+  //           </div>
+  //           <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
+  //             <button
+  //               type="submit"
+  //               style={{
+  //                 ...buttonStyles.base,
+  //                 flex: 1
+  //             }}
+                
+  //             >
+  //               Send Referral
+  //             </button>
+  //             <button
+  //               type="button"
+  //               onClick={onClose}
+  //               style={{
+  //                 ...buttonStyles.base,
+  //                 flex: 1,
+  //                 backgroundColor: colors.gray.lighter,
+  //                 color: colors.gray.text
+  //             }}
+  //             >
+  //               Cancel
+  //             </button>              
+  //           </div>
+           
+  //         </form>
+  //       </motion.div>
+  //     </>
+  //   );
+  // }
+  const handleReferralInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setReferralData({ ...userData, [name]: value });
+  }, []);
+
+
+
+  // function ReferralModal({ referralData, setReferralData, onClose }) {
+  // const ReferralModal = React.memo(({ referralData, setReferralData, onClose }) => {
+  // const ReferralModal = React.memo(({referralData, setReferralData, onClose }) => {
+    
+  //   return (
+  //     <>
+  //     <div
+  //         style={{
+  //           position: "fixed",
+  //           top: 0,
+  //           left: 0,
+  //           width: "100%",
+  //           height: "100%",
+  //           backgroundColor: "rgba(0, 0, 0, 0.1)",
+  //           backdropFilter: "blur(1px)",
+  //           zIndex: 1000,
+  //         }}
+  //         onClick={onClose}
+  //       />
+  //     <motion.div style={inputStyles.container}
+  //                   initial={{ opacity: 0 }}
+  //                   animate={{ opacity: 1 }}
+  //                   transition={{ delay: 1.0, duration: 0.5 }}>
+  //                     <form onSubmit={handleSendReferral}>
+  //                     <h1>Send a Referral</h1>
+  //                       <div>
+  //                         <label>Email:</label>
+  //                         <input
+  //                           type="email"
+  //                           value={referralData.email}
+  //                           onChange={handleReferralInputChange}
+  //                           required
+  //                         />
+  //                       </div>
+  //                       <div>
+  //                         <label>Message:</label>
+  //                         <textarea
+  //                           value={referralData.message}
+  //                           onChange={handleReferralInputChange}
+  //                           required
+  //                         />
+  //                       </div>
+  //                       <button type="submit">Send Referral</button>
+  //                       <button type="button" onClick={onClose}>
+  //                         Cancel
+  //                       </button>
+  //                     </form>                    
+  //                   </motion.div>
+      {/* {console.log("rendering referral form")}
         <div
           style={{
             position: "fixed",
@@ -492,123 +674,59 @@ const Profile = ({
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.3)", // Darken background
-            // backdropFilter: "blur(3px)", // Optional: Add blur effect
-            zIndex: 1000, // Ensure it's above everything else
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(1px)",
+            zIndex: 1000,
           }}
-          onClick={onClose} // Close modal when clicking outside
+          onClick={onClose}
         />
-  
-        {/* Modal */}
-        <motion.div
+        <div
           style={{
             position: "fixed",
             top: "50%",
-            left: "0%",
-            // transform: "translate(-50%, -50%)",
+            left: "4%",
             backgroundColor: "white",
             padding: "20px",
             borderRadius: "10px",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            zIndex: 1001, // Above overlay
+            zIndex: 1001,
             width: "90%",
-            maxWidth: "400px",
+            maxWidth: "320px",
           }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: -250 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          // initial={{ opacity: 0, y: 20 }}
+          // animate={{ opacity: 1, y: -250 }}
+          // transition={{ duration: 0.3, ease: 'easeOut' }}
+          onClick={(e) => e.stopPropagation()}
         >
-          <h1 style={{fontSize: '30px',
-            fontWeight: '600',
-            color: colors.gray.text,
-            margin: `0 0 ${spacing.xs} 0`
-          }}>Send a Referral</h1>
-          <form style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '24px',
-              }} onSubmit={handleSendReferral}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Email:</label>
+          <h1>Send a Referral</h1>
+          <form>
+            <div>
+              <label>Email:</label>
               <input
-                type="referemail"
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                onChange={(e) =>
-                  setReferralData((prev) => ({ ...prev, email: e.target.value }))
-                }
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
+                type="email"
+                value={referralData.email}
+                onChange={handleReferralInputChange}
                 required
               />
             </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Message:</label>
+            <div>
+              <label>Message:</label>
               <textarea
-                style={{
-                  ...styles.input,
-                  ':focus': {
-                    borderColor: colors.green.light,
-                    backgroundColor: colors.white,
-                  }
-                }}
-                onChange={(e) =>
-                  setReferralData((prev) => ({ ...prev, message: e.target.value }))
-                }
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.green.light;
-                  e.target.style.backgroundColor = colors.white;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.gray.border;
-                  e.target.style.backgroundColor = colors.gray.lighter;
-                }}
+                value={referralData.message}
+                onChange={handleReferralInputChange}
                 required
               />
             </div>
-            <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
-              <button
-                type="submit"
-                style={{
-                  ...buttonStyles.base,
-                  flex: 1
-              }}
-                
-              >
-                Send Referral
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                style={{
-                  ...buttonStyles.base,
-                  flex: 1,
-                  backgroundColor: colors.gray.lighter,
-                  color: colors.gray.text
-              }}
-              >
-                Cancel
-              </button>              
-            </div>
-           
+            <button type="submit">Send Referral</button>
+            <button type="button" onClick={onClose}>
+              Cancel
+            </button>
           </form>
-        </motion.div>
-      </>
-    );
-  }
-
+        </div> */}
+  //     </>
+  //   );
+  // });
+  
 
   if (!userData) return <div>Loading...</div>;
 
@@ -621,7 +739,6 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-        {/* <ProfileContainer> */}
          
         <motion.div style={{
             width: '390px',
@@ -709,7 +826,7 @@ const Profile = ({
                 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
                 {profilePicUrl ? (
                   <img
@@ -1133,26 +1250,7 @@ const Profile = ({
             </motion.div>
           
         </motion.div>
-        {/* </ProfileContainer> */}
-        {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
-          <Typography variant="h6">Interests</Typography>
-          <Box display="flex" flexWrap="wrap" gap={1} my={2}>
-            {interests.map((interest, index) => (
-              <Chip
-                key={index}
-                label={interest}
-                onDelete={() => handleInterestDelete(interest)}
-              />
-            ))}
-          </Box>
-            <TextField 
-              // autoFocus="autoFocus"
-              label="Type interest and press space"
-              value={currentInterest}
-              onChange={(e) => setCurrentInterest(e.target.value)}
-              onKeyDown={handleInterestKeyDown}
-            />
-          </Box> */}
+      
       </>
       ) : (
         <>
@@ -1248,10 +1346,10 @@ const Profile = ({
               // marginTop: spacing.xl
               marginTop: '-30px', // Negative margin to overlap the bottom of the image
               backgroundColor: colors.white,
-              width: '98%',
+              width: '93%',
               padding: '16px',
               boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
-              borderRadius: '64px',
+              borderRadius: '40px',
               position: 'relative',
               zIndex: 1, // Ensures it appears above the image
             }}>
@@ -1387,7 +1485,7 @@ const Profile = ({
                       style={styles.button}
                       initial={{ opacity: 0}}
                       animate={{ opacity: 1}}
-                      transition={{ delay: 1.0, duration: 0.5 }}
+                      transition={{ delay: 0.7, duration: 0.5 }}
                       // onClick={() => setIsReferralFormVisible(true)}
                       onClick={openModal}
                       onMouseOver={(e) => {
@@ -1407,7 +1505,164 @@ const Profile = ({
                     </motion.button>
 
                     {/* Modal Component */}
-                    {isModalOpen && <ReferralModal onClose={closeModal} />}
+                    {/* {isModalOpen && <ReferralModal onClose={closeModal} />} */}
+                    {/* {isModalOpen && (
+                      <ReferralModal
+                        referralData={referralData} 
+                        setReferralData={setReferralData} 
+                        onClose={closeModal} 
+                      />
+                    )} */}
+                    {console.log("rendering profile (after referral form)")}
+                    {/* {isModalOpen && 
+                    <ReferralModal referralData={referralData} setReferralData={setReferralData} onClose={closeModal} 
+                    
+                    />} */}
+
+                      
+                    {isModalOpen && 
+                    <>
+                      {/* Overlay */}
+                      <div
+                        style={{
+                          position: "fixed",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor: "rgba(0, 0, 0, 0.1)", // Darken background
+                          backdropFilter: "blur(1px)", // Optional: Add blur effect
+                          zIndex: 1000, // Ensure it's above everything else
+                        }}
+                        onClick={closeModal} // Close modal when clicking outside
+                      />
+                     <motion.div style={{
+                      position: "fixed",
+                      top: "50%",
+                      left: "4%",
+                      backgroundColor: "white",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+                      zIndex: 1001,
+                      width: "90%",
+                      maxWidth: "320px",
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: -250 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}>
+                         <h1 style={{fontSize: '30px',
+                                fontWeight: '600',
+                                color: colors.gray.text,
+                                margin: `0 0 ${spacing.xs} 0`
+                              }}>Send a Referral</h1>
+                              <form style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '24px',
+                                  }} onSubmit={handleSendReferral}>
+                                <div style={styles.inputGroup}>
+                                  <label style={styles.label}>Email:</label>
+                                  <input
+                                    type="referemail"
+                                    style={{
+                                      ...styles.input,
+                                      ':focus': {
+                                        borderColor: colors.green.light,
+                                        backgroundColor: colors.white,
+                                      }
+                                    }}
+                                    // placeholder='The email of the user you wish to refer.'
+                                    onChange={handleReferralInputChange}
+                                    onFocus={(e) => {
+                                      e.target.style.borderColor = colors.green.light;
+                                      e.target.style.backgroundColor = colors.white;
+                                    }}
+                                    onBlur={(e) => {
+                                      e.target.style.borderColor = colors.gray.border;
+                                      e.target.style.backgroundColor = colors.gray.lighter;
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <div style={styles.inputGroup}>
+                                  <label style={styles.label}>Message:</label>
+                                  <textarea
+                                    style={{
+                                      ...styles.input,
+                                      ':focus': {
+                                        borderColor: colors.green.light,
+                                        backgroundColor: colors.white,
+                                      }
+                                    }}
+                                    // placeholder='The message of the referral to give readers more information.'
+                                    onChange={handleReferralInputChange}
+                                    onFocus={(e) => {
+                                      e.target.style.borderColor = colors.green.light;
+                                      e.target.style.backgroundColor = colors.white;
+                                    }}
+                                    onBlur={(e) => {
+                                      e.target.style.borderColor = colors.gray.border;
+                                      e.target.style.backgroundColor = colors.gray.lighter;
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
+                                  <button
+                                    type="submit"
+                                    style={{
+                                      ...buttonStyles.base,
+                                      flex: 1
+                                  }}
+                                    
+                                  >
+                                    Send Referral
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    style={{
+                                      ...buttonStyles.base,
+                                      flex: 1,
+                                      backgroundColor: colors.gray.lighter,
+                                      color: colors.gray.text
+                                  }}
+                                  >
+                                    Cancel
+                                  </button>              
+                                </div>
+                              
+                              </form>
+                      {/* <form onSubmit={handleSendReferral}>
+                      <h1>Send a Referral</h1>
+                        <div>
+                          <label>Email:</label>
+                          <input
+                            type="referralemail"
+                            value={referralData.email}
+                            onChange={handleReferralInputChange}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label>Message:</label>
+                          <textarea
+                            value={referralData.message}
+                            onChange={handleReferralInputChange}
+                            required
+                          />
+                        </div>
+                        <button type="submit">Send Referral</button>
+                        <button type="button" onClick={closeModal}>
+                          Cancel
+                        </button>
+                      </form>                     */}
+                    </motion.div>
+                    </>
+                   
+                    }
 
                 {/* Info Section */}
                 <motion.div 
@@ -1473,19 +1728,26 @@ const Profile = ({
                       <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       </div>
                   </motion.div>
-                  <form onSubmit={handleTestUserProfile}>
-                    <div>
-                      <label htmlFor="guid">GUID:</label>
-                      <input
-                        type="text"
-                        id="guid"
-                        value={guid}
-                        onChange={(e) => setGuid(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <button type="submit">Fetch Profile</button>
-                  </form>
+
+                  <motion.div style={inputStyles.container}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.0, duration: 0.5 }}>
+                    <form onSubmit={handleTestUserProfile}>
+                      <div>
+                        <label htmlFor="guid">GUID:</label>
+                        <input
+                          type="text"
+                          id="guid"
+                          value={guid}
+                          onChange={(e) => setGuid(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button type="submit">Fetch Profile</button>
+                    </form>                    
+                  </motion.div>
+
                 </motion.div>
               </div>
             </motion.div>
