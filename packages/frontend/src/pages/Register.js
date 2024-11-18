@@ -160,14 +160,6 @@ function Register() {
         };
         let userApi = new CredibleCupid.UserApi();
 
-        userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
-            if (error) {
-                console.error("Failed to update profile:", error);
-            } else {
-                console.log("Successfully set up profile: ", data);
-            }
-        });
-
         // TODO: re-implement once referral + ai backend are done
         try {
             // Start verification process
