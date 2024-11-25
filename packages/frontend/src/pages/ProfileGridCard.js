@@ -3,18 +3,19 @@ import { Star, Verified } from 'lucide-react';
 import { colors } from '../styles/theme';
 import { badgeStyles, scoreStyles } from '../styles/commonStyles';
 
-const ProfileCard = ({
+const ProfileGridCard = ({
   name = 'Anonymous',
   age = '',
   gender = '',
   verified = false,
-  imageUrl = null
+  imageUrl = null,
+  onClick
 }) => {
   const [imageError, setImageError] = useState(false);
 
-  const updatedCardStyles = {
+  const gridCardStyles = {
     container: {
-      width: '100%', 
+      width: 'auto', 
       maxWidth: '160px', 
       margin: '10px', 
       borderRadius: '8px', 
@@ -27,29 +28,30 @@ const ProfileCard = ({
     }
   };
   
-  const updatedImageStyles = {
+  const gridImageStyles = {
     section: {
       position: 'relative',
       width: '100%',
+      height: '150px',
+      overflow: 'hidden',
     },
     image: {
       width: '100%',
-      height: '150px', 
       objectFit: 'cover',
     },
     placeholder: {
       width: '100%',
-      height: '150px',
+      height: '100%', 
       backgroundColor: colors.gray.light,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       color: colors.gray.dark,
-      fontSize: '12px'
-    }
+      fontSize: '12px',
+    },
   };
   
-  const updatedContentStyles = {
+  const gridContentStyles = {
     section: {
       display: 'flex', 
       flexDirection: 'column',
@@ -73,18 +75,18 @@ const ProfileCard = ({
   
 
   return (
-    <div style={updatedCardStyles.container}>
+    <div style={gridCardStyles.container} onClick={onClick}>
       <div>
-        <div style={updatedImageStyles.section}>
+        <div style={gridImageStyles.section}>
           {imageUrl && !imageError ? (
             <img
               src={imageUrl}
               alt={`${name}'s profile`}
-              style={updatedImageStyles.image}
+              style={gridImageStyles.image}
               onError={() => setImageError(true)}
             />
           ) : (
-            <div style={updatedImageStyles.placeholder}>
+            <div style={gridImageStyles.placeholder}>
               No image available
             </div>
           )}
@@ -96,9 +98,9 @@ const ProfileCard = ({
           )}
         </div>
 
-        <div style={updatedContentStyles.section}>
-          <div style={updatedContentStyles.header}>
-            <h2 style={updatedContentStyles.title}>
+        <div style={gridContentStyles.section}>
+          <div style={gridContentStyles.header}>
+            <h2 style={gridContentStyles.title}>
               {name}{age ? `, ${age}` : ''}{gender ? ` ${gender}` : ''}
             </h2>        
           </div>
@@ -108,4 +110,4 @@ const ProfileCard = ({
   );
 };
 
-export default ProfileCard;
+export default ProfileGridCard;
