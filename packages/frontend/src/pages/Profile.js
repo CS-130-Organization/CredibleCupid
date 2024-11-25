@@ -187,7 +187,7 @@ const Profile = ({
 }) => {
   const [userData, setUserData] = useState(null);
 
-  // const [userEditData, setUserEditData] = useState(null);// maybe want a temporary user data to store changes
+  const [userEditData, setUserEditData] = useState(null);// maybe want a temporary user data to store changes
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
@@ -284,6 +284,7 @@ const Profile = ({
 
           const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
           setUserData(updatedUserData);
+          setUserEditData(updatedUserData);
 
           if (data.referrals?.length > 0) {
             fetchAllReferrals(data.referrals); // Fetch referrals
@@ -359,31 +360,31 @@ const Profile = ({
     let apiInstance = new CredibleCupid.UserApi();
 
     // Convert date_of_birth to milliseconds since epoch
-    const birthdayMs = new Date(userData.date_of_birth).getTime();
-    userData.birthday_ms_since_epoch = birthdayMs;
+    const birthdayMs = new Date(userEditData.date_of_birth).getTime();
+    userEditData.birthday_ms_since_epoch = birthdayMs;
 
     // convert Height
-    const totalInches = parseInt(userData.height_ft, 10) * 12 + parseInt(userData.height_in, 10);
+    const totalInches = parseInt(userEditData.height_ft, 10) * 12 + parseInt(userEditData.height_in, 10);
     const mmHeight = totalInches * 25.4;
     
 
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
-      email: userData.email,
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      bio: userData.bio,
-      gender: userData.gender,
-      pronouns: userData.pronouns,
-      sexual_orientation: userData.sexual_orientation,
-      // birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
-      date_of_birth: userData.date_of_birth,
+      email: userEditData.email,
+      first_name: userEditData.first_name,
+      last_name: userEditData.last_name,
+      bio: userEditData.bio,
+      gender: userEditData.gender,
+      pronouns: userEditData.pronouns,
+      sexual_orientation: userEditData.sexual_orientation,
+      // birthday_ms_since_epoch: userEditData.birthday_ms_since_epoch,
+      date_of_birth: userEditData.date_of_birth,
       birthday_ms_since_epoch: birthdayMs,
       height_mm: mmHeight,
-      height_ft: userData.height_ft,
-      height_in: userData.height_in,
-      occupation: userData.occupation,
+      height_ft: userEditData.height_ft,
+      height_in: userEditData.height_in,
+      occupation: userEditData.occupation,
   };
     console.log(JSON.stringify(userUpdateBioRequest)); // new CredibleCupidApi.UserUpdateBioRequest(); puts the data as an entry in a bio object
     // Make the update request
@@ -397,6 +398,7 @@ const Profile = ({
         setAlertMessage(`Successfully updated bio`);
         setShowAlert(true);
         setUserData(userUpdateBioRequest); // Update the state with new data
+        setUserEditData(userUpdateBioRequest); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
     });
@@ -404,7 +406,7 @@ const Profile = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    setUserEditData({ ...userEditData, [name]: value });
   };
 
   const handleImageChange = (event) => {
@@ -816,7 +818,7 @@ const ImageUpload = () => (
                           }}
                           type="email"
                           name="email"
-                          value={userData.email}
+                          value={userEditData.email}
                           onChange={handleChange}
                           disabled
                         />
@@ -838,7 +840,7 @@ const ImageUpload = () => (
                         }}
                         type="text"
                         name="first_name"
-                        value={userData.first_name}
+                        value={userEditData.first_name}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -867,7 +869,7 @@ const ImageUpload = () => (
                         }}
                         type="text"
                         name="last_name"
-                        value={userData.last_name}
+                        value={userEditData.last_name}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -895,7 +897,7 @@ const ImageUpload = () => (
                           }
                         }}
                         name="gender"
-                        value={userData.gender}
+                        value={userEditData.gender}
                         onChange={handleChange}
                         
                       >
@@ -922,7 +924,7 @@ const ImageUpload = () => (
                         }}
                         type="text"
                         name="pronouns"
-                        value={userData.pronouns}
+                        value={userEditData.pronouns}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -950,7 +952,7 @@ const ImageUpload = () => (
                           }
                         }}
                         name="sexual_orientation"
-                        value={userData.sexual_orientation}
+                        value={userEditData.sexual_orientation}
                         onChange={handleChange}
                       >
                         <option value="Straight">Straight</option>
@@ -978,7 +980,7 @@ const ImageUpload = () => (
                               }}
                               type="date"
                               name="date_of_birth"
-                              value={userData.date_of_birth}
+                              value={userEditData.date_of_birth}
                               onChange={handleChange}
                               onFocus={(e) => {
                                   e.target.style.borderColor = colors.green.light;
@@ -1050,7 +1052,7 @@ const ImageUpload = () => (
                           }}
                           type="number"
                           name="height_ft"
-                          value={userData.height_ft}
+                          value={userEditData.height_ft}
                           // onChange={(e) => setHeightFeet(e.target.value)}
                           onChange={handleChange}
                           // onBlur={handleHeightChange}
@@ -1078,7 +1080,7 @@ const ImageUpload = () => (
                         }}
                         type="number"
                         name="height_in"
-                        value={userData.height_in}
+                        value={userEditData.height_in}
                         // onChange={(e) => setHeightInches(e.target.value)}
                         onChange={handleChange}
                         // onBlur={handleHeightChange}
@@ -1115,7 +1117,7 @@ const ImageUpload = () => (
                         }}
                         type="text"
                         name="occupation"
-                        value={userData.occupation}
+                        value={userEditData.occupation}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -1144,7 +1146,7 @@ const ImageUpload = () => (
                         }
                       }}
                       name="bio"
-                      value={userData.bio}
+                      value={userEditData.bio}
                       onChange={handleChange}
                       onFocus={(e) => {
                         e.target.style.borderColor = colors.green.light;
@@ -1605,7 +1607,7 @@ const ImageUpload = () => (
                       </div>
                   </motion.div> */}
                   {/* Referrals */}
-                  {userData.gender == "Male" && 
+                  {userData.gender === "Male" && 
                   <motion.div
                     style={inputStyles.container}
                     initial={{ opacity: 0 }}
