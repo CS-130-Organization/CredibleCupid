@@ -4,12 +4,15 @@ import * as CredibleCupidApi from '../credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { colors, spacing } from '../styles/theme';
 import { buttonStyles } from '../styles/commonStyles';
+import ProfileDetailsPopup from './ProfileDetailsPopup';
 
 const MatchesPage = () => {
   const [matchGuids, setMatchGuids] = useState([]);
   const [loadedProfiles, setLoadedProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -60,7 +63,7 @@ const MatchesPage = () => {
     if (headerRef.current) {
       setHeaderHeight(headerRef.current.offsetHeight);
     }
-  }, [headerRef]);
+  }, []);
 
   const loadProfile = (guid) => {
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
@@ -139,6 +142,7 @@ const MatchesPage = () => {
       fontSize: '22px',
     },
   };
+  
 
   if (error) {
     return (
@@ -157,6 +161,19 @@ const MatchesPage = () => {
     );
   }
 
+  const handleProfileClick = (profileId) => {
+    const profile = loadedProfiles.find(p => p.guid === profileId);    
+    if (!profile) return;
+    setSelectedProfile(profile);
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedProfile(null);
+  };
+
+
   return (
     <div>
       <div ref={headerRef} style={styles.header}>
@@ -165,7 +182,7 @@ const MatchesPage = () => {
       <div style={styles.gridContainer}>
         {loadedProfiles.length > 0 ? (
           loadedProfiles.map(profile => (
-            <ProfileGridCard key={profile.guid} {...profile} />
+            <ProfileGridCard key={profile.guid} {...profile} onClick={() => handleProfileClick(profile.guid)}/>
           ))
         ) : (
           <div style={styles.emptyState}>
@@ -174,6 +191,10 @@ const MatchesPage = () => {
           </div>
         )}
       </div>
+
+      {isPopupOpen && selectedProfile && (
+        <ProfileDetailsPopup {...selectedProfile} onClose={closePopup} />
+      )}
       
     </div>
   );
