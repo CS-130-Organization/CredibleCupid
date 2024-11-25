@@ -1,9 +1,9 @@
-import React, { useCallback , useEffect, useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
   buttonStyles,
@@ -194,7 +194,7 @@ const Profile = ({
   const [userGuid, setUserGuid] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
-  const [photo, setPhoto] = useState(null);
+  // const [photo, setPhoto] = useState(null);
 
   // Add this to your state declarations
   const [isUploading, setIsUploading] = useState(false);
@@ -214,9 +214,54 @@ const Profile = ({
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  const [referrals, setReferrals] = useState([]);
+
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
+
+    const fetchReferrerData = async (referrerGuid) => {
+      const apiInstance = new CredibleCupid.UserApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.queryUser(referrerGuid, (error, data) => {
+          if (error) {
+            console.error("Error fetching referrer data:", error);
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    };
+
+    const fetchReferralDetails = async (referralGuid) => {
+      const apiInstance = new CredibleCupid.ReferralApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.getReferral(referralGuid, async (error, data) => {
+          if (error) {
+            console.error("Error fetching referral data:", error);
+            reject(error);
+          } else {
+            try {
+              const referrerData = await fetchReferrerData(data.referrer_guid);
+              resolve({ ...data, referrer: referrerData });
+            } catch (fetchReferrerError) {
+              reject(fetchReferrerError);
+            }
+          }
+        });
+      });
+    };
+
+    const fetchAllReferrals = async (referralGuids) => {
+      const referralPromises = referralGuids.map((guid) => fetchReferralDetails(guid));
+      try {
+        const allReferrals = await Promise.all(referralPromises);
+        setReferrals(allReferrals);
+      } catch (error) {
+        console.error("Error fetching all referrals:", error);
+      }
+    };
 
     const fetchProfile = (guid) => {
       setIsOwner(true);
@@ -240,7 +285,9 @@ const Profile = ({
           const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
           setUserData(updatedUserData);
 
-
+          if (data.referrals?.length > 0) {
+            fetchAllReferrals(data.referrals); // Fetch referrals
+          }
 
           apiInstance.profilePicUser(guid, (error, data, response) => {
             if (error) {
@@ -366,7 +413,7 @@ const Profile = ({
       setIsUploading(true);
       
       // Set preview immediately 
-      setPhoto(file);
+      // setPhoto(file);
       setPreviewImage(URL.createObjectURL(file));
 
       const apiInstance = new CredibleCupid.UserApi();
@@ -587,6 +634,7 @@ const ImageUpload = () => (
       </div>
   </div>
 );
+
 
   // const handleChange = (e) => {
   //   const { name, value } = e.target;
@@ -1543,7 +1591,7 @@ const ImageUpload = () => (
                   </div>
 
                   {/* Referrals */}
-                  <motion.div  style={inputStyles.container}
+                  {/* <motion.div  style={inputStyles.container}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.5 }}>
@@ -1555,9 +1603,44 @@ const ImageUpload = () => (
                       <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       </div>
-                  </motion.div>
+                  </motion.div> */}
+                  {/* Referrals */}
+                  {userData.gender == "Male" && 
+                  <motion.div
+                    style={inputStyles.container}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.0, duration: 0.5 }}
+                  >
+                  <label style={inputStyles.label}>Referrals</label>
+                  {referrals.length > 0 ? (
+                    referrals.map((referral, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <Link
+                          to={`/userprofile/${referral.referrer.guid}`}
+                          style={{
+                            ...styles.subtitle,
+                            marginRight: "8px", // Add spacing between link and message
+                          }}
+                        >
+                          {referral.referrer.first_name}
+                        </Link>
+                        <p style={{ ...styles.subtitle, margin: 0 }}>- {referral.message}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No referrals available.</p>
+                  )}
+                  </motion.div>}
 
-                  <motion.div style={inputStyles.container}
+                  {/* <motion.div style={inputStyles.container}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.0, duration: 0.5 }}>
@@ -1574,7 +1657,7 @@ const ImageUpload = () => (
                       </div>
                       <button type="submit">Fetch Profile</button>
                     </form>                    
-                  </motion.div>
+                  </motion.div> */}
 
                 </motion.div>
               </div>
