@@ -193,6 +193,11 @@ const Profile = ({
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [photo, setPhoto] = useState(null);
+
+  // Add this to your state declarations
+  const [isUploading, setIsUploading] = useState(false);
 
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
@@ -205,6 +210,9 @@ const Profile = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
 
   useEffect(() => {
@@ -240,7 +248,7 @@ const Profile = ({
             } else {
               // Assuming response contains the URL to the profile picture
               setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
-
+              setPreviewImage(response.req.url);
               console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
             }
           });
@@ -335,8 +343,12 @@ const Profile = ({
     apiInstance.updateBio(userUpdateBioRequest, (error, data, response) => {
       if (error) {
         console.error("Failed to update profile:", error);
+        setAlertMessage(`Failed to update profile. Please try again`);
+        setShowAlert(true);
       } else {
         console.log("Successfully updated bio");
+        setAlertMessage(`Successfully updated bio`);
+        setShowAlert(true);
         setUserData(userUpdateBioRequest); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
@@ -351,14 +363,26 @@ const Profile = ({
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setIsUploading(true);
+      
+      // Set preview immediately 
+      setPhoto(file);
+      setPreviewImage(URL.createObjectURL(file));
+
       const apiInstance = new CredibleCupid.UserApi();
       const opts = { file }; // File selected by the user
       try {
         apiInstance.uploadProfilePic(opts, (error, data, response) => {
+          setIsUploading(false);
+
           if (error) {
             console.error("Error uploading profile picture:", error);
+            setAlertMessage(`Failed to upload profile picture. Please try again.`);
+            setShowAlert(true);
           } else {
             console.log("Profile picture uploaded successfully");
+            setAlertMessage(`Profile picture uploaded successfully`);
+            setShowAlert(true);
             // Optionally, update the UI with the new profile picture
             // Fetch the updated profile picture
             // const guid = 'YOUR_USER_GUID'; // Replace with the actual GUID for the user
@@ -367,6 +391,9 @@ const Profile = ({
                 console.error("Error fetching profile picture:", error);
               } else {
                 // Assuming response contains the URL to the profile picture
+                if (data?.url) {
+                  setPreviewImage(data.url);
+                }
                 setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
 
                 console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
@@ -410,8 +437,12 @@ const Profile = ({
     apiInstance.sendReferral(sendReferralRequest, (error, data, response) => {
       if (error) {
         console.error("Failed to send referral:", error);
+        setAlertMessage(`Failed to send referral`);
+        setShowAlert(true);
       } else {
         console.log("Successfully sent referral");
+        setAlertMessage(`Successfully sent referral`);
+        setShowAlert(true);
         closeModal();
         // setUserData(userUpdateBioRequest); // Update the state with new data
         // setIsEditing(false); // Exit edit mode
@@ -427,6 +458,135 @@ const Profile = ({
     const { name, value } = e.target;
     setReferralData({ ...referralData, [name]: value });
   };
+
+  
+  const Alert = ({ message, onClose }) => (
+    <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    }}>
+        <div style={{
+            backgroundColor: 'white',
+            padding: spacing.xl,
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            maxWidth: '400px',
+            width: '70%'
+        }}>
+            <div style={{
+                marginBottom: spacing.lg,
+                fontSize: '16px',
+                lineHeight: '1.5',
+                color: colors.gray.text,
+                whiteSpace: 'pre-line'
+            }}>
+                {message}
+            </div>
+            <button
+                onClick={onClose}
+                style={{
+                    ...buttonStyles.base,
+                    width: '100%',
+                    marginTop: spacing.md
+                }}
+            >
+                OK
+            </button>
+        </div>
+    </div>
+);
+
+
+const ImageUpload = () => (
+  <div style={inputStyles.container}>
+      <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Profile Picture</label>
+      <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: spacing.md,
+          padding: spacing.lg,
+          border: `2px dashed ${colors.gray.border}`,
+          borderRadius: '8px',
+          backgroundColor: colors.gray.lighter,
+          cursor: 'pointer'
+      }}>
+          {previewImage ? (
+              <div style={{
+                  width: '300px',
+                  height: '300px',
+                  borderRadius: '10%',
+                  overflow: 'hidden',
+                  marginBottom: spacing.md,
+                  position: 'relative',
+                  opacity: 0.9,
+              }}>
+                  <img
+                      src={previewImage}
+                      alt="Profile preview"
+                      style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          opacity: isUploading ? 0.5 : 1
+                      }}
+                  />
+                  {isUploading && (
+                      <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)'
+                      }}>
+                          Loading...
+                      </div>
+                  )}
+              </div>
+          ) : (
+              <div style={{
+                  width: '150px',
+                  height: '150px',
+                  borderRadius: '50%',
+                  backgroundColor: colors.gray.lighter,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: spacing.md
+              }}>
+                  <span style={{ fontSize: '40px', color: colors.gray.text }}>+</span>
+              </div>
+          )}
+          <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+              id="profile-image-upload"
+              disabled={isUploading}
+          />
+          <label
+              htmlFor="profile-image-upload"
+              style={{
+                  ...buttonStyles.base,
+                  cursor: isUploading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  height: '30px',
+                  opacity: isUploading ? 0.7 : 1
+              }}
+          >
+              {isUploading ? 'Uploading...' : (previewImage ? 'Change Photo' : 'Upload Photo')}
+          </label>
+      </div>
+  </div>
+);
 
   // const handleChange = (e) => {
   //   const { name, value } = e.target;
@@ -521,7 +681,7 @@ const Profile = ({
                   Edit Profile
                   </div>
                 {/* Upload Image */}
-                <motion.div style={{
+                {/* <motion.div style={{
                   width: '100%',
                   height: '100%',
                   display: 'flex',
@@ -574,6 +734,21 @@ const Profile = ({
                       onChange={handleImageChange}
                     />
                   </label>
+                </motion.div> */}
+                <motion.div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: '3px' // Push down from top
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                <ImageUpload />
+
                 </motion.div>
 
                 {/* The rest */}
@@ -1405,6 +1580,12 @@ const Profile = ({
               </div>
             </motion.div>
           </motion.div>
+          {showAlert && (
+            <Alert
+                message={alertMessage}
+                onClose={() => setShowAlert(false)}
+            />
+          )}
         </>
       )}
       <br></br>
