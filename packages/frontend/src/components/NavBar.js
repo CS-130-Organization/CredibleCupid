@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Search, Heart } from 'lucide-react';
+import { User, Search, Heart, Share2 } from 'lucide-react';
 import { colors } from '../styles/theme';
 
-const NavBar = () => {
+const NavBar = ({ userGender }) => {
     return (
         <nav style={styles.nav}>
             <ul style={styles.navLinks}>
@@ -22,6 +22,13 @@ const NavBar = () => {
                         <Heart style={styles.icon} />
                     </Link>
                 </li>
+                {userGender !== 'male' && (
+                    <li>
+                        <Link to="/referrals" style={styles.link}>
+                            <Share2 style={styles.icon} />
+                        </Link>
+                    </li>
+                )}
             </ul>
         </nav>
     );

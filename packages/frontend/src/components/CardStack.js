@@ -69,7 +69,6 @@ const CardStack = () => {
   const [currentAction, setCurrentAction] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Initialize API clients
   const defaultClient = CredibleCupidApi.ApiClient.instance;
   const bearer = defaultClient.authentications['bearer'];
   const jwtToken = sessionStorage.getItem("jwtToken");
@@ -80,7 +79,7 @@ const CardStack = () => {
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
 
-  // Calculate the age based on `birthday_ms_since_epoch`
+  // calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
@@ -98,7 +97,7 @@ const CardStack = () => {
         } else {
           const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
-          // Load first two profiles initially for smooth transition
+          // load first two profiles only
           if (userGuids.length > 0) {
             loadProfile(userGuids[0]);
             if (userGuids.length > 1) {
@@ -136,15 +135,12 @@ const CardStack = () => {
         userApi.profilePicUser(guid, (error, picData, response) => {
           if (error) {
             console.error(error);
-            // Still create profile without picture
             createAndSetProfile(null);
           } else {
-            // Create profile with picture URL
             createAndSetProfile(response.req.url);
           }
         });
 
-        // Helper function to create and set profile
         function createAndSetProfile(profileURL) {
           setLoadedProfiles(prev => [...prev, {
             ...((data.first_name || data.last_name) ? {
