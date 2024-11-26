@@ -28,8 +28,6 @@ function Register() {
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [verificationStep, setVerificationStep] = useState(0);
-
-    // Add this to your state declarations
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
@@ -61,13 +59,13 @@ function Register() {
                     return;
                 }
 
-                // password matching validation
+                // Password matching validation
                 if (password !== confirmPassword) {
                     setAlertMessage("Passwords do not match");
                     setShowAlert(true);
                     return;
                 }
-                // Create account in db if fields are valid
+
                 let apiInstance = new CredibleCupid.AuthApi();
                 let registerRequest = new CredibleCupid.LoginRequest(email, password);
 
@@ -136,8 +134,6 @@ function Register() {
             console.error("JWT token missing. Unable to set up profile.");
             return;
         }
-
-        // Set up API client instance and authenticate with JWT
         let defaultClient = CredibleCupid.ApiClient.instance;
         let bearer = defaultClient.authentications['bearer'];
         bearer.accessToken = jwtToken;
@@ -146,7 +142,6 @@ function Register() {
         const birthdayMs = new Date(birthday).getTime();
         const heightMM = height * 10;
 
-        // Build UserUpdateBioRequest object
         const userUpdateBioRequest = {
             first_name: firstName,
             last_name: lastName,
