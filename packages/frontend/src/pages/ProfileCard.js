@@ -60,7 +60,7 @@ const ProfileCard = ({
       width: '100%',
       position: 'absolute',
       bottom: 0,
-      left: 0, // Add this to ensure left alignment
+      left: 0, 
       backgroundColor: colors.white,
       borderTop: `1px solid ${colors.gray.lighter}`,
       paddingBottom: '70px'
@@ -70,11 +70,11 @@ const ProfileCard = ({
       padding: spacing.lg,
       gap: spacing.md,
       width: '100%',
-      boxSizing: 'border-box', // Add this
-      justifyContent: 'center' // Change to center
+      boxSizing: 'border-box', 
+      justifyContent: 'center' 
     },
     actionButton: (isActive, isLike) => ({
-      flex: 0.5, // Change from 1 to 0.5
+      flex: 0.5, 
       padding: spacing.xl,
       height: '80px',
       display: 'flex',
@@ -86,7 +86,7 @@ const ProfileCard = ({
       cursor: 'pointer',
       transition: 'all 0.2s ease',
       backgroundColor: isActive ? (isLike ? '#dcfce7' : '#fee2e2') : colors.white,
-      maxWidth: '170px' // Add fixed max width
+      maxWidth: '170px' 
     }),
     buttonText: (isActive, isLike) => ({
       fontWeight: '600',
