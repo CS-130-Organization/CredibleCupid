@@ -9,6 +9,7 @@ import AiError from './pages/AiError';
 import SuccessPage from './pages/SuccessPage';
 import Referrals from './pages/Referrals';
 import NavBar from './components/NavBar';
+import MatchesPage from './pages/MatchesPage';
 import * as CredibleCupidApi from './credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from './client/Client';
 
@@ -27,6 +28,7 @@ function AppRoutes({ userGender }) {
         <Route path="/register" element={<Register />} />
         <Route path="/aierror" element={<AiError />} />
         <Route path="/success" element={<SuccessPage />} />
+          <Route path="/matches" element={<MatchesPage />} />
         <Route path="/referrals" element={<Referrals />} />
       </Routes>
       {shouldShowNavBar && <NavBar userGender={userGender} />}
