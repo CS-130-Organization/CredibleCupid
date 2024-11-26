@@ -399,7 +399,7 @@ function UserProfile({
                   }}
                   />
               )}
-              {
+              {/* {
                 <motion.div style={{
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
@@ -419,7 +419,7 @@ function UserProfile({
                   <Verified size={16} />
                   <span>Verified</span>
                 </motion.div>
-              }
+              } */}
 
             </motion.div>
 
