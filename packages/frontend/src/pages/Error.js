@@ -1,11 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing } from '../styles/theme';
 import { contentContainerStyles, buttonStyles, titleStyles, subheadingStyles, cardStyles, logoStyles } from '../styles/commonStyles';
 import logo from '../assets/images/logo.png';
 
-const AiError = () => {
+const Error = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const errorMessage = location.state?.errorMessage || "We were unable to verify your profile. This may be due to our AI detection system identifying potential issues with your profile information. Please try again with different profile details.";
 
     const handleRetry = () => {
         navigate('/register');
@@ -33,18 +35,18 @@ const AiError = () => {
                 }}>
                     <h1 style={{
                         ...titleStyles,
-                        marginBottom: spacing.xl  // Increased spacing between title and subheading
+                        marginBottom: spacing.xl
                     }}> 
                         Profile Verification Failed 
                     </h1>
                     <p style={{
                         ...subheadingStyles,
                         textAlign: 'center',
-                        maxWidth: '300px'
+                        maxWidth: '500px',
+                        color: colors.gray.text,
+                        lineHeight: '1.5'
                     }}>
-                        We were unable to verify your profile. This may be due to our AI detection system
-                        identifying potential issues with your profile information. Please try again with
-                        different profile details.
+                        {errorMessage}
                     </p>
                 </div>
                 <div style={{
@@ -68,4 +70,4 @@ const AiError = () => {
     );
 }
 
-export default AiError;
+export default Error;

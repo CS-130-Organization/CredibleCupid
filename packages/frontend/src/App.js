@@ -3,7 +3,7 @@ import { useLocation, BrowserRouter as Router, Route, Routes } from 'react-route
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
-import AiError from './pages/AiError';
+import Error from './pages/Error';
 import SuccessPage from './pages/SuccessPage';
 import CardStack from './components/CardStack';
 import UserProfile from './pages/UserProfile'
@@ -44,7 +44,7 @@ function App() {
           <Route path="/userprofile/:guid" element={<UserProfile />} />
           <Route path="/browse" element={<CardStack />} />
           <Route exact path="/register" element={<Register />} />
-          <Route exact path="/aierror" element={<AiError />} />
+          <Route exact path="/error" element={<Error />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/matches" element={<MatchesPage />} />
           {/* ... other routes ... */}
