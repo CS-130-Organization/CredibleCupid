@@ -3,7 +3,7 @@ import { useLocation, BrowserRouter as Router, Route, Routes } from 'react-route
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
-import AiError from './pages/AiError';
+import Error from './pages/Error';
 import SuccessPage from './pages/SuccessPage';
 import CardStack from './components/CardStack';
 import UserProfile from './pages/UserProfile'

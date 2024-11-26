@@ -160,33 +160,24 @@ function Register() {
         };
         let userApi = new CredibleCupid.UserApi();
 
-        // TODO: re-implement once referral + ai backend are done
-        try {
-            // Start verification process
-            if (gender.toLowerCase() === 'male') {
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-                setVerificationStep(1); // Move to AI check
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait another 5 seconds
-            } else {
-                setVerificationStep(1);
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-            }
+        userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
+            if (error) {
+                console.error("Failed to update profile:", error);
+                let errorMessage;
 
-            // If AI check passes, proceed with bio update
-            userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
-                if (error) {
-                    console.error("Failed to update profile:", error);
-                    navigate('/error');
+                if (error.response?.body?.message) {
+                    errorMessage = error.response.body.message;
+                } else if (error.response?.body?.error) {
+                    errorMessage = error.response.body.error;
                 } else {
-                    console.log("Successfully set up bio: ", data);
-                    navigate('/success');  // Navigate to success page instead of login
+                    errorMessage = "Failed to update profile. Please try again.";
                 }
-            });
-        } catch (error) {
-            console.error("Verification failed:", error);
-            navigate('/error');
-        }
-        navigate('/login');
+                navigate('/error', { state: { errorMessage } });
+            } else {
+                console.log("Successfully set up bio: ", data);
+                navigate('/success');
+            }
+        });
     };
 
     const handleFocus = (e) => {
@@ -582,16 +573,8 @@ function Register() {
         }
     };
 
-    const renderVerification = () => {
-        let verificationMessage;
-        if (gender.toLowerCase() === 'male') {
-            verificationMessage = verificationStep === 0
-                ? "Verifying referrals..."
-                : "Checking for AI profile...";
-        } else {
-            verificationMessage = "Checking for AI profile...";
-        }
 
+    const renderVerification = () => {
         return (
             <div style={{
                 textAlign: 'center',
@@ -608,7 +591,15 @@ function Register() {
                 }} />
                 <h2 style={titleStyles}>Verifying Your Information</h2>
                 <p style={subheadingStyles}>
-                    {verificationMessage}
+                    {gender.toLowerCase() === 'male' ? (
+                        <>
+                            Checking referrals and running AI verification...
+                        </>
+                    ) : (
+                        <>
+                            Running AI verification...
+                        </>
+                    )}
                 </p>
                 <style>{`
                     @keyframes spin {
