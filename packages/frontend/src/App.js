@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
@@ -12,8 +12,30 @@ import NavBar from './components/NavBar';
 import * as CredibleCupidApi from './credible_cupid/src/index';
 import InitDefaultCredibleCupidClient from './client/Client';
 
+// Create a wrapper component for the routes and navbar
+function AppRoutes({ userGender }) {
+  const location = useLocation();
+  const shouldShowNavBar = !['/login', '/register', '/aierror', '/success'].includes(location.pathname);
+
+  return (
+    <>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/userprofile/:guid" element={<UserProfile />} />
+        <Route path="/browse" element={<CardStack />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/aierror" element={<AiError />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/referrals" element={<Referrals />} />
+      </Routes>
+      {shouldShowNavBar && <NavBar userGender={userGender} />}
+    </>
+  );
+}
+
 function App() {
-  const [userGuid, setUserGuid] = useState(null)
+  const [userGuid, setUserGuid] = useState(null);
   const [userGender, setUserGender] = useState(null);
 
   const defaultClient = CredibleCupidApi.ApiClient.instance;
@@ -22,10 +44,6 @@ function App() {
   InitDefaultCredibleCupidClient(jwtToken);
   bearer.accessToken = jwtToken;
 
-  // Determine if NavBar should be shown (exclude login, register, etc.)
-  const shouldShowNavBar = !['/login', '/register', '/aierror', '/success'].includes(window.location.pathname);
-
-  // Fetch user gender when component mounts
   useEffect(() => {
     const fetchUserGender = async () => {
       try {
@@ -40,42 +58,46 @@ function App() {
           }
         });
 
-      // use user guid to get user's gender
-      const token = sessionStorage.getItem("jwtToken");
-      if (token) {
-        let userApi = new CredibleCupidApi.UserApi();
-        userApi.queryUser(userGuid, (error, data) => {
-          if (!error) {
-            setUserGender(data.gender);
-          }
-        });
+        // use user guid to get user's gender
+        const token = sessionStorage.getItem("jwtToken");
+        if (token && userGuid) {
+          let userApi = new CredibleCupidApi.UserApi();
+          userApi.queryUser(userGuid, (error, data) => {
+            if (!error) {
+              setUserGender(data.gender);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-    }
-  };
+    };
+    fetchUserGender();
+  }, [userGuid]);
 
-  fetchUserGender();
-}, []);
-
-return (
-  <div style={styles.pageContainer}>
-    <div style={styles.contentWrapper}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/userprofile/:guid" element={<UserProfile />} />
-        <Route path="/browse" element={<CardStack />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/aierror" element={<AiError />} />
-        <Route path="/success" element={<SuccessPage />} />
-        <Route path="/referrals" element={<Referrals />} />
-      </Routes>
-      {shouldShowNavBar && <NavBar userGender={userGender} />}
-    </div>
-  </div>
-);
+  return (
+    <Router>
+      <div style={styles.pageContainer}>
+        <div style={styles.contentWrapper}>
+          <AppRoutes userGender={userGender} />
+        </div>
+      </div>
+    </Router>
+  );
 }
+
+const restyles = {
+  pageContainer: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  contentWrapper: {
+    flex: 1,
+    position: 'relative',
+  }
+};
+
 
 const styles = {
   pageContainer: {
@@ -86,6 +108,9 @@ const styles = {
   contentWrapper: {
     flex: 1,
     position: 'relative',
+    maxWidth: '390px',  
+    margin: '0 auto',   
+    width: '100%',
   }
 };
 
