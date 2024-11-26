@@ -8,6 +8,7 @@ import SuccessPage from './pages/SuccessPage';
 import CardStack from './components/CardStack';
 import UserProfile from './pages/UserProfile'
 import NavBar from './components/NavBar';
+import MatchesPage from './pages/MatchesPage';
 import { colors } from './styles/theme';
 import './App.css';
 
@@ -45,6 +46,7 @@ function App() {
           <Route exact path="/register" element={<Register />} />
           <Route exact path="/aierror" element={<AiError />} />
           <Route path="/success" element={<SuccessPage />} />
+          <Route path="/matches" element={<MatchesPage />} />
           {/* ... other routes ... */}
         </Routes>
         {shouldShowNavBar && <NavBar />}
