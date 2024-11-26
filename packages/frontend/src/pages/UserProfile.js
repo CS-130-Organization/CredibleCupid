@@ -1,7 +1,7 @@
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion'; 
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
@@ -190,11 +190,55 @@ function UserProfile({
   const navigate = useNavigate();
   const [profilePicUrl, setProfilePicUrl] = useState(null);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
+  const [referrals, setReferrals] = useState([]);
 
 
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
+
+    const fetchReferrerData = async (referrerGuid) => {
+      const apiInstance = new CredibleCupid.UserApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.queryUser(referrerGuid, (error, data) => {
+          if (error) {
+            console.error("Error fetching referrer data:", error);
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    };
+
+    const fetchReferralDetails = async (referralGuid) => {
+      const apiInstance = new CredibleCupid.ReferralApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.getReferral(referralGuid, async (error, data) => {
+          if (error) {
+            console.error("Error fetching referral data:", error);
+            reject(error);
+          } else {
+            try {
+              const referrerData = await fetchReferrerData(data.referrer_guid);
+              resolve({ ...data, referrer: referrerData });
+            } catch (fetchReferrerError) {
+              reject(fetchReferrerError);
+            }
+          }
+        });
+      });
+    };
+
+    const fetchAllReferrals = async (referralGuids) => {
+      const referralPromises = referralGuids.map((guid) => fetchReferralDetails(guid));
+      try {
+        const allReferrals = await Promise.all(referralPromises);
+        setReferrals(allReferrals);
+      } catch (error) {
+        console.error("Error fetching all referrals:", error);
+      }
+    };
 
     const fetchProfile = (guid) => {
     //   setIsOwner(true);
@@ -218,6 +262,9 @@ function UserProfile({
           const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
           setUserData(updatedUserData);
 
+          if (data.referrals?.length > 0) {
+            fetchAllReferrals(data.referrals); // Fetch referrals
+          }
 
 
           apiInstance.profilePicUser(guid, (error, data, response) => {
@@ -352,7 +399,7 @@ function UserProfile({
                   }}
                   />
               )}
-              {
+              {/* {
                 <motion.div style={{
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
@@ -372,7 +419,7 @@ function UserProfile({
                   <Verified size={16} />
                   <span>Verified</span>
                 </motion.div>
-              }
+              } */}
 
             </motion.div>
 
@@ -384,10 +431,10 @@ function UserProfile({
               // marginTop: spacing.xl
               marginTop: '-30px', // Negative margin to overlap the bottom of the image
               backgroundColor: colors.white,
-              width: '98%',
+              width: '93%',
               padding: '16px',
               boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
-              borderRadius: '64px',
+              borderRadius: '40px',
               position: 'relative',
               zIndex: 1, // Ensures it appears above the image
             }}
@@ -534,20 +581,41 @@ function UserProfile({
                     </div>)}
                   </div>
 
-                    {/* Referrals */}
-                    <motion.div  style={inputStyles.container}
-                     initial={{ opacity: 0 }}
-                     animate={{ opacity: 1 }}
-                     transition={{ delay: 1.0, duration: 0.5 }}>
-                        <label style={inputStyles.label}>
-                        Referrals
-                        </label>
-                        <div>
-                        <p style={styles.subtitle}>Person 1: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                        <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                        <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
-                        </div>
-                    </motion.div>
+                  {/* Referrals */}
+                  {userData.gender == "Male" && 
+                  <motion.div
+                    style={inputStyles.container}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.0, duration: 0.5 }}
+                  >
+                  <label style={inputStyles.label}>Referrals</label>
+                  {referrals.length > 0 ? (
+                    referrals.map((referral, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <Link
+                          to={`/userprofile/${referral.referrer.guid}`}
+                          style={{
+                            ...styles.subtitle,
+                            marginRight: "8px", // Add spacing between link and message
+                          }}
+                        >
+                          {referral.referrer.first_name}
+                        </Link>
+                        <p style={{ ...styles.subtitle, margin: 0 }}>- {referral.message}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No referrals available.</p>
+                  )}
+                  </motion.div>}
                   </motion.div>
                 </div>
             </motion.div>

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
 import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
+  buttonStyles,
   imageStyles,
   inputStyles,
 } from '../styles/commonStyles';
@@ -185,12 +186,18 @@ const Profile = ({
   credibilityScore = 90,
 }) => {
   const [userData, setUserData] = useState(null);
-  // const [userData, setUserData] = useState(null);// maybe want a temporary user data to store changes
+
+  const [userEditData, setUserEditData] = useState(null);// maybe want a temporary user data to store changes
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false); // To toggle between view and edit mode
   const [guid, setGuid] = useState('');
   const [userGuid, setUserGuid] = useState('');
   const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  // const [photo, setPhoto] = useState(null);
+
+  // Add this to your state declarations
+  const [isUploading, setIsUploading] = useState(false);
 
   const [isOwner, setIsOwner] = useState(false);
   const [tokenRefreshed, setTokenRefreshed] = useState(false); // Track if auth has been refreshed
@@ -198,9 +205,63 @@ const Profile = ({
   // const [heightFeet, setHeightFeet] = useState(userData?.height_mm ? Math.floor(userData.height_mm / 25.4 / 12) : 0);
   // const [heightInches, setHeightInches] = useState(userData?.height_mm ? Math.round((userData.height_mm / 25.4) % 12) : 0);
   
+  // For referrals
+  const [referralData, setReferralData] = useState({ refemail: "", message: "" });// for sending referrals
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const [referrals, setReferrals] = useState([]);
+
 
   useEffect(() => {
     const jwtToken = sessionStorage.getItem("jwtToken");
+
+    const fetchReferrerData = async (referrerGuid) => {
+      const apiInstance = new CredibleCupid.UserApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.queryUser(referrerGuid, (error, data) => {
+          if (error) {
+            console.error("Error fetching referrer data:", error);
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        });
+      });
+    };
+
+    const fetchReferralDetails = async (referralGuid) => {
+      const apiInstance = new CredibleCupid.ReferralApi();
+      return new Promise((resolve, reject) => {
+        apiInstance.getReferral(referralGuid, async (error, data) => {
+          if (error) {
+            console.error("Error fetching referral data:", error);
+            reject(error);
+          } else {
+            try {
+              const referrerData = await fetchReferrerData(data.referrer_guid);
+              resolve({ ...data, referrer: referrerData });
+            } catch (fetchReferrerError) {
+              reject(fetchReferrerError);
+            }
+          }
+        });
+      });
+    };
+
+    const fetchAllReferrals = async (referralGuids) => {
+      const referralPromises = referralGuids.map((guid) => fetchReferralDetails(guid));
+      try {
+        const allReferrals = await Promise.all(referralPromises);
+        setReferrals(allReferrals);
+      } catch (error) {
+        console.error("Error fetching all referrals:", error);
+      }
+    };
 
     const fetchProfile = (guid) => {
       setIsOwner(true);
@@ -223,8 +284,11 @@ const Profile = ({
 
           const updatedUserData = { ...data, date_of_birth: formattedBirthday, height_ft: heightFeet, height_in: heightInches };
           setUserData(updatedUserData);
+          setUserEditData(updatedUserData);
 
-
+          if (data.referrals?.length > 0) {
+            fetchAllReferrals(data.referrals); // Fetch referrals
+          }
 
           apiInstance.profilePicUser(guid, (error, data, response) => {
             if (error) {
@@ -232,7 +296,7 @@ const Profile = ({
             } else {
               // Assuming response contains the URL to the profile picture
               setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
-
+              setPreviewImage(response.req.url);
               console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
             }
           });
@@ -260,30 +324,6 @@ const Profile = ({
       navigate("/login");
     }
 
-
-    // Dummy user data with additional fields
-    // const dummyData = {
-    //   email: "example@email.com",
-    //   first_name: "first_name",
-    //   last_name: "last_name",
-    //   guid: "4b148da7-562f-46f5-8fdf-d0d2fbf12272",
-    //   bio: "Dummy bio",
-    //   gender: "Male",
-    //   pronouns: "He/Him",
-    //   sexual_orientation: "Straight",
-    //   // birthday_ms_since_epoch: 2147483647, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-    //   birthday_ms_since_epoch: 883612800000, // Example birthday in milliseconds since epoch (Jan 1, 1990)
-    //   date_of_birth: "1990-05-18",
-    //   height_mm: 1800, // Height in millimeters (example: 1800mm = 1.8 meters or 5'11")
-    //   occupation: "Dummy occupation",
-    //   education: "Dummy education",
-    //   location: "Dummy location",
-    //   verified: true,
-    //   // verified: True,
-    // };
-    
-    // Set dummy data to mimic API response
-    // if (!userData) setUserData(dummyData);
   }, [tokenRefreshed, navigate]);
 
   // Calculate the age based on `birthday_ms_since_epoch`
@@ -300,44 +340,6 @@ const Profile = ({
     e.preventDefault();  // Prevents the form from refreshing the page
     navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
   };
-
-  // const handleFetchProfile = (e) => {
-  //   e.preventDefault();
-
-  //   if (guid === userGuid) {
-  //     setIsOwner(true);
-  //   } else {
-  //     setIsOwner(false);
-  //   }
-
-  //   // InitDefaultCredibleCupidClient(null);
-  //   const apiInstance = new CredibleCupid.UserApi();
-  //   apiInstance.queryUser(guid, (error, data) => {
-  //     if (error) {
-  //       console.error(error);
-  //     } else {
-  //       console.log("Successfully fetch profile")
-        
-  //       // Convert birthday_ms_since_epoch to date_of_birth (YYYY-MM-DD)
-  //       const birthdayDate = new Date(data.birthday_ms_since_epoch);
-  //       const formattedBirthday = birthdayDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-
-  //       const heightFeet = data.height_mm ? Math.floor(data.height_mm / 25.4 / 12) : 0;
-  //       const heightInches = data.height_mm ? Math.round((data.height_mm / 25.4) % 12) : 0;
-          
-
-  //       // Add date_of_birth to the data object
-  //       const updatedUserData = { 
-  //         ...data, date_of_birth: formattedBirthday, 
-  //         height_ft: heightFeet, 
-  //         height_in: heightInches };
-
-
-  //       // Update userData with the new data
-  //         setUserData(updatedUserData);
-  //     }
-  //   });
-  // };
 
 
   const handleUpdateProfile = (e) => {
@@ -358,40 +360,45 @@ const Profile = ({
     let apiInstance = new CredibleCupid.UserApi();
 
     // Convert date_of_birth to milliseconds since epoch
-    const birthdayMs = new Date(userData.date_of_birth).getTime();
-    userData.birthday_ms_since_epoch = birthdayMs;
+    const birthdayMs = new Date(userEditData.date_of_birth).getTime();
+    userEditData.birthday_ms_since_epoch = birthdayMs;
 
     // convert Height
-    const totalInches = parseInt(userData.height_ft, 10) * 12 + parseInt(userData.height_in, 10);
+    const totalInches = parseInt(userEditData.height_ft, 10) * 12 + parseInt(userEditData.height_in, 10);
     const mmHeight = totalInches * 25.4;
     
 
     
     // Build UserUpdateBioRequest object
     const userUpdateBioRequest = {
-      email: userData.email,
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      bio: userData.bio,
-      gender: userData.gender,
-      pronouns: userData.pronouns,
-      sexual_orientation: userData.sexual_orientation,
-      // birthday_ms_since_epoch: userData.birthday_ms_since_epoch,
-      date_of_birth: userData.date_of_birth,
+      email: userEditData.email,
+      first_name: userEditData.first_name,
+      last_name: userEditData.last_name,
+      bio: userEditData.bio,
+      gender: userEditData.gender,
+      pronouns: userEditData.pronouns,
+      sexual_orientation: userEditData.sexual_orientation,
+      // birthday_ms_since_epoch: userEditData.birthday_ms_since_epoch,
+      date_of_birth: userEditData.date_of_birth,
       birthday_ms_since_epoch: birthdayMs,
       height_mm: mmHeight,
-      height_ft: userData.height_ft,
-      height_in: userData.height_in,
-      occupation: userData.occupation,
+      height_ft: userEditData.height_ft,
+      height_in: userEditData.height_in,
+      occupation: userEditData.occupation,
   };
     console.log(JSON.stringify(userUpdateBioRequest)); // new CredibleCupidApi.UserUpdateBioRequest(); puts the data as an entry in a bio object
     // Make the update request
     apiInstance.updateBio(userUpdateBioRequest, (error, data, response) => {
       if (error) {
         console.error("Failed to update profile:", error);
+        setAlertMessage(`Failed to update profile. Please try again`);
+        setShowAlert(true);
       } else {
         console.log("Successfully updated bio");
+        setAlertMessage(`Successfully updated bio`);
+        setShowAlert(true);
         setUserData(userUpdateBioRequest); // Update the state with new data
+        setUserEditData(userUpdateBioRequest); // Update the state with new data
         setIsEditing(false); // Exit edit mode
       }
     });
@@ -399,20 +406,32 @@ const Profile = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData({ ...userData, [name]: value });
+    setUserEditData({ ...userEditData, [name]: value });
   };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setIsUploading(true);
+      
+      // Set preview immediately 
+      // setPhoto(file);
+      setPreviewImage(URL.createObjectURL(file));
+
       const apiInstance = new CredibleCupid.UserApi();
       const opts = { file }; // File selected by the user
       try {
         apiInstance.uploadProfilePic(opts, (error, data, response) => {
+          setIsUploading(false);
+
           if (error) {
             console.error("Error uploading profile picture:", error);
+            setAlertMessage(`Failed to upload profile picture. Please try again.`);
+            setShowAlert(true);
           } else {
             console.log("Profile picture uploaded successfully");
+            setAlertMessage(`Profile picture uploaded successfully`);
+            setShowAlert(true);
             // Optionally, update the UI with the new profile picture
             // Fetch the updated profile picture
             // const guid = 'YOUR_USER_GUID'; // Replace with the actual GUID for the user
@@ -421,6 +440,9 @@ const Profile = ({
                 console.error("Error fetching profile picture:", error);
               } else {
                 // Assuming response contains the URL to the profile picture
+                if (data?.url) {
+                  setPreviewImage(data.url);
+                }
                 setProfilePicUrl(response.req.url); // Update the state with the new profile picture URL
 
                 console.log("Profile picture fetched successfully " + JSON.stringify(response.req.url, null, 2));
@@ -436,6 +458,191 @@ const Profile = ({
   };
 
 
+  
+  const handleSendReferral = (e) => {
+    e.preventDefault();
+    console.log("handleSendReferral")
+    
+    const jwtToken = sessionStorage.getItem("jwtToken");
+    if (!jwtToken) {
+      console.error("JWT token missing. Unable to update profile.");
+      return;
+    }
+    
+    // Set up API client instance and authenticate with JWT
+    let defaultClient = CredibleCupid.ApiClient.instance;
+    let bearer = defaultClient.authentications['bearer'];
+    bearer.accessToken = jwtToken;
+    
+    let apiInstance = new CredibleCupid.ReferralApi();
+
+    // Build SendReferralRequest object
+    const sendReferralRequest = {
+      email: referralData.refemail,
+      message: referralData.message,
+  };
+    console.log(JSON.stringify(sendReferralRequest)); // new CredibleCupidApi.sendReferralRequest(); puts the data as an entry in a bio object
+    // Make the sendReferral request
+    apiInstance.sendReferral(sendReferralRequest, (error, data, response) => {
+      if (error) {
+        console.error("Failed to send referral:", error);
+        setAlertMessage(`Failed to send referral`);
+        setShowAlert(true);
+      } else {
+        console.log("Successfully sent referral");
+        setAlertMessage(`Successfully sent referral`);
+        setShowAlert(true);
+        closeModal();
+        // setUserData(userUpdateBioRequest); // Update the state with new data
+        // setIsEditing(false); // Exit edit mode
+      }
+    });
+  };
+
+  // const handleReferralInputChange = useCallback((e) => {
+  //   const { name, value } = e.target;
+  //   setReferralData({ ...userData, [name]: value });
+  // }, []);
+  const handleReferralInputChange = (e) => {
+    const { name, value } = e.target;
+    setReferralData({ ...referralData, [name]: value });
+  };
+
+  
+  const Alert = ({ message, onClose }) => (
+    <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    }}>
+        <div style={{
+            backgroundColor: 'white',
+            padding: spacing.xl,
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            maxWidth: '400px',
+            width: '70%'
+        }}>
+            <div style={{
+                marginBottom: spacing.lg,
+                fontSize: '16px',
+                lineHeight: '1.5',
+                color: colors.gray.text,
+                whiteSpace: 'pre-line'
+            }}>
+                {message}
+            </div>
+            <button
+                onClick={onClose}
+                style={{
+                    ...buttonStyles.base,
+                    width: '100%',
+                    marginTop: spacing.md
+                }}
+            >
+                OK
+            </button>
+        </div>
+    </div>
+);
+
+
+const ImageUpload = () => (
+  <div style={inputStyles.container}>
+      <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Profile Picture</label>
+      <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: spacing.md,
+          padding: spacing.lg,
+          border: `2px dashed ${colors.gray.border}`,
+          borderRadius: '8px',
+          backgroundColor: colors.gray.lighter,
+          cursor: 'pointer'
+      }}>
+          {previewImage ? (
+              <div style={{
+                  width: '300px',
+                  height: '300px',
+                  borderRadius: '10%',
+                  overflow: 'hidden',
+                  marginBottom: spacing.md,
+                  position: 'relative',
+                  opacity: 0.9,
+              }}>
+                  <img
+                      src={previewImage}
+                      alt="Profile preview"
+                      style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          opacity: isUploading ? 0.5 : 1
+                      }}
+                  />
+                  {isUploading && (
+                      <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)'
+                      }}>
+                          Loading...
+                      </div>
+                  )}
+              </div>
+          ) : (
+              <div style={{
+                  width: '150px',
+                  height: '150px',
+                  borderRadius: '50%',
+                  backgroundColor: colors.gray.lighter,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: spacing.md
+              }}>
+                  <span style={{ fontSize: '40px', color: colors.gray.text }}>+</span>
+              </div>
+          )}
+          <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+              id="profile-image-upload"
+              disabled={isUploading}
+          />
+          <label
+              htmlFor="profile-image-upload"
+              style={{
+                  ...buttonStyles.base,
+                  cursor: isUploading ? 'not-allowed' : 'pointer',
+                  textAlign: 'center',
+                  height: '30px',
+                  opacity: isUploading ? 0.7 : 1
+              }}
+          >
+              {isUploading ? 'Uploading...' : (previewImage ? 'Change Photo' : 'Upload Photo')}
+          </label>
+      </div>
+  </div>
+);
+
+
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setUserData({ ...userData, [name]: value });
+  // };
+
   if (!userData) return <div>Loading...</div>;
 
 
@@ -447,7 +654,6 @@ const Profile = ({
 
         // This is just a sample for updating profile. Change the text or dropdowns then click save changes
         <>
-        {/* <ProfileContainer> */}
          
         <motion.div style={{
             width: '390px',
@@ -525,7 +731,7 @@ const Profile = ({
                   Edit Profile
                   </div>
                 {/* Upload Image */}
-                <motion.div style={{
+                {/* <motion.div style={{
                   width: '100%',
                   height: '100%',
                   display: 'flex',
@@ -535,7 +741,7 @@ const Profile = ({
                 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
                 >
                 {profilePicUrl ? (
                   <img
@@ -578,6 +784,21 @@ const Profile = ({
                       onChange={handleImageChange}
                     />
                   </label>
+                </motion.div> */}
+                <motion.div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginTop: '3px' // Push down from top
+                }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                <ImageUpload />
+
                 </motion.div>
 
                 {/* The rest */}
@@ -597,7 +818,7 @@ const Profile = ({
                           }}
                           type="email"
                           name="email"
-                          value={userData.email}
+                          value={userEditData.email}
                           onChange={handleChange}
                           disabled
                         />
@@ -619,7 +840,7 @@ const Profile = ({
                         }}
                         type="text"
                         name="first_name"
-                        value={userData.first_name}
+                        value={userEditData.first_name}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -648,7 +869,7 @@ const Profile = ({
                         }}
                         type="text"
                         name="last_name"
-                        value={userData.last_name}
+                        value={userEditData.last_name}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -676,7 +897,7 @@ const Profile = ({
                           }
                         }}
                         name="gender"
-                        value={userData.gender}
+                        value={userEditData.gender}
                         onChange={handleChange}
                         
                       >
@@ -703,7 +924,7 @@ const Profile = ({
                         }}
                         type="text"
                         name="pronouns"
-                        value={userData.pronouns}
+                        value={userEditData.pronouns}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -731,7 +952,7 @@ const Profile = ({
                           }
                         }}
                         name="sexual_orientation"
-                        value={userData.sexual_orientation}
+                        value={userEditData.sexual_orientation}
                         onChange={handleChange}
                       >
                         <option value="Straight">Straight</option>
@@ -759,7 +980,7 @@ const Profile = ({
                               }}
                               type="date"
                               name="date_of_birth"
-                              value={userData.date_of_birth}
+                              value={userEditData.date_of_birth}
                               onChange={handleChange}
                               onFocus={(e) => {
                                   e.target.style.borderColor = colors.green.light;
@@ -831,7 +1052,7 @@ const Profile = ({
                           }}
                           type="number"
                           name="height_ft"
-                          value={userData.height_ft}
+                          value={userEditData.height_ft}
                           // onChange={(e) => setHeightFeet(e.target.value)}
                           onChange={handleChange}
                           // onBlur={handleHeightChange}
@@ -859,7 +1080,7 @@ const Profile = ({
                         }}
                         type="number"
                         name="height_in"
-                        value={userData.height_in}
+                        value={userEditData.height_in}
                         // onChange={(e) => setHeightInches(e.target.value)}
                         onChange={handleChange}
                         // onBlur={handleHeightChange}
@@ -896,7 +1117,7 @@ const Profile = ({
                         }}
                         type="text"
                         name="occupation"
-                        value={userData.occupation}
+                        value={userEditData.occupation}
                         onChange={handleChange}
                         onFocus={(e) => {
                           e.target.style.borderColor = colors.green.light;
@@ -925,7 +1146,7 @@ const Profile = ({
                         }
                       }}
                       name="bio"
-                      value={userData.bio}
+                      value={userEditData.bio}
                       onChange={handleChange}
                       onFocus={(e) => {
                         e.target.style.borderColor = colors.green.light;
@@ -959,26 +1180,7 @@ const Profile = ({
             </motion.div>
           
         </motion.div>
-        {/* </ProfileContainer> */}
-        {/* <Box display="flex" flexDirection="column" alignItems="left" textAlign="left" >
-          <Typography variant="h6">Interests</Typography>
-          <Box display="flex" flexWrap="wrap" gap={1} my={2}>
-            {interests.map((interest, index) => (
-              <Chip
-                key={index}
-                label={interest}
-                onDelete={() => handleInterestDelete(interest)}
-              />
-            ))}
-          </Box>
-            <TextField 
-              // autoFocus="autoFocus"
-              label="Type interest and press space"
-              value={currentInterest}
-              onChange={(e) => setCurrentInterest(e.target.value)}
-              onKeyDown={handleInterestKeyDown}
-            />
-          </Box> */}
+      
       </>
       ) : (
         <>
@@ -1042,7 +1244,7 @@ const Profile = ({
                   }}
                   />
               )}
-              {
+              {/* {
                 <motion.div style={{
                   position: 'absolute',
                   top: '10px', // Adjusts distance from top of image
@@ -1062,7 +1264,7 @@ const Profile = ({
                   <Verified size={16} />
                   <span>Verified</span>
                   </motion.div>
-              }
+              } */}
 
             </motion.div>
 
@@ -1074,10 +1276,10 @@ const Profile = ({
               // marginTop: spacing.xl
               marginTop: '-30px', // Negative margin to overlap the bottom of the image
               backgroundColor: colors.white,
-              width: '98%',
+              width: '93%',
               padding: '16px',
               boxShadow: '0px -4px 8px rgba(0, 0, 0, 0.2)', // Optional: shadow to make it appear elevated
-              borderRadius: '64px',
+              borderRadius: '40px',
               position: 'relative',
               zIndex: 1, // Ensures it appears above the image
             }}>
@@ -1105,8 +1307,8 @@ const Profile = ({
                       alignItems: 'center',
                       marginBottom: spacing.md
                     }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0}}
+                    animate={{ opacity: 1}}
                     transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <div>
@@ -1170,8 +1372,7 @@ const Profile = ({
                   </motion.div>
                   
                 </div>
-                {isOwner && (
-                    <motion.button 
+                <motion.button 
                     style={styles.button}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -1194,7 +1395,152 @@ const Profile = ({
                     >
                       Edit Profile
                     </motion.button >
-                )}
+
+                     {/* Referral Section */}
+                    {userData?.gender !== "Male" && <motion.button
+                      style={styles.button}
+                      initial={{ opacity: 0}}
+                      animate={{ opacity: 1}}
+                      transition={{ delay: 0.7, duration: 0.5 }}
+                      onClick={openModal}
+                      onMouseOver={(e) => {
+                        // if (!isLoading) {
+                          e.currentTarget.style.backgroundColor = colors.green.dark;
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                          e.currentTarget.style.boxShadow = `0 4px 12px ${colors.black.opacity10}`;
+                        // }
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = colors.green.light;
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = `0 2px 8px ${colors.black.opacity10}`;
+                      }}
+                    >
+                     + Refer a Guy
+                    </motion.button>}
+
+                    {isModalOpen && 
+                    <>
+                      {/* Overlay */}
+                      <div
+                        style={{
+                          position: "fixed",
+                          top: 0,
+                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor: "rgba(0, 0, 0, 0.1)", // Darken background
+                          backdropFilter: "blur(1px)", // Optional: Add blur effect
+                          zIndex: 1000, // Ensure it's above everything else
+                        }}
+                        onClick={closeModal} // Close modal when clicking outside
+                      />
+                     <motion.div style={{
+                      position: "fixed",
+                      top: "50%",
+                      left: "4%",
+                      backgroundColor: "white",
+                      padding: "20px",
+                      borderRadius: "10px",
+                      boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
+                      zIndex: 1001,
+                      width: "90%",
+                      maxWidth: "320px",
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: -250 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}>
+                         <h1 style={{fontSize: '30px',
+                                fontWeight: '600',
+                                color: colors.gray.text,
+                                margin: `0 0 ${spacing.xs} 0`
+                              }}>Send a Referral</h1>
+                              <form style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '24px',
+                                  }} onSubmit={handleSendReferral}>
+                                <div style={styles.inputGroup}>
+                                  <label style={styles.label}>Email:</label>
+                                  <input
+                                    type="refemail"
+                                    name="refemail"
+                                    style={{
+                                      ...styles.input,
+                                      ':focus': {
+                                        borderColor: colors.green.light,
+                                        backgroundColor: colors.white,
+                                      }
+                                    }}
+                                    // placeholder='The email of the user you wish to refer.'
+                                    value={referralData.refemail}
+                                    onChange={handleReferralInputChange}
+                                    onFocus={(e) => {
+                                      e.target.style.borderColor = colors.green.light;
+                                      e.target.style.backgroundColor = colors.white;
+                                    }}
+                                    onBlur={(e) => {
+                                      e.target.style.borderColor = colors.gray.border;
+                                      e.target.style.backgroundColor = colors.gray.lighter;
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <div style={styles.inputGroup}>
+                                  <label style={styles.label}>Message:</label>
+                                  <textarea
+                                    type="message"
+                                    style={{
+                                      ...styles.input,
+                                      ':focus': {
+                                        borderColor: colors.green.light,
+                                        backgroundColor: colors.white,
+                                      }
+                                    }}
+                                    name="message"
+                                    value={referralData.message}
+                                    // placeholder='The message of the referral to give readers more information.'
+                                    onChange={handleReferralInputChange}
+                                    onFocus={(e) => {
+                                      e.target.style.borderColor = colors.green.light;
+                                      e.target.style.backgroundColor = colors.white;
+                                    }}
+                                    onBlur={(e) => {
+                                      e.target.style.borderColor = colors.gray.border;
+                                      e.target.style.backgroundColor = colors.gray.lighter;
+                                    }}
+                                    required
+                                  />
+                                </div>
+                                <div style={{ display: 'flex', gap: spacing.md, marginTop: spacing.md }}>
+                                  <button
+                                    type="submit"
+                                    style={{
+                                      ...buttonStyles.base,
+                                      flex: 1
+                                  }}
+                                    
+                                  >
+                                    Send Referral
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    style={{
+                                      ...buttonStyles.base,
+                                      flex: 1,
+                                      backgroundColor: colors.gray.lighter,
+                                      color: colors.gray.text
+                                  }}
+                                  >
+                                    Cancel
+                                  </button>              
+                                </div>
+                              </form>
+                    </motion.div>
+                    </>
+                    }
 
                 {/* Info Section */}
                 <motion.div 
@@ -1247,7 +1593,7 @@ const Profile = ({
                   </div>
 
                   {/* Referrals */}
-                  <motion.div  style={inputStyles.container}
+                  {/* <motion.div  style={inputStyles.container}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.5 }}>
@@ -1259,24 +1605,72 @@ const Profile = ({
                       <p style={styles.subtitle}>Person 2: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       <p style={styles.subtitle}>Person 3: I know this person from XXX, for YYY years. I would describe him as ZZZ.</p>
                       </div>
-                  </motion.div>
-                  <form onSubmit={handleTestUserProfile}>
-                    <div>
-                      <label htmlFor="guid">GUID:</label>
-                      <input
-                        type="text"
-                        id="guid"
-                        value={guid}
-                        onChange={(e) => setGuid(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <button type="submit">Fetch Profile</button>
-                  </form>
+                  </motion.div> */}
+                  {/* Referrals */}
+                  {userData.gender === "Male" && 
+                  <motion.div
+                    style={inputStyles.container}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.0, duration: 0.5 }}
+                  >
+                  <label style={inputStyles.label}>Referrals</label>
+                  {referrals.length > 0 ? (
+                    referrals.map((referral, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <Link
+                          to={`/userprofile/${referral.referrer.guid}`}
+                          style={{
+                            ...styles.subtitle,
+                            marginRight: "8px", // Add spacing between link and message
+                          }}
+                        >
+                          {referral.referrer.first_name}
+                        </Link>
+                        <p style={{ ...styles.subtitle, margin: 0 }}>- {referral.message}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No referrals available.</p>
+                  )}
+                  </motion.div>}
+
+                  {/* <motion.div style={inputStyles.container}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.0, duration: 0.5 }}>
+                    <form onSubmit={handleTestUserProfile}>
+                      <div>
+                        <label htmlFor="guid">GUID:</label>
+                        <input
+                          type="text"
+                          id="guid"
+                          value={guid}
+                          onChange={(e) => setGuid(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button type="submit">Fetch Profile</button>
+                    </form>                    
+                  </motion.div> */}
+
                 </motion.div>
               </div>
             </motion.div>
           </motion.div>
+          {showAlert && (
+            <Alert
+                message={alertMessage}
+                onClose={() => setShowAlert(false)}
+            />
+          )}
         </>
       )}
       <br></br>
