@@ -1,3 +1,5 @@
+# exclude pycache
+__pycache__
 .env
 /packages/frontend/.generated
 .DS_Store

@@ -2,7 +2,7 @@ import dotenv
 import os
 import openai
 import json
-import Enum
+from enum import Enum
 
 dotenv.load_dotenv()
 
