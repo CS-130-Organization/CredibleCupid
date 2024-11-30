@@ -1,6 +1,6 @@
 import dotenv
 import os
-import openai
+from openai import OpenAI
 import json
 from enum import Enum
 
@@ -13,13 +13,13 @@ class Model(Enum):
 
 class ProfileValidator:
     OPENAI_KEY = os.getenv("OPENAI_KEY")
-    openai.api_key = OPENAI_KEY
+    client = OpenAI(api_key=OPENAI_KEY)
     system_prompt = """You are an AI model trained to distinguish between human-written and AI-generated text on dating profiles. 
         You will be provided a json object; analyze its content, style, and structure to determine the likelihood that it was written by a human. Respond **only** with a JSON object in the following format:
         {"human_probability": float}"""
 
     @classmethod
-    def validate_text(cls, data: json, model: Model = Model.GPT_4O) -> float:
+    def validate_text(cls, data: json, model: Model = Model.GPT_4O_MINI.value) -> float:
         """
         Validates whether the provided user profile text is AI-written.
         Args:
@@ -33,7 +33,7 @@ class ProfileValidator:
         prompt = f"Analyze the following user profile and determine the probability that it was written by a human. Provide the result in JSON format as {{\"human_probability\": float}}.\n\nProfile:\n{profile}"
 
         try:
-            response = openai.ChatCompletion.create(
+            response = cls.client.chat.completions.create(
                 model=model,
                 messages=[
                     {"role": "system", "content": cls.system_prompt},
