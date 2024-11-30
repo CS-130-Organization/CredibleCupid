@@ -2,3 +2,4 @@
 /packages/frontend/.generated
 .DS_Store
 *.10x
+__pycache__
