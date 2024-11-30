@@ -154,6 +154,11 @@ export class UserUpdateBioRequest {
 	 * The occupation of the user
 	 */
 	occupation: string;
+
+	/*
+	 * The credibility score of the user
+	 */
+	credibility_score: number;
 }
 
 export class LikeUserResponse {

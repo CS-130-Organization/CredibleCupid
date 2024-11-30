@@ -58,6 +58,9 @@ export class User {
 	@Column({ type: "text", nullable: true })
 	occupation: string | undefined;
 
+	@Column({ type: "float", default: 100 })
+	credibility_score: number;
+
 	@ManyToMany(() => User)
 	@JoinTable()
 	likes: User[]
