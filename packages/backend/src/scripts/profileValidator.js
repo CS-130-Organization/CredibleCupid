@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-import { Configuration, OpenAIApi } from 'openai';
+const dotenv = require('dotenv');
+const OpenAI = require('openai');
 
 dotenv.config();
 
@@ -10,11 +10,9 @@ const Model = {
 
 class ProfileValidator {
   static OPENAI_KEY = process.env.OPENAI_KEY;
-  static client = new OpenAIApi(
-    new Configuration({
-      apiKey: ProfileValidator.OPENAI_KEY,
-    })
-  );
+  static client = new OpenAI({
+    apiKey: ProfileValidator.OPENAI_KEY,
+  });
   static systemPrompt = `You are an AI model trained to distinguish between human-written and AI-generated text on dating profiles. 
 You will be provided a json object; analyze its content, style, and structure to determine the likelihood that it was written by a human. Respond **only** with a JSON object in the following format:
 {"human_probability": float}`;
@@ -31,7 +29,7 @@ You will be provided a json object; analyze its content, style, and structure to
     )}`;
 
     try {
-      const response = await ProfileValidator.client.createChatCompletion({
+      const response = await ProfileValidator.client.chat.completions.create({
         model: model,
         messages: [
           { role: "system", content: ProfileValidator.systemPrompt },
@@ -40,9 +38,11 @@ You will be provided a json object; analyze its content, style, and structure to
         max_tokens: 50,
         n: 1,
         stop: null,
+        response_format: { type: "json_object" },
       });
 
-      const content = response.data.choices[0].message.content;
+
+      const content = response.choices[0].message.content;
       const responseJson = JSON.parse(content);
       const probability = parseFloat(responseJson.human_probability);
 
@@ -58,4 +58,4 @@ You will be provided a json object; analyze its content, style, and structure to
   }
 }
 
-export { ProfileValidator, Model }; 
+module.exports = { ProfileValidator, Model }; 
