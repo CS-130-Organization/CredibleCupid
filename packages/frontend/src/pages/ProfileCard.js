@@ -19,7 +19,7 @@ const ProfileCard = ({
   name = 'Anonymous',
   age = '',
   gender = '',
-  credibilityScore = 0,
+  credibility_score = 0,
   bio = 'No bio available',
   occupation = 'Not specified',
   education = 'Not specified',
@@ -114,9 +114,9 @@ const ProfileCard = ({
             <h2 style={contentStyles.title}>
               {name}{age ? `, ${age}` : ''}{gender ? ` ${gender}` : ''}
             </h2>
-            <div style={scoreStyles.tag(credibilityScore)}>
+            <div style={scoreStyles.tag(credibility_score)}>
               <Star size={16} />
-              <span>{credibilityScore}%</span>
+              <span>{credibility_score}%</span>
             </div>
           </div>
 

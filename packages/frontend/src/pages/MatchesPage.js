@@ -84,7 +84,7 @@ const MatchesPage = () => {
             ...(age ? { age } : {}),
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
-            ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
+            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
             ...(data.occupation ? { occupation: data.occupation } : {}),
             ...(data.education ? { education: data.education } : {}),
             ...(data.location ? { location: data.location } : {}),
