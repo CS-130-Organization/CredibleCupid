@@ -335,12 +335,7 @@ const CardStack = () => {
               </AnimatePresence>
             </motion.div>
           ) : (
-            <motion.div
-              style={styles.emptyState}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", damping: 15 }}
-            >
+            <div style={styles.emptyState}>
               <p style={styles.emptyText}>No more profiles to show!</p>
               <button
                 style={styles.resetButton}
@@ -354,7 +349,7 @@ const CardStack = () => {
               >
                 Find More Matches
               </button>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
