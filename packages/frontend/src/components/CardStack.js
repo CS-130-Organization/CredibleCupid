@@ -131,6 +131,7 @@ const CardStack = () => {
         console.error(error);
       } else {
         const age = calculateAge(data.birthday_ms_since_epoch);
+        console.log("From cardstack: ", data);
 
         // Get profile picture first
         userApi.profilePicUser(guid, (error, picData, response) => {
@@ -153,7 +154,7 @@ const CardStack = () => {
             ...(age ? { age } : {}),
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
-            ...(data.credibilityScore ? { credibilityScore: data.credibilityScore } : {}),
+            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
             ...(data.occupation ? { occupation: data.occupation } : {}),
             ...(data.education ? { education: data.education } : {}),
             ...(data.location ? { location: data.location } : {}),
@@ -335,12 +336,7 @@ const CardStack = () => {
               </AnimatePresence>
             </motion.div>
           ) : (
-            <motion.div
-              style={styles.emptyState}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", damping: 15 }}
-            >
+            <div style={styles.emptyState}>
               <p style={styles.emptyText}>No more profiles to show!</p>
               <button
                 style={styles.resetButton}
@@ -354,7 +350,7 @@ const CardStack = () => {
               >
                 Find More Matches
               </button>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>

@@ -182,9 +182,7 @@ const styles = {
   }
 };
 
-const Profile = ({
-  credibilityScore = 90,
-}) => {
+const Profile = () => {
   const [userData, setUserData] = useState(null);
 
   const [userEditData, setUserEditData] = useState(null);// maybe want a temporary user data to store changes
@@ -272,6 +270,7 @@ const Profile = ({
           console.error(error);
         } else {
           console.log("Successfully fetched profile");
+          //console.log(data);
 
           const birthdayDate = new Date(data.birthday_ms_since_epoch);
           const formattedBirthday = birthdayDate instanceof Date && !isNaN(birthdayDate)
@@ -1366,15 +1365,15 @@ const ImageUpload = () => (
                         borderRadius: spacing.md,
                         fontSize: '14px',
                         fontWeight: '500',
-                        backgroundColor: credibilityScore >= 75 ? '#dcfce7' : credibilityScore >= 25 ? colors.orange.light : '#fee2e2',
-                        color: credibilityScore >= 75 ? colors.green.dark : credibilityScore >= 25 ? colors.orange.dark : colors.red.dark
+                        backgroundColor: userData.credibility_score >= 75 ? '#dcfce7' : userData.credibility_score >= 25 ? colors.orange.light : '#fee2e2',
+                        color: userData.credibility_score >= 75 ? colors.green.dark : userData.credibility_score >= 25 ? colors.orange.dark : colors.red.dark
                       }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.5, duration: 0.5 }}
                       >
                         <Star size={16} />
-                        <span>{credibilityScore}%</span>
+                        <span>{userData.credibility_score}%</span>
                       </motion.div>                     
                   </motion.div>
                   

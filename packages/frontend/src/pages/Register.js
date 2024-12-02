@@ -28,8 +28,6 @@ function Register() {
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [verificationStep, setVerificationStep] = useState(0);
-
-    // Add this to your state declarations
     const [isUploading, setIsUploading] = useState(false);
 
     const handleNext = () => {
@@ -61,13 +59,13 @@ function Register() {
                     return;
                 }
 
-                // password matching validation
+                // Password matching validation
                 if (password !== confirmPassword) {
                     setAlertMessage("Passwords do not match");
                     setShowAlert(true);
                     return;
                 }
-                // Create account in db if fields are valid
+
                 let apiInstance = new CredibleCupid.AuthApi();
                 let registerRequest = new CredibleCupid.LoginRequest(email, password);
 
@@ -136,8 +134,6 @@ function Register() {
             console.error("JWT token missing. Unable to set up profile.");
             return;
         }
-
-        // Set up API client instance and authenticate with JWT
         let defaultClient = CredibleCupid.ApiClient.instance;
         let bearer = defaultClient.authentications['bearer'];
         bearer.accessToken = jwtToken;
@@ -146,7 +142,6 @@ function Register() {
         const birthdayMs = new Date(birthday).getTime();
         const heightMM = height * 10;
 
-        // Build UserUpdateBioRequest object
         const userUpdateBioRequest = {
             first_name: firstName,
             last_name: lastName,
@@ -163,38 +158,21 @@ function Register() {
         userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
             if (error) {
                 console.error("Failed to update profile:", error);
+                let errorMessage;
+
+                if (error.response?.body?.message) {
+                    errorMessage = error.response.body.message;
+                } else if (error.response?.body?.error) {
+                    errorMessage = error.response.body.error;
+                } else {
+                    errorMessage = "Failed to update profile. Please try again.";
+                }
+                navigate('/error', { state: { errorMessage } });
             } else {
-                console.log("Successfully set up profile: ", data);
+                console.log("Successfully set up bio: ", data);
+                navigate('/success');
             }
         });
-
-        // TODO: re-implement once referral + ai backend are done
-        try {
-            // Start verification process
-            if (gender.toLowerCase() === 'male') {
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-                setVerificationStep(1); // Move to AI check
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait another 5 seconds
-            } else {
-                setVerificationStep(1);
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-            }
-
-            // If AI check passes, proceed with bio update
-            userApi.updateBio(userUpdateBioRequest, (error, data, response) => {
-                if (error) {
-                    console.error("Failed to update profile:", error);
-                    navigate('/error');
-                } else {
-                    console.log("Successfully set up bio: ", data);
-                    navigate('/success');  // Navigate to success page instead of login
-                }
-            });
-        } catch (error) {
-            console.error("Verification failed:", error);
-            navigate('/error');
-        }
-        navigate('/login');
     };
 
     const handleFocus = (e) => {
@@ -590,16 +568,8 @@ function Register() {
         }
     };
 
-    const renderVerification = () => {
-        let verificationMessage;
-        if (gender.toLowerCase() === 'male') {
-            verificationMessage = verificationStep === 0
-                ? "Verifying referrals..."
-                : "Checking for AI profile...";
-        } else {
-            verificationMessage = "Checking for AI profile...";
-        }
 
+    const renderVerification = () => {
         return (
             <div style={{
                 textAlign: 'center',
@@ -616,7 +586,15 @@ function Register() {
                 }} />
                 <h2 style={titleStyles}>Verifying Your Information</h2>
                 <p style={subheadingStyles}>
-                    {verificationMessage}
+                    {gender.toLowerCase() === 'male' ? (
+                        <>
+                            Checking referrals and running AI verification...
+                        </>
+                    ) : (
+                        <>
+                            Running AI verification...
+                        </>
+                    )}
                 </p>
                 <style>{`
                     @keyframes spin {
