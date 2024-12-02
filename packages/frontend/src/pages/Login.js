@@ -10,7 +10,9 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); // Add this hook
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,9 +24,17 @@ function Login() {
 
     apiInstance.authLogin(loginRequest, (error, data, response) => {
       if (error) {
-        console.error(response);
-        console.error(response.body.message);
-        console.error(response.body.statusCode);
+        let errorMessage;
+        if (response?.body?.message) {
+            errorMessage = response.body.message;
+        } else if (response?.body?.error) {
+            errorMessage = response.body.error;
+        } else {
+            errorMessage = "Login failed. Please try again.";
+        }
+        setAlertMessage(errorMessage);
+        setShowAlert(true);
+        setIsLoading(false);
       } else {
         console.log("Successfully logged in!")
         InitDefaultCredibleCupidClient(data.jwt);
@@ -45,6 +55,49 @@ function Login() {
     });
   };
 
+  const Alert = ({ message, onClose }) => (
+    <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+    }}>
+        <div style={{
+            backgroundColor: 'white',
+            padding: spacing.xl,
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            maxWidth: '400px',
+            width: '70%'
+        }}>
+            <div style={{
+                marginBottom: spacing.lg,
+                fontSize: '16px',
+                lineHeight: '1.5',
+                color: colors.gray.text,
+                whiteSpace: 'pre-line'
+            }}>
+                {message}
+            </div>
+            <button
+                onClick={onClose}
+                style={{
+                    ...buttonStyles.base,
+                    width: '100%',
+                    marginTop: spacing.md
+                }}
+            >
+                OK
+            </button>
+        </div>
+    </div>
+);
 
   return (
     <div style={cardStyles.container}>
@@ -134,6 +187,12 @@ function Login() {
           </Link>
         </p>
       </div>
+      {showAlert && (
+        <Alert
+          message={alertMessage}
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   );
 }
