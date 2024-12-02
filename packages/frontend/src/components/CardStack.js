@@ -68,6 +68,7 @@ const CardStack = () => {
   const [error, setError] = useState(null);
   const [currentAction, setCurrentAction] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [seenGuids, setSeenGuids] = useState(new Set());
 
   // Initialize API clients
   const defaultClient = CredibleCupidApi.ApiClient.instance;
@@ -98,15 +99,9 @@ const CardStack = () => {
         } else {
           const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
-          // Load first two profiles initially for smooth transition
-          if (userGuids.length > 0) {
-            loadProfile(userGuids[0]);
-            if (userGuids.length > 1) {
-              loadProfile(userGuids[1]);
-            }
-          } else {
-            setIsLoading(false);
-          }
+          
+          // Load all profiles at once
+          userGuids.forEach(guid => loadProfile(guid));
         }
       });
     } catch (err) {
@@ -125,7 +120,14 @@ const CardStack = () => {
     // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
+    if (!guid || seenGuids.has(guid)) {
+      return;
+    }
+  
+    // Add to seenGuids immediately so no other calls can process this guid
+    setSeenGuids(prev => new Set([...prev, guid]));
 
+    console.log(guid )
     userApi.queryUser(guid, (error, data) => {
       if (error) {
         console.error(error);
@@ -196,17 +198,6 @@ const CardStack = () => {
 
   };
 
-  // Pre-load next profile when current profile changes
-  useEffect(() => {
-    if (loadedProfiles.length > 0 && !isLoading) {
-      const currentIndex = matchGuids.findIndex(guid => guid === loadedProfiles[0].guid);
-      if (currentIndex >= 0 && currentIndex < matchGuids.length - 1) {
-        const nextGuid = matchGuids[currentIndex + 1];
-        loadProfile(nextGuid);
-      }
-    }
-  }, [loadedProfiles, isLoading]);
-
   const removeCard = async (action) => {
     if (isDragging) return;
     setIsDragging(true);
@@ -242,7 +233,10 @@ const CardStack = () => {
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    setLoadedProfiles(prev => prev.slice(1));
+    setLoadedProfiles(prev => {
+      const [removed, ...rest] = prev;
+      return rest;
+    });
     setCurrentAction(null);
     setIsDragging(false);
   };
