@@ -38,6 +38,6 @@ export class AuthService {
 
 		const db_user = await this.user_service.create_user(email, hash);
 
-		return true;
+		return !!db_user;
 	}
 }

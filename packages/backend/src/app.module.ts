@@ -20,7 +20,8 @@ import { DATABASE_PASSWORD, DATABASE_NAME } from "./env"
 			entities: [User, Referral],
 			synchronize: true,
 		}),
-		AuthModule
+		AuthModule,
+		UserModule
 	],
 })
 export class AppModule { }

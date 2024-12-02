@@ -15,4 +15,7 @@ COPY . .
 EXPOSE ${BACKEND_PORT}
 
 ENV OPENAPI_OUT=/usr/generated/credible_cupid_openapi.json
-CMD ["npm", "run", "start:debug"]
+
+ARG START_CMD="start:debug"
+ENV START_CMD=${START_CMD}
+CMD npm run ${START_CMD}
