@@ -192,7 +192,7 @@ function Register() {
         // Contains at least one lowercase letter
         // Contains at least one number
         // Contains at least one special character
-        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#<_])[A-Za-z\d@$!%*?&#<_]{8,}$/;
         return strongPasswordRegex.test(password);
     };
 

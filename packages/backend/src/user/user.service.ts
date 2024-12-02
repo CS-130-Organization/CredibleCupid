@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DataSource } from "typeorm";;
+import { Repository, DataSource, Not } from "typeorm";;
 
 import { User, Referral, Gender, SexualOrientation } from "../database/entities";
 import { ProfileValidator } from "../scripts/profileValidator";
@@ -21,7 +21,8 @@ export class UserService {
 	}
 
 	async create_user(email: string, password: string): Promise<User | null> {
-		if (await this.find_user_with_email(email)) {
+		const existing = await this.find_user_with_email(email);
+		if (existing && existing.credibility_score > 0) {
 			return null;
 		}
 
@@ -57,7 +58,7 @@ export class UserService {
 			user.height_mm = height_mm;
 			user.occupation = occupation;
 			console.log("user before cred score update: ", user);
-			
+
 			// calculate credibility score with text validation
 			const probability = await ProfileValidator.validateText(user);
 			console.log("generated credibility score (human probability): ", probability);
@@ -69,7 +70,12 @@ export class UserService {
 
 			if (user.gender == Gender.kMale) {
 				const referrals = await manager.find(Referral, { relations: { user: true }, where: { email: user.email.toLowerCase() } })
+
 				if (referrals.length < 3) {
+
+					user.credibility_score = 0;
+					await manager.save(User, user);
+
 					return Err("Male user does not have enough referrals! You need to have at least 3 referrals in order to use CredibleCupid.");
 				}
 
@@ -131,7 +137,7 @@ export class UserService {
 				case SexualOrientation.kStraight: { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kGay:      { want_genders = [Gender.kMale];                 break; }
 				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
-				default:               { break; }
+				default:                          { break;                                                }
 			}
 		} else if (user.gender == Gender.kFemale) {
 			switch (user.sexual_orientation) {
@@ -139,20 +145,20 @@ export class UserService {
 				case SexualOrientation.kGay:      { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kLesbian:  { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
-				default:               { break; }
+				default:                          { break;                                                }
 			}
 		}
 
-		let matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0] } });
+		const matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0], guid: Not(user.guid) } });
 
 		for (let i = 1; i < want_genders.length; i++) {
-			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i] } }));
+			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i], guid: Not(user.guid) } }));
 		}
 		
-		matches = matches.filter(i => !i.passes.find(j => j.guid == guid));
-		matches = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
+		const matches_they_like_us = matches.filter(i => !i.passes.find(j => j.guid == guid));
+		const matches_we_like_them = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
 
-		return Ok(matches);
+		return Ok(matches_we_like_them);
 	}
 
 	async like_user(guid: string, cutie_guid: string): Promise<Result<boolean, string>> {
@@ -172,7 +178,8 @@ export class UserService {
 				return Err("Cutie does not exist!");
 			}
 
-			user.passes = user.passes.filter(p => p.guid != cutie_guid);
+			const filtered_passes = user.passes.filter(p => p.guid != cutie_guid)
+			user.passes = filtered_passes;
 			user.likes.push(cutie);
 
 			await manager.save(User, user);
@@ -200,7 +207,8 @@ export class UserService {
 				return Err("Cutie does not exist!");
 			}
 
-			user.likes = user.likes.filter(l => l.guid != cutie_guid);
+			const filtered_likes = user.likes.filter(l => l.guid != cutie_guid);
+			user.likes = filtered_likes;
 			user.passes.push(cutie);
 
 			await manager.save(User, user);
@@ -221,15 +229,16 @@ export class UserService {
 	}
 
 	async find_mutual_likes(guid: string): Promise<Result<User[], string>> {
-		const user = await this.user_repository.findOne({ where: { guid } });
+		const user = await this.user_repository.findOne({ relations: { likes: true }, where: { guid } });
 
 		if (!user) {
 			return Err("User does not exist!");
 		}
 
-		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user] } })
+		const likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user], guid: Not(guid) } })
+		const filtered_likes = likes.filter(i => !!user.likes.find(j => i.guid == j.guid));
 
-		return Ok(likes);
+		return Ok(filtered_likes);
 	}
 
 	async send_referral(guid: string, email: string, message: string): Promise<Result<null, string>> {
