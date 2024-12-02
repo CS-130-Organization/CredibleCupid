@@ -83,21 +83,6 @@ const MatchesPage = () => {
         userApi.profilePicUser(guid, (error, picData, response) => {
           const profileURL = error ? null : response.req.url;
 
-          // setLoadedProfiles(prev => [...prev, {
-          //   ...((data.first_name || data.last_name) ? {
-          //     name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
-          //   } : {}),
-          //   ...(age ? { age } : {}),
-          //   ...(data.gender ? { gender: data.gender[0] } : {}),
-          //   ...(data.bio ? { bio: data.bio } : {}),
-          //   ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
-          //   ...(data.occupation ? { occupation: data.occupation } : {}),
-          //   ...(data.education ? { education: data.education } : {}),
-          //   ...(data.location ? { location: data.location } : {}),
-          //   ...(data.interests ? { interests: data.interests } : {}),
-          //   ...(profileURL ? { imageUrl: profileURL } : {}),
-          //   guid: guid,
-          // }]);
           setLoadedProfiles(prev => {
             // Double-check before adding to ensure no duplicates
             if (prev.some(p => p.guid === guid)) {
