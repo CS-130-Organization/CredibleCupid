@@ -114,6 +114,7 @@ const MatchesPage = () => {
     emptyState: {
       textAlign: 'center',
       padding: spacing.xl,
+      marginTop: spacing.xl
     },
     resetButton: {
       ...buttonStyles.base,
@@ -123,6 +124,13 @@ const MatchesPage = () => {
         backgroundColor: colors.green.dark,
       }
     },
+    emptyText: {
+      color: colors.red.light,
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      textAlign: 'center',
+      margin: 0,
+    },    
     header: {
       position: 'fixed',
       top: 0,
@@ -173,31 +181,36 @@ const MatchesPage = () => {
     setSelectedProfile(null);
   };
 
-
-  return (
-    <div>
-      <div ref={headerRef} style={styles.header}>
-        <h1 style={styles.headerTitle}>Matches</h1>
+  if (loadedProfiles.length <= 0){
+    return (
+      <div>
+        <div ref={headerRef} style={styles.header}>
+          <h1 style={styles.headerTitle}>Matches</h1>
+        </div>
+        <div style={styles.emptyState}>
+          <p style={styles.emptyText}>No more profiles to show!</p>
+          <button style={styles.resetButton} onClick={resetProfiles}>Find More Matches</button>
+        </div>
       </div>
-      <div style={styles.gridContainer}>
-        {loadedProfiles.length > 0 ? (
-          loadedProfiles.map(profile => (
+    )
+  }
+  else{
+    return (
+      <div>
+        <div ref={headerRef} style={styles.header}>
+          <h1 style={styles.headerTitle}>Matches</h1>
+        </div>
+        <div style={styles.gridContainer}>
+          {loadedProfiles.map(profile => (
             <ProfileGridCard key={profile.guid} {...profile} onClick={() => handleProfileClick(profile.guid)}/>
-          ))
-        ) : (
-          <div style={styles.emptyState}>
-            <p>No profiles to show</p>
-            <button style={styles.resetButton} onClick={resetProfiles}>Find More Matches</button>
-          </div>
-        )}
+          ))}
+        </div>
+        {isPopupOpen && selectedProfile && (
+          <ProfileDetailsPopup {...selectedProfile} onClose={closePopup} />
+        )}    
       </div>
-
-      {isPopupOpen && selectedProfile && (
-        <ProfileDetailsPopup {...selectedProfile} onClose={closePopup} />
-      )}
-      
-    </div>
-  );
+    );
+  }
 };
 
 export default MatchesPage;
