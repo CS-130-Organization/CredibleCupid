@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DataSource } from "typeorm";;
+import { Repository, DataSource, Not } from "typeorm";;
 
 import { User, Referral, Gender, SexualOrientation } from "../database/entities";
 import { ProfileValidator } from "../scripts/profileValidator";
@@ -143,7 +143,7 @@ export class UserService {
 			}
 		}
 
-		let matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0] } });
+		let matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0], guid: Not(user.guid) } });
 
 		for (let i = 1; i < want_genders.length; i++) {
 			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i] } }));
