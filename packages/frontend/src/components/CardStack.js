@@ -125,7 +125,12 @@ const CardStack = () => {
     // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
-
+    // Check for duplicate GUIDs before querying the API
+    if (loadedProfiles.some(p => p.guid === guid)) {
+      console.log(`Profile with GUID ${guid} already loaded.`);
+      return;
+    }
+    
     userApi.queryUser(guid, (error, data) => {
       if (error) {
         console.error(error);
@@ -173,22 +178,48 @@ const CardStack = () => {
           const height = data.height_mm ? convertHeightToFeetInches(data.height_mm) : null;
 
 
-          setLoadedProfiles(prev => [...prev, {
-            ...((data.first_name || data.last_name) ? {
-              name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
-            } : {}),
-            ...(age && age !== "Age not provided" ? { age } : {}),
-            ...(height && height !== "Height not provided" ? { height } : {}),
-            ...(data.gender ? { gender: data.gender[0] } : {}),
-            ...(data.bio ? { bio: data.bio } : {}),
-            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
-            ...(data.occupation ? { occupation: data.occupation } : {}),
-            ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
-            ...(data.pronouns ? { pronouns: data.pronouns } : {}),
-            ...(profileURL ? { imageUrl: profileURL } : {}),
-            guid: guid
-          }]);
-
+          // setLoadedProfiles(prev => [...prev, {
+          //   ...((data.first_name || data.last_name) ? {
+          //     name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+          //   } : {}),
+          //   ...(age && age !== "Age not provided" ? { age } : {}),
+          //   ...(height && height !== "Height not provided" ? { height } : {}),
+          //   ...(data.gender ? { gender: data.gender[0] } : {}),
+          //   ...(data.bio ? { bio: data.bio } : {}),
+          //   ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
+          //   ...(data.occupation ? { occupation: data.occupation } : {}),
+          //   ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+          //   ...(data.pronouns ? { pronouns: data.pronouns } : {}),
+          //   ...(profileURL ? { imageUrl: profileURL } : {}),
+          //   guid: guid
+          // }]);
+          setLoadedProfiles(prev => {
+            // Double-check before adding to ensure no duplicates
+            if (prev.some(p => p.guid === guid)) {
+              console.log(`Profile with GUID ${guid} already exists in loadedProfiles.`);
+              return prev;
+            }
+  
+            const newProfile = {
+              ...((data.first_name || data.last_name) ? {
+                name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+              } : {}),
+              ...(age ? { age } : {}),
+              ...(data.gender ? { gender: data.gender[0] } : {}),
+              ...(data.bio ? { bio: data.bio } : {}),
+              ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
+              ...(data.occupation ? { occupation: data.occupation } : {}),
+              ...(data.education ? { education: data.education } : {}),
+              ...(data.location ? { location: data.location } : {}),
+              ...(data.interests ? { interests: data.interests } : {}),
+              ...(profileURL ? { imageUrl: profileURL } : {}),
+              guid: guid,
+            };
+  
+            const updatedProfiles = [...prev, newProfile];
+            console.log("Loaded Profiles:", updatedProfiles); // Log here
+            return updatedProfiles;
+          });
           setIsLoading(false);
         }
       }
