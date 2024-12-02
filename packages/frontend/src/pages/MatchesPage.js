@@ -46,7 +46,12 @@ const MatchesPage = () => {
           //remember to change back to .guids
           const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
-          userGuids.forEach((guid) => loadProfile(guid));
+          
+          // const uniqueList = [...new Set(userGuids)]
+          // console.log("length comparison!", uniqueList.length, userGuids.length)          
+          
+          loadAllProfiles(userGuids)
+          // userGuids.forEach((guid) => loadProfile(guid));
         }
       });
     } catch (err) {
@@ -67,6 +72,20 @@ const MatchesPage = () => {
     }
   }, []);
 
+  const loadAllProfiles = (guids) => {
+    const proposalList = []
+    guids.forEach((guid) => {
+      console.log("guid process", guid, proposalList.length)
+      proposalList.push(loadProfile(guid))
+    })
+    setLoadedProfiles(proposalList)
+  }
+
+  useEffect(() => {    
+    console.log("new loadedProf: ", loadedProfiles)
+  }, [loadedProfiles]);
+
+
   const loadProfile = (guid) => {
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
@@ -79,7 +98,7 @@ const MatchesPage = () => {
         userApi.profilePicUser(guid, (error, picData, response) => {
           const profileURL = error ? null : response.req.url;
 
-          setLoadedProfiles(prev => [...prev, {
+          return {
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
             } : {}),
@@ -93,10 +112,10 @@ const MatchesPage = () => {
             ...(data.interests ? { interests: data.interests } : {}),
             ...(profileURL ? { imageUrl: profileURL } : {}),
             guid: guid,
-          }]);
+          }
         });
       }
-    });
+    });    
   };
 
   const resetProfiles = () => {
