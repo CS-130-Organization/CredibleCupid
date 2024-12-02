@@ -94,6 +94,11 @@ export class GetUserResponse {
 	occupation: string | undefined;
 
 	/*
+	 * The credibility score of the user
+	 */
+	credibility_score: number | undefined;
+
+	/*
 	 * The GUIDs of the referrals for this user.
 	 */
 	referrals: string[];
@@ -154,6 +159,11 @@ export class UserUpdateBioRequest {
 	 * The occupation of the user
 	 */
 	occupation: string;
+
+	/*
+	 * The credibility score of the user
+	 */
+	credibility_score: number;
 }
 
 export class LikeUserResponse {

@@ -18,6 +18,7 @@
 		"noFallthroughCasesInSwitch": false,
 		"strictNullChecks": true
 	},
+	"esModuleInterop": true,
 	"watchOptions": {
 		"watchFile": "fixedPollingInterval"
 	}

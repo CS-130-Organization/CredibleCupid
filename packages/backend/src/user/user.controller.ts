@@ -40,6 +40,7 @@ export class UserController {
 			birthday_ms_since_epoch: user.birthday?.getTime(),
 			height_mm: user.height_mm,
 			occupation: user.occupation,
+			credibility_score: user.credibility_score,
 			referrals: referrals.map(i => i.guid),
 		};
 	}
@@ -94,6 +95,7 @@ export class UserController {
 			birthday_ms_since_epoch: updated_user.birthday?.getTime(),
 			height_mm: updated_user.height_mm,
 			occupation: updated_user.occupation,
+			credibility_score: updated_user.credibility_score,
 			referrals: referrals.map(r => r.guid),
 		};
 	}
