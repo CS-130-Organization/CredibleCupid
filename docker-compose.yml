@@ -24,6 +24,8 @@ services:
     build:
       context: ./packages/backend
       dockerfile: Dockerfile.local
+      args:
+        START_CMD: ${BACKEND_START_CMD:-start:debug}
     restart: always
     env_file: .env
     ports:

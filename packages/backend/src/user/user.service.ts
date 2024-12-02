@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, DataSource, Not } from "typeorm";;
+import { Repository, DataSource, Not } from "typeorm";
 
 import { User, Referral, Gender, SexualOrientation } from "../database/entities";
 import { ProfileValidator } from "../scripts/profileValidator";
