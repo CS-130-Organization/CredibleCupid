@@ -26,12 +26,51 @@ const MatchesPage = () => {
 
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
+  const referralApi = new CredibleCupidApi.ReferralApi();
 
   const calculateAge = (birthdayMs) => {
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
+
+  const fetchReferrerData = async (referrerGuid) => {
+    return new Promise((resolve, reject) => {
+      userApi.queryUser(referrerGuid, (error, data) => {
+        if (error) {
+          console.error("Error fetching referrer data:", error);
+          reject(error);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  };
+
+  const fetchReferralDetails = (referralGuid) => {
+    return new Promise((resolve, reject) => {
+      referralApi.getReferral(referralGuid, (error, data) => {
+        if (error) {
+          console.error("Error fetching referral data:", error);
+          reject(error);
+        } else {
+          resolve(data.message);
+        }
+      });
+    });
+  };
+
+  const fetchAllReferrals = async (referralGuids) => {
+    try {
+      const referralPromises = referralGuids.map((guid) => fetchReferralDetails(guid));
+      const allReferrals = await Promise.all(referralPromises);
+      return allReferrals;
+    } catch (error) {
+      console.error("Error fetching all referrals:", error);
+      return [];
+    }
+  };
+
 
   const fetchMatches = async () => {
     setIsLoading(true);
@@ -88,29 +127,45 @@ const MatchesPage = () => {
         const age = calculateAge(data.birthday_ms_since_epoch);
         const height = data.height_mm ? convertHeightToFeetInches(data.height_mm) : null;
 
-        userApi.profilePicUser(guid, (error, picData, response) => {
-          const profileURL = error ? null : response.req.url;
+        // First fetch referrals if they exist
+        const referralsPromise = data.referrals?.length > 0 
+          ? fetchAllReferrals(data.referrals)
+          : Promise.resolve([]);
 
-           setLoadedProfiles(prev => [...prev, {
-            ...((data.first_name || data.last_name) ? {
-              name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
-            } : {}),
-            ...(age && age !== "Age not provided" ? { age } : {}),
-            ...(height && height !== "Height not provided" ? { height } : {}),
-            ...(data.gender ? { gender: data.gender[0] } : {}),
-            ...(data.bio ? { bio: data.bio } : {}),
-            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
-            ...(data.occupation ? { occupation: data.occupation } : {}),
-            ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
-            ...(data.pronouns ? { pronouns: data.pronouns } : {}),
-            ...(data.email ? { email: data.email } : {}),
-            ...(profileURL ? { imageUrl: profileURL } : {}),
-            guid: guid
-          }]);
+        // Then get the profile picture
+        const profilePicPromise = new Promise((resolve) => {
+          userApi.profilePicUser(guid, (error, picData, response) => {
+            resolve(error ? null : response.req.url);
+          });
         });
-      }
-    });
-  };
+
+         // Wait for both promises to resolve
+         Promise.all([referralsPromise, profilePicPromise])
+         .then(([formattedReferrals, profileURL]) => {
+           setLoadedProfiles(prev => [...prev, {
+             ...((data.first_name || data.last_name) ? {
+               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+             } : {}),
+             ...(age && age !== "Age not provided" ? { age } : {}),
+             ...(height && height !== "Height not provided" ? { height } : {}),
+             ...(data.gender ? { gender: data.gender[0] } : {}),
+             ...(data.bio ? { bio: data.bio } : {}),
+             ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
+             ...(data.occupation ? { occupation: data.occupation } : {}),
+             ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+             ...(data.pronouns ? { pronouns: data.pronouns } : {}),
+             ...(data.email ? { email: data.email } : {}),
+             ...(profileURL ? { imageUrl: profileURL } : {}),
+             ...(formattedReferrals.length > 0 ? { referrals: formattedReferrals } : {}),
+             guid: guid
+           }]);
+         })
+         .catch(error => {
+           console.error("Error loading profile:", error);
+         });
+     }
+   });
+ };
 
   const resetProfiles = () => {
     setLoadedProfiles([]);
