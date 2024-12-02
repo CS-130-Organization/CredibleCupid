@@ -485,8 +485,15 @@ const Profile = ({
     // Make the sendReferral request
     apiInstance.sendReferral(sendReferralRequest, (error, data, response) => {
       if (error) {
-        console.error("Failed to send referral:", error);
-        setAlertMessage(`Failed to send referral`);
+        console.error("Failed to send referral:", response.body.message);
+
+        // Extract error details
+        // const statusCode = response.body.status || "Unknown status";
+        const errorMessage = response.body.message || "An error occurred.";
+        // const errorType = response.error.error || "Unknown error";
+    
+        // Display error details in alert
+        setAlertMessage(`Failed to send referral: \n${errorMessage}`);
         setShowAlert(true);
       } else {
         console.log("Successfully sent referral");
