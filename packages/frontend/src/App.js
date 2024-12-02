@@ -39,6 +39,7 @@ function App() {
     <div style={styles.pageContainer}>
       <div style={styles.contentWrapper}>
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/userprofile/:guid" element={<UserProfile />} />

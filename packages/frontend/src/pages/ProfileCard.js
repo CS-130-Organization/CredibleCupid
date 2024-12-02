@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
+import { Heart, X, Star, Tag, Users, Briefcase, Ruler } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
 import {
   cardStyles,
@@ -21,10 +21,9 @@ const ProfileCard = ({
   credibility_score = 0,
   bio = 'No bio available',
   occupation = 'Not specified',
-  education = 'Not specified',
-  location = 'Location unknown',
-  interests = [],
-  verified = false,
+  orientation = 'Not specified',
+  pronouns = 'Not specified',
+  height = 'Not specified',
   imageUrl = null
 }) => {
   const [isLiked, setIsLiked] = useState(false);
@@ -43,7 +42,6 @@ const ProfileCard = ({
     onPass?.();
   };
 
-  // Only styles specific to this implementation
   const styles = {
     actionContainer: {
       width: '100%',
@@ -100,12 +98,6 @@ const ProfileCard = ({
               No image available
             </div>
           )}
-          {verified && (
-            <div style={badgeStyles.verified}>
-              <Verified size={16} />
-              <span>Verified</span>
-            </div>
-          )}
         </div>
 
         <div style={contentStyles.section}>
@@ -123,26 +115,22 @@ const ProfileCard = ({
 
           <div>
             <div style={detailStyles.row}>
+              <Tag size={20} color={colors.gray.dark} />
+              <span>{pronouns}</span>
+            </div>
+            <div style={detailStyles.row}>
+              <Users size={20} color={colors.gray.dark} />
+              <span>{orientation}</span>
+            </div>
+            <div style={detailStyles.row}>
+              <Ruler size={20} color={colors.gray.dark} />
+              <span>{height}</span>
+            </div>
+            <div style={detailStyles.row}>
               <Briefcase size={20} color={colors.gray.dark} />
               <span>{occupation}</span>
             </div>
-            <div style={detailStyles.row}>
-              <GraduationCap size={20} color={colors.gray.dark} />
-              <span>{education}</span>
-            </div>
-            <div style={detailStyles.row}>
-              <MapPin size={20} color={colors.gray.dark} />
-              <span>{location}</span>
-            </div>
           </div>
-
-          {interests.length > 0 && (
-            <div style={tagStyles.container}>
-              {interests.map((interest, index) => (
-                <span key={index} style={tagStyles.tag}>{interest}</span>
-              ))}
-            </div>
-          )}
         </div>
 
         <div style={styles.actionContainer}>
