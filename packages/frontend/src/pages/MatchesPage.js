@@ -188,7 +188,7 @@ const MatchesPage = () => {
           <h1 style={styles.headerTitle}>Matches</h1>
         </div>
         <div style={styles.emptyState}>
-          <p style={styles.emptyText}>No more profiles to show!</p>
+          <p style={styles.emptyText}>No matches to show yet!</p>
           <button style={styles.resetButton} onClick={resetProfiles}>Find More Matches</button>
         </div>
       </div>
