@@ -493,7 +493,7 @@ const Profile = ({
         // const errorType = response.error.error || "Unknown error";
     
         // Display error details in alert
-        setAlertMessage(`Failed to send referral: \n${errorMessage}`);
+        setAlertMessage(`${errorMessage}`);
         setShowAlert(true);
       } else {
         console.log("Successfully sent referral");
