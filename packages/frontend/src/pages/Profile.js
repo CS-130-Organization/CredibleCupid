@@ -2,7 +2,7 @@ import React, {useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { ArrowLeft, Instagram, User, Star, MapPin, Briefcase, GraduationCap, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
@@ -220,7 +220,8 @@ const Profile = () => {
 
     const fetchReferrerData = async (referrerGuid) => {
       const apiInstance = new CredibleCupid.UserApi();
-      return new Promise((resolve, reject) => {
+
+      const referrerData = await new Promise((resolve, reject) => {
         apiInstance.queryUser(referrerGuid, (error, data) => {
           if (error) {
             console.error("Error fetching referrer data:", error);
@@ -230,6 +231,19 @@ const Profile = () => {
           }
         });
       });
+    
+      const profilePicUrl = await new Promise((resolve, reject) => {
+        apiInstance.profilePicUser(referrerGuid, (error, data, response) => {
+          if (error) {
+            console.error("Error fetching profile picture:", error);
+            resolve(null); // Handle gracefully if no picture is found
+          } else {
+            resolve(response.req.url); // Assume response contains the profile picture URL
+          }
+        });
+      });
+    
+      return { ...referrerData, profilePicUrl }; // Include the profile picture URL in the returned data
     };
 
     const fetchReferralDetails = async (referralGuid) => {
@@ -335,10 +349,10 @@ const Profile = () => {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
-  const handleTestUserProfile = (e) => {
-    e.preventDefault();  // Prevents the form from refreshing the page
-    navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
-  };
+  // const handleTestUserProfile = (e) => {
+  //   e.preventDefault();  // Prevents the form from refreshing the page
+  //   navigate(`/userprofile/${guid}`);  // Navigates to the profile page with the GUID
+  // };
 
 
   const handleUpdateProfile = (e) => {
@@ -1563,7 +1577,7 @@ const ImageUpload = () => (
                 >
                   {/* Bio */}
                   <div style={inputStyles.container}>
-                    <label style={inputStyles.label}>
+                    <label style={{ ...inputStyles.label, marginTop: "2rem"}}>
                       About Me
                     </label>
                     <div>
@@ -1614,37 +1628,94 @@ const ImageUpload = () => (
                   </motion.div> */}
                   {/* Referrals */}
                   {userData.gender === "Male" && 
-                  <motion.div
-                    style={inputStyles.container}
+                    <motion.div
+                    style={{
+                      ...inputStyles.container,
+                      padding: "0rem",
+                      borderTop: `1px solid ${colors.gray.lighter}`,
+                      // backgroundColor: "#f9f9f9",
+                      // borderRadius: "8px",
+                      // boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.5 }}
                   >
-                  <label style={inputStyles.label}>Referrals</label>
+                    {/* <Quote size={20} color={colors.darkGray} /> */}
+
+                    <label style={{ ...inputStyles.label, marginBottom: "0.9rem" , marginTop: "1.5rem"}}>
+                    Referrals
+                    </label>
                   {referrals.length > 0 ? (
                     referrals.map((referral, index) => (
                       <div
                         key={index}
                         style={{
                           display: "flex",
-                          alignItems: "center",
-                          marginBottom: "1rem",
+                          flexDirection: "row",
+                          // alignItems: "flex-start",
+                          marginBottom: "0.4rem",
+                          marginTop: "0.4rem",
+                          padding: "0.9rem",
+                          borderRadius: "8px",
+                          boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.05)",
+                          border: "1px solid #e0e0e0",
+                          backgroundColor: colors.gray.lighter,
                         }}
                       >
-                        <Link
+                        <Link to={`/userprofile/${referral.referrer.guid}`}
+                        >
+                        <img
+                        src={referral.referrer.profilePicUrl || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"} // Fallback for missing profile pic
+                        alt={`${referral.referrer.first_name}'s profile`}
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "50%",
+                          marginRight: "1rem",
+                          objectFit: "cover"
+                        }}
+                        />
+                        </Link>
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          marginBottom: "1rem",
+                          // padding: "1.5rem",
+                          // backgroundColor: "#ffffff",
+                          // borderRadius: "8px",
+                          // boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.05)",
+                          // border: "1px solid #e0e0e0",
+                          // backgroundColor: "#f9f9f9",
+                        }}
+                      >
+                      <Link
                           to={`/userprofile/${referral.referrer.guid}`}
                           style={{
-                            ...styles.subtitle,
-                            marginRight: "8px", // Add spacing between link and message
+                            fontWeight: "bold",
+                            fontSize: "1rem",
+                            color: "#333",
+                            // marginTop: "0.5rem",
+                            textDecoration: "none",
+                            marginBottom: "0.1rem"
                           }}
                         >
-                          {referral.referrer.first_name}
+                          {referral.referrer.first_name}  {referral.referrer.last_name}
                         </Link>
-                        <p style={{ ...styles.subtitle, margin: 0 }}>- {referral.message}</p>
+                        {/* <Quote size={20} color={colors.darkGray} /> */}
+                        <p style={{ fontSize: "1rem", color: "#555", margin: 0 }}>
+                          {referral.message}
+                        </p>
+
+                      </div>
+
                       </div>
                     ))
                   ) : (
-                    <p>No referrals available.</p>
+                    <p style={{ fontSize: "1rem", color: "#777" }}>No referrals available.</p>
                   )}
                   </motion.div>}
 
