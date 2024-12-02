@@ -37,12 +37,14 @@ const MatchesPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      userApi.getMutualLikes((error, data) => {
-        if (error) {
+      //remember to change back to getMutualLikes      
+      matchmakerApi.findMatches((error, data) => {        
+        if (error) {          
           setError('Failed to fetch matches');
           console.error(error);
         } else {
-          const userGuids = data.guids || [];
+          //remember to change back to .guids
+          const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
           userGuids.forEach((guid) => loadProfile(guid));
         }
