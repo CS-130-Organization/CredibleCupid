@@ -42,7 +42,7 @@ const MatchesPage = () => {
           setError('Failed to fetch matches');
           console.error(error);
         } else {
-          const userGuids = data.user_guids || [];
+          const userGuids = data.guids || [];
           setMatchGuids(userGuids);
           userGuids.forEach((guid) => loadProfile(guid));
         }

@@ -137,7 +137,7 @@ export class UserService {
 				case SexualOrientation.kStraight: { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kGay:      { want_genders = [Gender.kMale];                 break; }
 				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
-				default:               { break; }
+				default:                          { break;                                                }
 			}
 		} else if (user.gender == Gender.kFemale) {
 			switch (user.sexual_orientation) {
@@ -145,20 +145,20 @@ export class UserService {
 				case SexualOrientation.kGay:      { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kLesbian:  { want_genders = [Gender.kFemale];               break; }
 				case SexualOrientation.kBisexual: { want_genders = [Gender.kMale, Gender.kFemale]; break; }
-				default:               { break; }
+				default:                          { break;                                                }
 			}
 		}
 
-		let matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0], guid: Not(user.guid) } });
+		const matches = await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[0], guid: Not(user.guid) } });
 
 		for (let i = 1; i < want_genders.length; i++) {
-			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i] } }));
+			matches.concat(await this.user_repository.find({ relations: { passes: true }, where: { gender: want_genders[i], guid: Not(user.guid) } }));
 		}
 		
-		matches = matches.filter(i => !i.passes.find(j => j.guid == guid));
-		matches = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
+		const matches_they_like_us = matches.filter(i => !i.passes.find(j => j.guid == guid));
+		const matches_we_like_them = matches.filter(i => !user.passes.find(j => i.guid == j.guid) && !user.likes.find(j => i.guid == j.guid));
 
-		return Ok(matches);
+		return Ok(matches_we_like_them);
 	}
 
 	async like_user(guid: string, cutie_guid: string): Promise<Result<boolean, string>> {
@@ -178,7 +178,8 @@ export class UserService {
 				return Err("Cutie does not exist!");
 			}
 
-			user.passes = user.passes.filter(p => p.guid != cutie_guid);
+			const filtered_passes = user.passes.filter(p => p.guid != cutie_guid)
+			user.passes = filtered_passes;
 			user.likes.push(cutie);
 
 			await manager.save(User, user);
@@ -206,7 +207,8 @@ export class UserService {
 				return Err("Cutie does not exist!");
 			}
 
-			user.likes = user.likes.filter(l => l.guid != cutie_guid);
+			const filtered_likes = user.likes.filter(l => l.guid != cutie_guid);
+			user.likes = filtered_likes;
 			user.passes.push(cutie);
 
 			await manager.save(User, user);
@@ -233,10 +235,10 @@ export class UserService {
 			return Err("User does not exist!");
 		}
 
-		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user], guid: Not(guid) } })
-		likes = likes.filter(l => !!user.likes.find(u => u.guid == l.guid));
+		const likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user], guid: Not(guid) } })
+		const filtered_likes = likes.filter(i => !!user.likes.find(j => i.guid == j.guid));
 
-		return Ok(likes);
+		return Ok(filtered_likes);
 	}
 
 	async send_referral(guid: string, email: string, message: string): Promise<Result<null, string>> {
