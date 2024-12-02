@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, X, Star, Tag, Users, Briefcase, Ruler } from 'lucide-react';
+import { MessageCircle, Heart, X, Star, Tag, Users, Briefcase, Ruler } from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
 import {
   cardStyles,
@@ -24,11 +24,13 @@ const ProfileCard = ({
   orientation = 'Not specified',
   pronouns = 'Not specified',
   height = 'Not specified',
-  imageUrl = null
+  imageUrl = null,
+  referrals = []
 }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showReferrals, setShowReferrals] = useState(false);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -40,6 +42,10 @@ const ProfileCard = ({
     setIsDisliked(!isDisliked);
     setIsLiked(false);
     onPass?.();
+  };
+  
+  const toggleReferrals = () => {
+    setShowReferrals(!showReferrals);
   };
 
   const styles = {
@@ -79,12 +85,71 @@ const ProfileCard = ({
       fontWeight: '600',
       fontSize: '24px',
       color: isActive ? (isLike ? colors.green.dark : colors.red.dark) : colors.gray.dark
-    })
+    }),
+    referralButton: {
+      position: 'absolute',
+      top: spacing.lg,
+      right: spacing.lg,
+      padding: spacing.md,
+      borderRadius: '50%',
+      border: 'none',
+      backgroundColor: colors.white,
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      transition: 'transform 0.2s ease',
+      zIndex: 10
+    },
+    referralContainer: {
+      position: 'absolute',
+      top: '80px',
+      right: spacing.lg,
+      backgroundColor: colors.white,
+      padding: spacing.lg,
+      borderRadius: spacing.md,
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      maxWidth: '300px',
+      maxHeight: '400px',
+      overflowY: 'auto',
+      zIndex: 20,
+      display: showReferrals ? 'block' : 'none'
+    },
+    referralItem: {
+      padding: spacing.md,
+      borderBottom: `1px solid ${colors.gray.lighter}`,
+      fontSize: '14px',
+      lineHeight: '1.4'
+    }
   };
 
   return (
     <div style={cardStyles.container}>
       <div style={cardStyles.content}>
+        {referrals?.length > 0 && (
+          <>
+            <button 
+              onClick={toggleReferrals}
+              style={styles.referralButton}
+              title="View Referrals"
+            >
+              <MessageCircle 
+                size={24} 
+                color={colors.gray.dark}
+              />
+            </button>
+            
+            <div style={styles.referralContainer}>
+              <h4 style={{ margin: '0 0 8px 0' }}>Referrals</h4>
+              {referrals.map((referral, index) => (
+                <div key={index} style={styles.referralItem}>
+                  {referral}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
         <div style={imageStyles.section}>
           {imageUrl && !imageError ? (
             <img

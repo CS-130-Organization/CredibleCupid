@@ -79,12 +79,50 @@ const CardStack = () => {
 
   const matchmakerApi = new CredibleCupidApi.MatchmakerApi();
   const userApi = new CredibleCupidApi.UserApi();
+  const referralApi = new CredibleCupidApi.ReferralApi();
 
   // Calculate the age based on `birthday_ms_since_epoch`
   const calculateAge = (birthdayMs) => {
     const ageDifMs = Date.now() - birthdayMs;
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const convertHeightToFeetInches = (heightMm) => {
+    if (!heightMm || isNaN(heightMm)) {
+      return "Height not provided";
+    }
+    const totalInches = heightMm * 0.0393701;
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    if (inches === 12) {
+      return `${feet + 1}'0"`;
+    }
+    return `${feet}'${inches}"`;
+  };
+
+  const fetchReferralDetails = (referralGuid) => {
+    return new Promise((resolve, reject) => {
+      referralApi.getReferral(referralGuid, (error, data) => {
+        if (error) {
+          console.error("Error fetching referral data:", error);
+          reject(error);
+        } else {
+          resolve(data.message);
+        }
+      });
+    });
+  };
+
+  const fetchAllReferrals = async (referralGuids) => {
+    try {
+      const referralPromises = referralGuids.map((guid) => fetchReferralDetails(guid));
+      const allReferrals = await Promise.all(referralPromises);
+      return allReferrals;
+    } catch (error) {
+      console.error("Error fetching all referrals:", error);
+      return [];
+    }
   };
 
   const fetchMatches = async () => {
@@ -98,7 +136,6 @@ const CardStack = () => {
         } else {
           const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
-          // Load first two profiles initially for smooth transition
           if (userGuids.length > 0) {
             loadProfile(userGuids[0]);
             if (userGuids.length > 1) {
@@ -122,95 +159,64 @@ const CardStack = () => {
   }, []);
 
   const loadProfile = async (guid) => {
-    // no guid or duplicate profile
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
-    // Check for duplicate GUIDs before querying the API
-    if (loadedProfiles.some(p => p.guid === guid)) {
-      console.log(`Profile with GUID ${guid} already loaded.`);
-      return;
-    }
-    
-    userApi.queryUser(guid, (error, data) => {
+    userApi.queryUser(guid, async (error, data) => {
       if (error) {
         console.error(error);
       } else {
-        const age = calculateAge(data.birthday_ms_since_epoch);
-        console.log("From cardstack: ", data);
+        try {
+          // Fetch referrals if they exist
+          const referrals = data.referrals?.length > 0
+            ? await fetchAllReferrals(data.referrals)
+            : [];
 
-        // Get profile picture first
-        userApi.profilePicUser(guid, (error, picData, response) => {
-          if (error) {
-            console.error(error);
-            // Still create profile without picture
-            createAndSetProfile(null);
-          } else {
-            // Create profile with picture URL
-            createAndSetProfile(response.req.url);
-          }
-        });
+          // Get profile picture
+          const profileURL = await new Promise((resolve) => {
+            userApi.profilePicUser(guid, (error, picData, response) => {
+              resolve(error ? null : response.req.url);
+            });
+          });
 
-        function calculateAge(birthdayMs) {
-          if (!birthdayMs || isNaN(birthdayMs)) {
-            return "Age not provided";
-          }
-          const ageDifMs = Date.now() - birthdayMs;
-          const ageDate = new Date(ageDifMs);
-          return Math.abs(ageDate.getUTCFullYear() - 1970);
-        }
-        
-        function convertHeightToFeetInches(heightMm) {
-          if (!heightMm || isNaN(heightMm)) {
-            return "Height not provided";
-          }
-          const totalInches = heightMm * 0.0393701;
-          const feet = Math.floor(totalInches / 12);
-          const inches = Math.round(totalInches % 12);
-          if (inches === 12) {
-            return `${feet + 1}'0"`;
-          }
-          return `${feet}'${inches}"`;
-        }
-        
-        // Helper function to create and set profile
-        function createAndSetProfile(profileURL) {
-          const age = data.birthday_ms_since_epoch ? calculateAge(data.birthday_ms_since_epoch) : null;
+          const age = calculateAge(data.birthday_ms_since_epoch);
           const height = data.height_mm ? convertHeightToFeetInches(data.height_mm) : null;
 
           setLoadedProfiles(prev => {
-            // Double-check before adding to ensure no duplicates
             if (prev.some(p => p.guid === guid)) {
-              console.log(`Profile with GUID ${guid} already exists in loadedProfiles.`);
               return prev;
             }
-  
+
             const newProfile = {
               ...((data.first_name || data.last_name) ? {
                 name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
               } : {}),
               ...(age ? { age } : {}),
+              ...(height ? { height } : {}),
               ...(data.gender ? { gender: data.gender[0] } : {}),
               ...(data.bio ? { bio: data.bio } : {}),
               ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
               ...(data.occupation ? { occupation: data.occupation } : {}),
+              ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+              ...(data.pronouns ? { pronouns: data.pronouns } : {}),
               ...(data.education ? { education: data.education } : {}),
               ...(data.location ? { location: data.location } : {}),
               ...(data.interests ? { interests: data.interests } : {}),
               ...(profileURL ? { imageUrl: profileURL } : {}),
-              guid: guid,
+              ...(referrals.length > 0 ? { referrals } : {}),
+              guid: guid
             };
-  
-            const updatedProfiles = [...prev, newProfile];
-            console.log("Loaded Profiles:", updatedProfiles); // Log here
-            return updatedProfiles;
+
+            return [...prev, newProfile];
           });
+          setIsLoading(false);
+        } catch (err) {
+          console.error("Error loading profile:", err);
           setIsLoading(false);
         }
       }
     });
-
   };
-
+  
   // Pre-load next profile when current profile changes
   useEffect(() => {
     if (loadedProfiles.length > 0 && !isLoading) {
