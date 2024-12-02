@@ -13,6 +13,7 @@ const MatchesPage = () => {
   const [error, setError] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [loadedGuids, setLoadedGuids] = useState(new Set());
 
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -120,6 +121,9 @@ const MatchesPage = () => {
   const loadProfile = (guid) => {
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
+    if (!guid || loadedGuids.has(guid)) return;
+    setLoadedGuids(prev => new Set([...prev, guid]));
+    
     userApi.queryUser(guid, (error, data) => {
       if (error) {
         console.error(error);
@@ -141,31 +145,34 @@ const MatchesPage = () => {
 
          // Wait for both promises to resolve
          Promise.all([referralsPromise, profilePicPromise])
-         .then(([formattedReferrals, profileURL]) => {
-           setLoadedProfiles(prev => [...prev, {
-             ...((data.first_name || data.last_name) ? {
-               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
-             } : {}),
-             ...(age && age !== "Age not provided" ? { age } : {}),
-             ...(height && height !== "Height not provided" ? { height } : {}),
-             ...(data.gender ? { gender: data.gender[0] } : {}),
-             ...(data.bio ? { bio: data.bio } : {}),
-             ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
-             ...(data.occupation ? { occupation: data.occupation } : {}),
-             ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
-             ...(data.pronouns ? { pronouns: data.pronouns } : {}),
-             ...(data.email ? { email: data.email } : {}),
-             ...(profileURL ? { imageUrl: profileURL } : {}),
-             ...(formattedReferrals.length > 0 ? { referrals: formattedReferrals } : {}),
-             guid: guid
-           }]);
-         })
-         .catch(error => {
-           console.error("Error loading profile:", error);
-         });
-     }
-   });
- };
+        .then(([formattedReferrals, profileURL]) => {
+          setLoadedProfiles(prev => {
+            // Check if profile already exists
+            if (prev.some(p => p.guid === guid)) {
+              return prev;
+            }
+            return [...prev, {
+              ...((data.first_name || data.last_name) ? {
+                name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+              } : {}),
+              ...(age && age !== "Age not provided" ? { age } : {}),
+              ...(height && height !== "Height not provided" ? { height } : {}),
+              ...(data.gender ? { gender: data.gender[0] } : {}),
+              ...(data.bio ? { bio: data.bio } : {}),
+              ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
+              ...(data.occupation ? { occupation: data.occupation } : {}),
+              ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+              ...(data.pronouns ? { pronouns: data.pronouns } : {}),
+              ...(data.email ? { email: data.email } : {}),
+              ...(profileURL ? { imageUrl: profileURL } : {}),
+              ...(formattedReferrals.length > 0 ? { referrals: formattedReferrals } : {}),
+              guid: guid
+            }];
+          });
+        })
+    }
+  });
+};
 
   const resetProfiles = () => {
     setLoadedProfiles([]);
