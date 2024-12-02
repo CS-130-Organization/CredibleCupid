@@ -37,7 +37,7 @@ const MatchesPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      matchmakerApi.findMatches((error, data) => {
+      userApi.getMutualLikes((error, data) => {
         if (error) {
           setError('Failed to fetch matches');
           console.error(error);

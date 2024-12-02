@@ -127,21 +127,7 @@ export class UserController {
 
 	@UseGuards(JwtAuthGuard)
 	@ApiBearerAuth()
-	@Get("get_likes")
-	async get_likes(@AuthUser() user: User): Promise<GetLikesResponse> {
-		const res = await this.user_service.find_likes(user.guid);
-
-		if (res.err) {
-			throw new ForbiddenException(res.val);
-		}
-
-		return { guids: res.val.map(user => user.guid) };
-	}
-
-
-	@UseGuards(JwtAuthGuard)
-	@ApiBearerAuth()
-	@Get("get_likes")
+	@Get("get_mutual_likes")
 	async get_mutual_likes(@AuthUser() user: User): Promise<GetLikesResponse> {
 		const res = await this.user_service.find_mutual_likes(user.guid);
 

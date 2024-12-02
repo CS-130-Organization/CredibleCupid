@@ -32,9 +32,6 @@ export class AuthService {
 
 	async signup(email: string, password: string): Promise<boolean> {
 		email = email.toLowerCase();
-		if (await this.user_service.find_user_with_email(email)) {
-			return false;
-		}
 
 		const salt = await bcrypt.genSalt();
 		const hash = await bcrypt.hash(password, salt);

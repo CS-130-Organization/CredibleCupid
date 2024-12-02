@@ -21,7 +21,8 @@ export class UserService {
 	}
 
 	async create_user(email: string, password: string): Promise<User | null> {
-		if (await this.find_user_with_email(email)) {
+		const existing = await this.find_user_with_email(email);
+		if (existing && existing.credibility_score > 0) {
 			return null;
 		}
 
@@ -57,7 +58,7 @@ export class UserService {
 			user.height_mm = height_mm;
 			user.occupation = occupation;
 			console.log("user before cred score update: ", user);
-			
+
 			// calculate credibility score with text validation
 			const probability = await ProfileValidator.validateText(user);
 			console.log("generated credibility score (human probability): ", probability);
@@ -69,7 +70,12 @@ export class UserService {
 
 			if (user.gender == Gender.kMale) {
 				const referrals = await manager.find(Referral, { relations: { user: true }, where: { email: user.email.toLowerCase() } })
+
 				if (referrals.length < 3) {
+
+					user.credibility_score = 0;
+					await manager.save(User, user);
+
 					return Err("Male user does not have enough referrals! You need to have at least 3 referrals in order to use CredibleCupid.");
 				}
 
@@ -221,13 +227,14 @@ export class UserService {
 	}
 
 	async find_mutual_likes(guid: string): Promise<Result<User[], string>> {
-		const user = await this.user_repository.findOne({ where: { guid } });
+		const user = await this.user_repository.findOne({ relations: { likes: true }, where: { guid } });
 
 		if (!user) {
 			return Err("User does not exist!");
 		}
 
-		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user] } })
+		let likes = await this.user_repository.find({ relations: { likes: true }, where: { likes: [user], guid: Not(guid) } })
+		likes = likes.filter(l => !!user.likes.find(u => u.guid == l.guid));
 
 		return Ok(likes);
 	}
