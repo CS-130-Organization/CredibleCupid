@@ -256,9 +256,9 @@ female_users = []
 male_users = []
 
 # Generate 3 female users first
-for _ in range(15):  # Adjust number of female users to sign up first
+for _ in range(20):  # Adjust number of female users to sign up first
     create_user(female_users, male_users)
 
 # Generate male users after the female users
-for _ in range(5):  # Adjust number of male users after referrals are sent
+for _ in range(12):  # Adjust number of male users after referrals are sent
     create_male_user(male_users, female_users)

@@ -2,7 +2,7 @@ import React, {useEffect, useState } from 'react';
 import { motion } from 'framer-motion'; 
 import * as CredibleCupid from '../credible_cupid/src/index'
 import InitDefaultCredibleCupidClient from '../client/Client';
-import { ArrowLeft, Instagram, User, Star, MapPin, Verified, Briefcase, GraduationCap, Ruler } from 'lucide-react';
+import { ArrowLeft, Mail, User, Star, MapPin, Verified, Briefcase, Users, Ruler } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { colors, spacing } from '../styles/theme';
 import { 
@@ -1342,7 +1342,7 @@ const ImageUpload = () => (
                             opacity: 0.7,
                             margin: 0
                           }}>
-                            <Instagram size={20} color={colors.darkGray} />
+                            <Mail size={20} color={colors.darkGray} />
                             <span> {userData?.email}</span>
                           </div>)}
                           {userData?.location && (<div style={{
@@ -1584,17 +1584,24 @@ const ImageUpload = () => (
                       opacity: 0.7,
                       margin: 0
                     }}>
-                      <Briefcase size={20} color={colors.darkGray} />
-                      <span> {userData?.occupation}</span>
+                       <Users size={20} color={colors.darkGray} />
+                      <span> {userData?.sexual_orientation}</span>
                     </div>)}
-                    {userData?.education && (<div style={{
+                    {userData?.sexual_orientation && (<div style={{
                       fontSize: '16px',
                       color: colors.gray.text,
                       opacity: 0.7,
                       margin: 0
                     }}>
-                      <GraduationCap size={20} color={colors.darkGray} />
-                      <span> {userData?.education}</span>
+                      <Briefcase size={20} color={colors.darkGray} />
+                      <span> {userData?.occupation}</span>
+                    </div>)}
+                    {userData?.orientation && (<div style={{
+                      fontSize: '16px',
+                      color: colors.gray.text,
+                      opacity: 0.7,
+                      margin: 0
+                    }}>
                     </div>)}
                   </div>
 

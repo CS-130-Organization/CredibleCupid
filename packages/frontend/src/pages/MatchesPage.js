@@ -83,6 +83,7 @@ const MatchesPage = () => {
           console.error(error);
         } else {
           const userGuids = data.user_guids || [];
+          console.log(userGuids)
           setMatchGuids(userGuids);
           userGuids.forEach((guid) => loadProfile(guid));
         }

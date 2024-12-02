@@ -69,6 +69,7 @@ const CardStack = () => {
   const [currentAction, setCurrentAction] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [seenGuids, setSeenGuids] = useState(new Set());
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Initialize API clients
   const defaultClient = CredibleCupidApi.ApiClient.instance;
@@ -88,6 +89,81 @@ const CardStack = () => {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
+  const convertHeightToFeetInches = (heightMm) => {
+    if (!heightMm || isNaN(heightMm)) {
+      return null;
+    }
+    const totalInches = heightMm * 0.0393701;
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    if (inches === 12) {
+      return `${feet + 1}'0"`;
+    }
+    return `${feet}'${inches}"`;
+  };
+
+  const loadProfile = (guid) => {
+    return new Promise((resolve, reject) => {
+      if (!guid || seenGuids.has(guid)) {
+        resolve(null);
+        return;
+      }
+
+      userApi.queryUser(guid, (error, data) => {
+        if (error) {
+          console.error(error);
+          reject(error);
+          return;
+        }
+
+        userApi.profilePicUser(guid, (picError, picData, response) => {
+          const profileURL = !picError ? response.req.url : null;
+          
+          const profile = {
+            ...((data.first_name || data.last_name) ? {
+              name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
+            } : {}),
+            ...(data.birthday_ms_since_epoch ? { age: calculateAge(data.birthday_ms_since_epoch) } : {}),
+            ...(data.height_mm ? { height: convertHeightToFeetInches(data.height_mm) } : {}),
+            ...(data.gender ? { gender: data.gender[0] } : {}),
+            ...(data.bio ? { bio: data.bio } : {}),
+            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
+            ...(data.occupation ? { occupation: data.occupation } : {}),
+            ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+            ...(data.pronouns ? { pronouns: data.pronouns } : {}),
+            ...(profileURL ? { imageUrl: profileURL } : {}),
+            guid: guid
+          };
+
+          resolve(profile);
+        });
+      });
+    });
+  };
+
+  const loadNextProfiles = async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+
+    const remainingGuids = matchGuids.filter(guid => !seenGuids.has(guid));
+    const guidsToLoad = remainingGuids.slice(0, 3); // Load 3 profiles at a time
+
+    try {
+      for (const guid of guidsToLoad) {
+        const profile = await loadProfile(guid);
+        if (profile) {
+          setSeenGuids(prev => new Set([...prev, guid]));
+          setLoadedProfiles(prev => [...prev, profile]);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading profiles:', err);
+    }
+
+    setIsLoadingMore(false);
+    setIsLoading(false);
+  };
+
   const fetchMatches = async () => {
     setIsLoading(true);
     setError(null);
@@ -99,9 +175,7 @@ const CardStack = () => {
         } else {
           const userGuids = data.user_guids || [];
           setMatchGuids(userGuids);
-          
-          // Load all profiles at once
-          userGuids.forEach(guid => loadProfile(guid));
+          loadNextProfiles();
         }
       });
     } catch (err) {
@@ -111,132 +185,51 @@ const CardStack = () => {
     }
   };
 
-  // Fetch initial matches
   useEffect(() => {
     fetchMatches();
   }, []);
 
-  const loadProfile = async (guid) => {
-    // no guid or duplicate profile
-    if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
-
-    if (!guid || seenGuids.has(guid)) {
-      return;
+   // Load more profiles when we're running low
+   useEffect(() => {
+    if (loadedProfiles.length < 2 && matchGuids.length > seenGuids.size) {
+      loadNextProfiles();
     }
-  
-    // Add to seenGuids immediately so no other calls can process this guid
-    setSeenGuids(prev => new Set([...prev, guid]));
-
-    console.log(guid )
-    userApi.queryUser(guid, (error, data) => {
-      if (error) {
-        console.error(error);
-      } else {
-        const age = calculateAge(data.birthday_ms_since_epoch);
-        console.log("From cardstack: ", data);
-
-        // Get profile picture first
-        userApi.profilePicUser(guid, (error, picData, response) => {
-          if (error) {
-            console.error(error);
-            // Still create profile without picture
-            createAndSetProfile(null);
-          } else {
-            // Create profile with picture URL
-            createAndSetProfile(response.req.url);
-          }
-        });
-
-        function calculateAge(birthdayMs) {
-          if (!birthdayMs || isNaN(birthdayMs)) {
-            return "Age not provided";
-          }
-          const ageDifMs = Date.now() - birthdayMs;
-          const ageDate = new Date(ageDifMs);
-          return Math.abs(ageDate.getUTCFullYear() - 1970);
-        }
-        
-        function convertHeightToFeetInches(heightMm) {
-          if (!heightMm || isNaN(heightMm)) {
-            return "Height not provided";
-          }
-          const totalInches = heightMm * 0.0393701;
-          const feet = Math.floor(totalInches / 12);
-          const inches = Math.round(totalInches % 12);
-          if (inches === 12) {
-            return `${feet + 1}'0"`;
-          }
-          return `${feet}'${inches}"`;
-        }
-        
-        // Helper function to create and set profile
-        function createAndSetProfile(profileURL) {
-          const age = data.birthday_ms_since_epoch ? calculateAge(data.birthday_ms_since_epoch) : null;
-          const height = data.height_mm ? convertHeightToFeetInches(data.height_mm) : null;
-
-
-          setLoadedProfiles(prev => [...prev, {
-            ...((data.first_name || data.last_name) ? {
-              name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
-            } : {}),
-            ...(age && age !== "Age not provided" ? { age } : {}),
-            ...(height && height !== "Height not provided" ? { height } : {}),
-            ...(data.gender ? { gender: data.gender[0] } : {}),
-            ...(data.bio ? { bio: data.bio } : {}),
-            ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
-            ...(data.occupation ? { occupation: data.occupation } : {}),
-            ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
-            ...(data.pronouns ? { pronouns: data.pronouns } : {}),
-            ...(profileURL ? { imageUrl: profileURL } : {}),
-            guid: guid
-          }]);
-
-          setIsLoading(false);
-        }
-      }
-    });
-
-  };
+  }, [loadedProfiles.length, matchGuids.length, seenGuids.size])
 
   const removeCard = async (action) => {
     if (isDragging) return;
     setIsDragging(true);
     setCurrentAction(action);
-    console.log("guid = ", loadedProfiles[0].guid)
-    // If action is like, call the API
-    if (action === 'like' && loadedProfiles[0]?.guid) {
-      try {
-        matchmakerApi.likeUser(loadedProfiles[0]?.guid, (error, data, response) => {
+
+    const currentProfile = loadedProfiles[0];
+    if (!currentProfile?.guid) return;
+
+    try {
+      if (action === 'like') {
+        matchmakerApi.likeUser(currentProfile.guid, (error, data) => {
           if (error) {
-            console.error(`Failed to like user ${loadedProfiles[0].guid}`);
+            console.error(`Failed to like user ${currentProfile.guid}`);
           } else {
-            console.log(`Liked user ${data.guid}${data.matched ? ' - Match!' : ''}`)
+            console.log(`Liked user ${data.guid}${data.matched ? ' - Match!' : ''}`);
           }
         });
-      } catch (error) {
-        console.error(`Error liking user ${loadedProfiles[0].guid}`);
-      }
-    } else if (action === 'pass' && loadedProfiles[0]?.guid) {
-      try {
-        matchmakerApi.passUser(loadedProfiles[0]?.guid, (error, data, response) => {
+      } else {
+        matchmakerApi.passUser(currentProfile.guid, (error, data) => {
           if (error) {
-            console.error(`Failed to pass user ${loadedProfiles[0].guid}`);
+            console.error(`Failed to pass user ${currentProfile.guid}`);
           } else {
-            console.log(`Passed user ${loadedProfiles[0].guid}`);
+            console.log(`Passed user ${currentProfile.guid}`);
           }
         });
-      } catch (error) {
-        console.error(`Error passing user ${loadedProfiles[0].guid}`);
       }
+    } catch (error) {
+      console.error(`Error with ${action} action for user ${currentProfile.guid}`);
     }
 
     // Wait for animation
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    setLoadedProfiles(prev => {
-      const [removed, ...rest] = prev;
-      return rest;
-    });
+    setLoadedProfiles(prev => prev.slice(1));
     setCurrentAction(null);
     setIsDragging(false);
   };
