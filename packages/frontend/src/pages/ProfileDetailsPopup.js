@@ -125,12 +125,6 @@ const ProfileDetailsPopup = ({
                   No image available
                 </div>
               )}
-              {verified && (
-                <div style={badgeStyles.verified}>
-                  <Verified size={16} />
-                  <span>Verified</span>
-                </div>
-              )}
             </div>
 
             <div style={contentStyles.section}>
