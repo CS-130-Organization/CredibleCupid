@@ -1,6 +1,6 @@
 // src/components/ProfileCard/ProfileCard.js
 import React, { useState, useEffect } from 'react';
-import { Heart, X, Star, MapPin, Verified, Briefcase, GraduationCap } from 'lucide-react';
+import { Heart, X, Star, Briefcase, Tag, Users, Ruler, Mail} from 'lucide-react';
 import { colors, spacing } from '../styles/theme';
 import {
   cardStyles,
@@ -20,12 +20,12 @@ const ProfileDetailsPopup = ({
   credibilityScore = 0,
   bio = 'No bio available',
   occupation = 'Not specified',
-  education = 'Not specified',
-  location = 'Location unknown',
-  interests = [],
-  verified = false,
+  orientation = 'Not specified',
+  pronouns = 'Not specified',
+  height = 'Not specified',
+  email = 'Not provided',
   imageUrl = null,
-  onClose = () => {},
+  onClose = () => { },
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -67,7 +67,7 @@ const ProfileDetailsPopup = ({
       fontWeight: 'bold',
       cursor: 'pointer',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-      zIndex: 1100, 
+      zIndex: 1100,
     },
   };
 
@@ -89,12 +89,6 @@ const ProfileDetailsPopup = ({
                   No image available
                 </div>
               )}
-              {verified && (
-                <div style={badgeStyles.verified}>
-                  <Verified size={16} />
-                  <span>Verified</span>
-                </div>
-              )}
             </div>
 
             <div style={contentStyles.section}>
@@ -112,27 +106,27 @@ const ProfileDetailsPopup = ({
 
               <div>
                 <div style={detailStyles.row}>
+                  <Tag size={20} color={colors.gray.dark} />
+                  <span>{pronouns}</span>
+                </div>
+                <div style={detailStyles.row}>
+                  <Users size={20} color={colors.gray.dark} />
+                  <span>{orientation}</span>
+                </div>
+                <div style={detailStyles.row}>
+                  <Ruler size={20} color={colors.gray.dark} />
+                  <span>{height}</span>
+                </div>
+                <div style={detailStyles.row}>
                   <Briefcase size={20} color={colors.gray.dark} />
                   <span>{occupation}</span>
                 </div>
                 <div style={detailStyles.row}>
-                  <GraduationCap size={20} color={colors.gray.dark} />
-                  <span>{education}</span>
-                </div>
-                <div style={detailStyles.row}>
-                  <MapPin size={20} color={colors.gray.dark} />
-                  <span>{location}</span>
+                  <Mail size={20} color={colors.gray.dark} />
+                  <span>{email}</span>
                 </div>
               </div>
-
-              {interests.length > 0 && (
-                <div style={tagStyles.container}>
-                  {interests.map((interest, index) => (
-                    <span key={index} style={tagStyles.tag}>{interest}</span>
-                  ))}
-                </div>
-              )}
-            </div>        
+            </div>
           </div>
         </div>
         <button onClick={onClose} style={styles.closeButton}>

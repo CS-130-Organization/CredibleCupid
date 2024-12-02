@@ -65,6 +65,19 @@ const MatchesPage = () => {
     }
   }, []);
 
+  function convertHeightToFeetInches(heightMm) {
+    if (!heightMm || isNaN(heightMm)) {
+      return "Height not provided";
+    }
+    const totalInches = heightMm * 0.0393701;
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    if (inches === 12) {
+      return `${feet + 1}'0"`;
+    }
+    return `${feet}'${inches}"`;
+  }
+
   const loadProfile = (guid) => {
     if (!guid || loadedProfiles.some(p => p.guid === guid)) return;
 
@@ -73,24 +86,26 @@ const MatchesPage = () => {
         console.error(error);
       } else {
         const age = calculateAge(data.birthday_ms_since_epoch);
+        const height = data.height_mm ? convertHeightToFeetInches(data.height_mm) : null;
 
         userApi.profilePicUser(guid, (error, picData, response) => {
           const profileURL = error ? null : response.req.url;
 
-          setLoadedProfiles(prev => [...prev, {
+           setLoadedProfiles(prev => [...prev, {
             ...((data.first_name || data.last_name) ? {
               name: `${data.first_name ?? ''} ${data.last_name ?? ''}`.trim()
             } : {}),
-            ...(age ? { age } : {}),
+            ...(age && age !== "Age not provided" ? { age } : {}),
+            ...(height && height !== "Height not provided" ? { height } : {}),
             ...(data.gender ? { gender: data.gender[0] } : {}),
             ...(data.bio ? { bio: data.bio } : {}),
             ...(data.credibility_score ? { credibility_score: data.credibility_score } : {}),
             ...(data.occupation ? { occupation: data.occupation } : {}),
-            ...(data.education ? { education: data.education } : {}),
-            ...(data.location ? { location: data.location } : {}),
-            ...(data.interests ? { interests: data.interests } : {}),
+            ...(data.sexual_orientation ? { orientation: data.sexual_orientation } : {}),
+            ...(data.pronouns ? { pronouns: data.pronouns } : {}),
+            ...(data.email ? { email: data.email } : {}),
             ...(profileURL ? { imageUrl: profileURL } : {}),
-            guid: guid,
+            guid: guid
           }]);
         });
       }
