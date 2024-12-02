@@ -16,7 +16,8 @@ function Register() {
     const [gender, setGender] = useState('');
     const [pronouns, setPronouns] = useState('')
     const [orientation, setOrientation] = useState('');
-    const [height, setHeight] = useState('');
+    const [heightFeet, setHeightFeet] = useState('');
+    const [heightInches, setHeightInches] = useState('');
     const [occupation, setOccupation] = useState('');
     const [birthday, setBirthday] = useState('');
     const [bio, setBio] = useState('');
@@ -92,13 +93,14 @@ function Register() {
                 return;
 
             case 2:
-                if (!firstName || !lastName || !gender || !orientation || !height || !occupation || !birthday) {
+                if (!firstName || !lastName || !gender || !orientation || !heightFeet || !heightInches || !occupation || !birthday) {
                     const step2Missing = [];
                     if (!firstName) step2Missing.push('First Name')
                     if (!lastName) step2Missing.push('Last Name')
                     if (!gender) step2Missing.push('Gender');
                     if (!orientation) step2Missing.push('Sexual Orientation');
-                    if (!height) step2Missing.push('Height');
+                    if (!heightFeet) step2Missing.push('Height Feet');
+                    if (!heightInches) step2Missing.push('Height Inches');
                     if (!occupation) step2Missing.push('Occupation');
                     if (!birthday) step2Missing.push('Birthday');
 
@@ -140,7 +142,7 @@ function Register() {
 
         // Convert date_of_birth to milliseconds since epoch
         const birthdayMs = new Date(birthday).getTime();
-        const heightMM = height * 10;
+        const heightMM = convertHeightToMM(heightFeet, heightInches);
 
         const userUpdateBioRequest = {
             first_name: firstName,
@@ -279,6 +281,15 @@ function Register() {
             });
 
         }
+    };
+
+    const convertHeightToMM = (feet, inches) => {
+        if (!feet || isNaN(feet)) return null;
+        inches = inches || 0;
+        // Convert feet and inches to mm
+        // 1 foot = 304.8 mm
+        // 1 inch = 25.4 mm
+        return Math.round((feet * 304.8) + (inches * 25.4));
     };
 
     const ImageUpload = () => (
@@ -495,19 +506,36 @@ function Register() {
                         </div>
 
                         <div style={inputStyles.container}>
-                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Height (cm)</label>
-                            <input
-                                style={inputStyles.input}
-                                type="number"
-                                value={height}
-                                onChange={(e) => setHeight(e.target.value)} // convert to mm
-                                required
-                                placeholder="Enter your height (cm)"
-                                min="100"
-                                max="250"
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                            />
+                            <label style={{ ...inputStyles.label, marginTop: spacing.lg }}>Height</label>
+                            <div style={{ display: 'flex', gap: spacing.md }}>
+                                <div style={{ flex: 1 }}>
+                                    <input
+                                        style={inputStyles.input}
+                                        type="number"
+                                        value={heightFeet}
+                                        onChange={(e) => setHeightFeet(e.target.value)}
+                                        required
+                                        placeholder="Feet"
+                                        min="4"
+                                        max="7"
+                                        onFocus={handleFocus}
+                                        onBlur={handleBlur}
+                                    />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <input
+                                        style={inputStyles.input}
+                                        type="number"
+                                        value={heightInches}
+                                        onChange={(e) => setHeightInches(e.target.value)}
+                                        placeholder="Inches"
+                                        min="0"
+                                        max="11"
+                                        onFocus={handleFocus}
+                                        onBlur={handleBlur}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div style={inputStyles.container}>
