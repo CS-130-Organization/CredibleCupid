@@ -18,4 +18,13 @@ jobs:
     - name: Init .env
       run: cp testingEnv.Sample .env
     - name: Build and run credible cupid server
-      run: docker compose up --build --remove-orphans -d --wait
+      run: |
+        docker compose up --build --remove-orphans &
+        up_pid=$!
+        docker compose logs -f &
+        logs_pid=$!
+        while [ "$(docker compose ps --services --filter health=starting | wc -l)" -gt 0 ]; do
+          sleep 2
+        done
+        kill $logs_pid
+        wait $up_pid
