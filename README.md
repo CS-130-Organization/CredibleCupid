@@ -1,3 +1,51 @@
+# Prerequisites
+
+Before you begin, ensure you have the following tools installed on your local machine:
+
+- **Docker**: To containerize the application and run it in a consistent environment.
+- **Docker Compose**: To manage multi-container Docker applications.
+- **Make**: To run our build scripts.
+
+# Setup Instructions
+
+1. **Clone the Repository**:
+   First, clone the repository to your local machine using Git:
+   ```bash
+   git clone https://github.com/CS-130-Organization/CredibleCupid.git
+   cd CredibleCupid
+   ```
+
+2. **Copy the Environment Configuration**:
+   The project uses environment variables stored in a `.env` file. After cloning the repository, copy the sample environment file (`env.Sample`) to `.env` in the root of the project:
+   ```bash
+   cp env.Sample .env
+   ```
+
+   You can modify the `.env` file as needed to configure any environment-specific settings, such as API keys or database configurations.
+
+3. **Run the Application**:
+   To build and run the application locally, use the following command:
+   ```bash
+   make all
+   ```
+   This command will:
+   - Stop any existing Docker containers.
+   - Rebuild the Docker containers with the latest code.
+   - Remove any orphaned containers that are no longer needed.
+
+4. **Access the Website and Backend Documentation**:
+   Once the application is up and running, you can access the following:
+
+   - **Frontend Website**: Open your browser and navigate to `http://localhost:3000` to view the website.
+   - **Backend API Documentation**: Open your browser and go to `http://localhost:8000/api` to access the API documentation, where you can explore the available endpoints and interact with the backend.
+
+5. **Clean Up**:
+   If you want to clean up and remove all Docker containers and volumes, you can run:
+   ```bash
+   make clean
+   ```
+   This will stop and remove the containers, as well as any associated volumes.
+
 # Repository Template
 
 [![Build Status](https://app.travis-ci.com/melaasar/cs130-template.svg?branch=master)](https://app.travis-ci.com/github/melaasar/cs130-template)
