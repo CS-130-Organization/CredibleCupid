@@ -57,14 +57,11 @@ export class UserService {
 			user.birthday = new Date(birthday_ms_since_epoch);
 			user.height_mm = height_mm;
 			user.occupation = occupation;
-			console.log("user before cred score update: ", user);
 
 			// calculate credibility score with text validation
 			const probability = await ProfileValidator.validateText(user);
-			console.log("generated credibility score (human probability): ", probability);
 			
 			user.credibility_score = probability;
-			console.log("score assigned to user: ", user.credibility_score);
 
 			await manager.save(User, user);
 
