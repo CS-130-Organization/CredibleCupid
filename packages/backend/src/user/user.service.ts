@@ -57,7 +57,6 @@ export class UserService {
 			user.birthday = new Date(birthday_ms_since_epoch);
 			user.height_mm = height_mm;
 			user.occupation = occupation;
-			console.log("user before cred score update: ", user);
 
 			// calculate credibility score with text validation
 			const probability = await ProfileValidator.validateText(user);
