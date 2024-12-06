@@ -74,35 +74,20 @@ describe('UserService', () => {
     });
   });
 
-  describe('Prevent male user from updating bio without 3 referrals', () => {
-    it('should update user bio successfully', async () => {
+  describe('update_user_bio', () => {
+    it('should update user bio successfully for female user', async () => {
       const mockUser = { email: 'test@example.com', guid: '123', referrals: [] as Referral[], gender: Gender.kFemale } as User;
-      mockDataSource.transaction
-        .mockImplementationOnce(async (cb) => {
-          return cb({
-            findOne: jest.fn().mockResolvedValue(mockUser),
-            find: jest.fn().mockResolvedValue([]),
-            save: jest.fn(),
-          });
-        })
-        .mockImplementationOnce(async (cb) => {
-          return cb({
-            findOne: jest.fn().mockResolvedValue(mockUser),
-            find: jest.fn().mockResolvedValue([]),
-            save: jest.fn(),
-          });
-        })
-        .mockImplementationOnce(async (cb) => {
-          return cb({
-            findOne: jest.fn().mockResolvedValue(mockUser),
-            find: jest.fn().mockResolvedValue([mockUser, mockUser, mockUser]),
-            save: jest.fn(),
-          });
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn().mockResolvedValue(mockUser),
+          find: jest.fn().mockResolvedValue([]),
+          save: jest.fn(),
         });
+      });
 
       (ProfileValidator.validateText as jest.Mock).mockResolvedValue(90);
 
-      let result = await userService.update_user_bio(
+      const result = await userService.update_user_bio(
         '123',
         'John',
         'Doe',
@@ -114,10 +99,21 @@ describe('UserService', () => {
         1800,
         'Engineer',
       );
-
+    
       expect(result.ok).toBe(true);
+    });
 
-      result = await userService.update_user_bio(
+    it('should fail if male user has less than 3 referrals', async () => {
+      const mockUser = { email: 'test@example.com', guid: '123', referrals: [] as Referral[], gender: Gender.kMale } as User;
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn().mockResolvedValue(mockUser),
+          find: jest.fn().mockResolvedValue([]),
+          save: jest.fn(),
+        });
+      });
+
+      const result = await userService.update_user_bio(
         '123',
         'John',
         'Doe',
@@ -131,8 +127,20 @@ describe('UserService', () => {
       );
 
       expect(result.ok).toBe(false);
+      expect(result.val).toBe('Male user does not have enough referrals! You need to have at least 3 referrals in order to use CredibleCupid.');
+    });
 
-      result = await userService.update_user_bio(
+    it('should update user bio successfully for male user with 3 or more referrals', async () => {
+      const mockUser = { email: 'test@example.com', guid: '123', referrals: [new Referral(), new Referral(), new Referral()], gender: Gender.kMale } as User;
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn().mockResolvedValue(mockUser),
+          find: jest.fn().mockResolvedValue([mockUser, mockUser, mockUser]),
+          save: jest.fn(),
+        });
+      });
+
+      const result = await userService.update_user_bio(
         '123',
         'John',
         'Doe',
@@ -148,7 +156,7 @@ describe('UserService', () => {
       expect(result.ok).toBe(true);
     });
 
-    it('Dont update bio if user doesnt exist', async () => {
+    it('should not update bio if user does not exist', async () => {
       mockDataSource.transaction.mockImplementationOnce(async (cb) => {
         return cb({
           findOne: jest.fn().mockResolvedValue(null),
@@ -170,6 +178,53 @@ describe('UserService', () => {
 
       expect(result.err).toBe(true);
       expect(result.val).toBe('User does not exist!');
+    });
+  });
+
+  describe('send_referral', () => {
+    it('should throw an error if user is male', async () => {
+      const maleUser = { guid: '123', gender: Gender.kMale } as User;
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn().mockResolvedValue(maleUser),
+        });
+      });
+
+      const result = await userService.send_referral('123', 'test@example.com', 'Hello');
+      expect(result.err).toBe(true);
+      expect(result.val).toBe('Men are not allowed to send referrals.');
+    });
+
+    it('should send referral successfully if user is female', async () => {
+      const femaleUser = { guid: '123', gender: Gender.kFemale } as User;
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn().mockResolvedValueOnce(femaleUser).mockResolvedValueOnce(null),
+          save: jest.fn(),
+        });
+      });
+
+      const result = await userService.send_referral('123', 'test@example.com', 'Hello');
+      expect(result.ok).toBe(true);
+    });
+
+    it('should throw an error if user already referred this email', async () => {
+      const femaleUser = { guid: '123', gender: Gender.kFemale } as User;
+      mockDataSource.transaction.mockImplementationOnce(async (cb) => {
+        return cb({
+          findOne: jest.fn()
+            .mockResolvedValueOnce(femaleUser)
+            .mockResolvedValueOnce({
+              guid: '456',
+              email: 'test@example.com',
+              user: femaleUser
+            } as Referral),
+        });
+      });
+
+      const result = await userService.send_referral('123', 'test@example.com', 'Hello');
+      expect(result.err).toBe(true);
+      expect(result.val).toBe('You already referred this email!');
     });
   });
 });
