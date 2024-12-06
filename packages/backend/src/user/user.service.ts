@@ -61,10 +61,8 @@ export class UserService {
 
 			// calculate credibility score with text validation
 			const probability = await ProfileValidator.validateText(user);
-			console.log("generated credibility score (human probability): ", probability);
 			
 			user.credibility_score = probability;
-			console.log("score assigned to user: ", user.credibility_score);
 
 			await manager.save(User, user);
 

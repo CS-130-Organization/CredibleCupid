@@ -18,4 +18,9 @@ jobs:
     - name: Init .env
       run: cp testingEnv.Sample .env
     - name: Build and run credible cupid server
+      env:
+        OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
       run: docker compose up --build --remove-orphans -d --wait
+    - name: Show output logs
+      if: always()
+      run: docker compose logs
