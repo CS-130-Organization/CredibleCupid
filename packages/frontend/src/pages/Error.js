@@ -7,7 +7,7 @@ import logo from '../assets/images/logo.png';
 const Error = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const errorMessage = location.state?.errorMessage || "We were unable to verify your profile. This may be due to our AI detection system identifying potential issues with your profile information. Please try again with different profile details.";
+    const errorMessage = location.state?.errorMessage || "To create an account, you need 3 referrals from existing users. This requirement helps ensure a safe and trustworthy community. Please obtain the required referrals and try again.";
 
     const handleRetry = () => {
         navigate('/register');
