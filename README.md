@@ -20,7 +20,10 @@ Before you begin, ensure you have the following tools installed on your local ma
    ```bash
    cp env.Sample .env
    ```
-
+   Open the .env file and configure the following variables:
+   ```
+   OPENAI_API_KEY=<insert your OpenAI API key>
+   ```
    You can modify the `.env` file as needed to configure any environment-specific settings, such as API keys or database configurations.
 
 3. **Run the Application**:
